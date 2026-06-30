@@ -1,0 +1,19 @@
+{
+	"nodes":[
+		{"id":"agents","type":"file","file":"AGENTS.md","x":0,"y":0,"width":320,"height":180},
+		{"id":"tokens","type":"file","file":"design-brain/tokens.md","x":420,"y":-120,"width":320,"height":180},
+		{"id":"components","type":"file","file":"design-brain/components/README.md","x":420,"y":120,"width":320,"height":180},
+		{"id":"patterns","type":"file","file":"design-brain/patterns/README.md","x":840,"y":120,"width":320,"height":180},
+		{"id":"examples","type":"file","file":"design-brain/examples/README.md","x":1260,"y":120,"width":320,"height":180},
+		{"id":"exports","type":"text","text":"Tool exports\\nCodex: AGENTS.md\\nClaude: CLAUDE.md + .claude/skills\\nLovable: lovable/knowledge-base.md","x":1260,"y":-120,"width":360,"height":180},
+		{"id":"review","type":"file","file":"_review/Governance.md","x":840,"y":360,"width":320,"height":180}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"agents","fromSide":"right","toNode":"tokens","toSide":"left"},
+		{"id":"e2","fromNode":"agents","fromSide":"right","toNode":"components","toSide":"left"},
+		{"id":"e3","fromNode":"components","fromSide":"right","toNode":"patterns","toSide":"left"},
+		{"id":"e4","fromNode":"patterns","fromSide":"right","toNode":"examples","toSide":"left"},
+		{"id":"e5","fromNode":"examples","fromSide":"top","toNode":"exports","toSide":"bottom"},
+		{"id":"e6","fromNode":"review","fromSide":"top","toNode":"patterns","toSide":"bottom"}
+	]
+}

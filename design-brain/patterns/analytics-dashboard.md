@@ -1,0 +1,82 @@
+---
+type: pattern-contract
+status: in-review
+owner: design-system
+surfaces: [MarketIQ, RFP Analytics]
+platform: orbit-client-connected-platform
+source: code
+last_reviewed: 2026-06-15
+maturity_score: 84
+tags: [orbit, design-brain, pattern-contract, data-viz, benchmark]
+---
+
+# Pattern Contract: `analytics-dashboard`
+
+## Purpose & Precedent
+Summarize procurement analytics while preserving access to underlying rows and clear
+decision context.
+
+Benchmark precedent:
+`apps/docs/app/design-system/benchmarks/analytics-dashboard/MarketIQAnalyticsDashboardBenchmark.tsx`
+
+Adjacent Orbit / Client Connected Platform dashboard visual precedent:
+`design-brain/examples/orbit-client-home-ai-tools-dashboard.md`
+
+## When To Use / When Not To
+Use when the user compares KPIs, trends, categories, or supplier/project performance.
+Do not use charts when a dense table answers the question better. Use `home-dashboard`
+instead when the page is a platform home surface rather than a deep analytics view.
+
+## Regions & Composition
+Filter/state bar, KPI row, trend chart, category comparison, insight/status region,
+underlying table, export or drill-down actions. For client-facing dashboards, preserve
+clear context about what the metric means and where the user can inspect the underlying
+rows.
+
+Component contracts: `card-panel`, `data-table`, `button`, `select-combobox`,
+`badge-status`.
+
+## Hierarchy & Density
+Number first, delta second, chart third, underlying rows always reachable.
+
+## Page-Level States
+Initial skeleton, insufficient data, partial data, chart/table load failure, stale data,
+refreshing, refreshed, permission-limited export.
+
+## Navigation & Focus Behaviour
+Filters/state controls precede KPIs. Charts expose data outside hover through a visible
+summary and underlying table. The underlying table remains keyboard reachable and
+sortable.
+
+KPI deltas and table movement values must pass AA contrast at `--orbit-text-xs` in both
+themes. Do not rely on green/warning colour alone; keep the sign, direction icon, and
+visible delta copy.
+
+## Responsive Behaviour
+KPI cards stack only when needed. Charts keep readable labels or switch to table-first.
+Compact mode tightens page gaps and should pass compact density to the underlying table.
+
+## Data & Performance Notes
+No misleading axes. Consistent scales across compared charts. Use semantic data-viz
+tokens once available; until then use existing Orbit semantic/status tokens and document
+the gap in `data-viz.md`.
+
+## Anti-Patterns
+- Default chart library colors/tooltips.
+- Dual-axis or decorative charts.
+- Hiding data rows behind hover-only interactions.
+- Stale data shown only through colour.
+- Loading charts that reflow into a different final layout.
+
+## Golden Example
+- `design-brain/examples/analytics-kpi-chart.md`
+- Adjacent client dashboard visual truth:
+  `design-brain/examples/orbit-client-home-ai-tools-dashboard.md`
+
+## Gap Report
+- Major: real MarketIQ / RFP Analytics production screen source has not been linked.
+- Major: real data-viz token names are missing.
+- Minor: Orbit home dashboard screenshot is adjacent dashboard precedent, not a deep
+  analytics-chart source.
+- Minor: browser visual contrast evidence exists for the benchmark route, but no axe or
+  manual screen-reader artifact has been captured yet.

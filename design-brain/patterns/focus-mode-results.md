@@ -1,0 +1,76 @@
+---
+type: pattern-contract
+status: in-review
+owner: design-system
+surfaces: [ClauseIQ, shared]
+platform: orbit-client-connected-platform
+source: code
+maturity_score: 68
+last_reviewed: 2026-06-14
+tags: [orbit, design-brain, pattern-contract, benchmark]
+---
+
+# Pattern Contract: `focus-mode-results`
+
+## Purpose & Precedent
+Deep results review pattern for dense outputs where users compare, inspect, and act on
+findings without losing context.
+
+## Source Status
+This pattern now has benchmark evidence but not yet production product evidence. The
+ClauseIQ prototype is a guided workflow that ends in a results card; the newer benchmark
+route demonstrates a fuller focus-mode results table with persistent filters, result
+table, state controls, compact density, and detail dialog. Keep this `in-review` until a
+real production/product screen is linked.
+
+Benchmark evidence:
+`apps/docs/app/design-system/benchmarks/clauseiq-results/ClauseIQResultsBenchmark.tsx`
+
+## When To Use / When Not To
+Use for results dashboards, clause findings, analysis results, and review work where a
+table/list and detail view must stay connected. Do not use for lightweight summaries or
+linear setup flows.
+
+## Regions & Composition
+Header/status bar, filter rail or toolbar, results table/list, detail drawer/panel,
+review actions, stale/refresh indicator.
+
+Component contracts: `data-table`, `button`, `tabs`, `badge-status`, `dialog` or future
+`drawer`, `toast-notification`, `card-panel`.
+
+## Hierarchy & Density
+Users scan result count, filters, highest-priority rows, then detail. Default
+comfortable density is acceptable for review; compact density is required for
+high-row-count work.
+
+## Page-Level States
+Initial skeleton, partial data, zero results, failed load, stale/refreshing,
+long-running analysis, permission-limited actions.
+
+## Navigation & Focus Behaviour
+Keyboard enters filters, results, row actions, then detail. Closing detail returns focus
+to the originating row. If a modal is used instead of a future drawer, it must follow
+the `dialog` contract.
+
+## Responsive Behaviour
+On narrow screens, filters collapse into a controlled panel and detail becomes
+full-width. The result count and active filters remain visible.
+
+## Data & Performance Notes
+Use pagination or virtualisation for large result sets. Avoid reflow when results load.
+
+## Anti-Patterns
+- Filters hidden only in a modal for desktop workflows.
+- Cards replacing a dense result table.
+- Blank chart/table while loading instead of final-layout skeleton.
+- Treating ClauseIQ's current results card as the whole focus-mode precedent.
+
+## Golden Example
+`design-brain/examples/data-table-dense.md` now links the ClauseIQ results benchmark.
+`design-brain/examples/clauseiq-focus-mode-results.md` remains adjacent guided-workflow
+evidence.
+
+## Gap Report
+- Major: link a real focus-mode product screen before marking this stable.
+- Major: exact responsive behavior must be validated against product precedent.
+- Major: reusable drawer/detail-panel source is missing.

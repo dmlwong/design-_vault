@@ -1,0 +1,110 @@
+---
+type: pattern-contract
+status: in-review
+owner: design-system
+surfaces: [shared]
+platform: shared
+source: code
+last_reviewed: 2026-06-15
+maturity_score: 80
+tags: [orbit, design-brain, pattern-contract, lovable, migration, benchmark]
+---
+
+# Pattern Contract: `lovable-port`
+
+## Purpose & Precedent
+Use this pattern when a Lovable, ShadCN, Tailwind, v0, Bolt, or other AI-generated
+prototype needs to become Orbit-compliant product UI.
+
+Current benchmark precedent:
+`apps/docs/app/design-system/benchmarks/lovable-port/LovablePortBenchmark.tsx`
+
+Original source prototype:
+`Test`
+
+## When To Use / When Not To
+Use when the prototype has useful product structure, interaction ideas, or domain
+content but does not yet use Orbit components, semantic tokens, full states, or
+accessibility behavior.
+
+Do not use this as permission to import prototype UI wholesale. If the prototype is only
+visual inspiration with no useful workflow structure, rebuild from the closest Orbit
+component and page-pattern contracts instead.
+
+## Regions & Composition
+Required porting regions:
+- Source inventory: source files, routes, component imports, token/theme files.
+- Component mapping: imported element to Orbit component/contract.
+- Token translation: raw Tailwind/ShadCN/OKLCH/pixel/rem values to Orbit tokens.
+- State completion: loading, empty, error, disabled/permission, active filters, and
+  selected-detail states added around the useful workflow.
+- Theme and density verification: Efficio base and Orbit theme, comfortable and compact.
+- Deviation report: approved substitutions and gaps that need design-system decisions.
+
+Core contracts commonly used:
+`data-table`, `button`, `input`, `select-combobox`, `tabs`, `badge-status`,
+`card-panel`, `dialog` when detail/recovery needs modal behavior.
+
+## Hierarchy & Density
+Preserve the prototype's useful information architecture, but let Orbit decide the
+visual system. In the benchmark, the AUT01 project header, section tabs, scope filters,
+search, status/stage filters, column view, table, and row detail were preserved; visual
+styling, state handling, and accessibility moved to Orbit.
+
+Default to comfortable density and provide compact density for dense tables and lists.
+
+## Page-Level States
+Every port must add states that the prototype skipped:
+- Loading state matching final layout shape, current columns, and current density.
+- Empty state with recovery guidance.
+- Error state with retry or clear next action.
+- Disabled or no-permission state with visible reason.
+- Active filters and clear action.
+- Selected-row/detail state where row interaction exists.
+- Theme and density states.
+
+## Navigation & Focus Behaviour
+Replace click-only prototype interactions with Orbit keyboard-operable controls.
+Use named search regions, named tables, explicit row-selection labels, `aria-pressed`
+for toggle groups, `role="status"` for loading, and `role="alert"` for errors.
+When using `PageHeader` tabs, ensure every `panelId` referenced by a tab exists in the
+mounted DOM, even if inactive panels are mounted as hidden empty panels.
+Row-local actions such as "View" or "Edit" must include the row identity in their
+accessible names.
+
+Status and stage values must be visible text, not only colour dots.
+When compact visual initials or badges abbreviate people/resources, include the full
+text in a visually hidden node inside the same cell rather than relying on `aria-label`
+on a generic non-interactive element.
+
+## Responsive Behaviour
+The port must pass mobile-width sanity checks without page-level horizontal overflow.
+Wide tables may scroll inside their own table region, but controls, filter summaries,
+and recovery states must wrap without clipping.
+
+## Data & Performance Notes
+The current Orbit `Table` contract supports pagination, not virtualization. If a
+prototype uses virtualized div rows, prefer Orbit `Table` with pagination or
+server-side pagination unless a virtual-table contract exists.
+
+Do not preserve raw pixel column widths. Translate width needs to token expressions or
+let the Orbit component determine intrinsic layout.
+
+## Anti-Patterns
+- Importing ShadCN/Tailwind components into Orbit because they are already present in
+  the prototype.
+- Recreating a pseudo-table with divs, clickable headers, colour-only status dots, or
+  hover-only actions.
+- Keeping raw OKLCH theme values, pixel column widths, rem sizing, or hardcoded icon
+  sizes.
+- Treating missing component contracts as silent local implementation details.
+- Omitting permission, loading, empty, and error states because the prototype did.
+
+## Golden Example
+`design-brain/examples/lovable-initiatives-port.md`
+
+## Gap Report
+- Major: no contracted menu/checkbox-list pattern exists for granular column visibility.
+- Major: no Avatar/resource-stack contract exists yet.
+- Major: no source-backed virtual-table contract exists yet.
+- Major: no formal axe/contrast artifact has been captured for the benchmark route.

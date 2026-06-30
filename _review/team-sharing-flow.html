@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Orbit Design Brain — Team Sharing Flow</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171a2b; --ink:#e8eaf2; --muted:#9aa0b4;
+    --vault:#2bb673; --vault-soft:#173a2c;
+    --robot:#e0a93b; --robot-soft:#3a2f15;
+    --repo:#4c7df0; --repo-soft:#16244a;
+    --people:#8b7bf0; --people-soft:#241f44;
+    --consume:#36b6c8; --consume-soft:#103138;
+    --line:#33384f; --danger:#ef6a6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b1f36,#0f1220);
+    color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:32px 16px 64px}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .rule{display:flex;gap:10px;align-items:center;background:linear-gradient(90deg,var(--vault-soft),transparent);
+    border:1px solid var(--vault);border-radius:12px;padding:12px 16px;margin:0 0 26px;font-weight:600}
+  .rule .dot{color:var(--vault)}
+  .col{display:flex;flex-direction:column;align-items:center;gap:0}
+  .node{width:100%;border-radius:16px;padding:16px 18px;border:1px solid var(--line);
+    background:var(--panel);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .node .lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .node h3{margin:0 0 4px;font-size:18px}
+  .node p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:12px;background:#0e1120;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:#c4c9da}
+  .people .node{border-color:var(--people);background:linear-gradient(180deg,var(--people-soft),var(--panel))}
+  .vault{border-color:var(--vault)!important;background:linear-gradient(180deg,var(--vault-soft),var(--panel))!important}
+  .repo{border-color:var(--repo)!important;background:linear-gradient(180deg,var(--repo-soft),var(--panel))!important}
+  .consume{border-color:var(--consume)!important;background:linear-gradient(180deg,var(--consume-soft),var(--panel))!important}
+  /* connector */
+  .conn{display:flex;flex-direction:column;align-items:center;width:100%;}
+  .conn .line{width:2px;height:22px;background:var(--line)}
+  .conn .pill{font-size:12px;color:var(--ink);background:#0e1120;border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px;margin:2px 0;font-weight:600}
+  .conn .pill small{color:var(--muted);font-weight:400}
+  .chev{color:var(--line);font-size:18px;line-height:1;margin-top:-2px}
+  .robotpill{border-color:var(--robot)!important;color:var(--robot)}
+  /* row of people / consumers */
+  .triple{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+  .mini{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:#11142400}
+  .mini .ic{font-size:22px}
+  .mini b{display:block;margin-top:4px}
+  .mini span{color:var(--muted);font-size:12px}
+  /* side branch */
+  .branchrow{display:grid;grid-template-columns:1fr auto;gap:14px;width:100%;align-items:center}
+  .branch{border:1px dashed var(--line);border-radius:14px;padding:12px 14px;background:#11142466}
+  .branch h4{margin:0;font-size:14px}
+  .branch p{margin:3px 0 0;color:var(--muted);font-size:12px}
+  .barrow{color:var(--muted);font-size:12px;text-align:center;white-space:nowrap}
+  /* feedback + prereq */
+  .feedback{margin-top:20px;border:1px dashed var(--danger);border-radius:14px;padding:12px 16px;
+    background:rgba(239,106,106,.06);color:#ffd9d9;font-size:13px}
+  .feedback b{color:#ff9b9b}
+  .prereq{margin-top:18px;border:1px solid var(--robot);border-radius:14px;padding:14px 16px;background:var(--robot-soft)}
+  .prereq h4{margin:0 0 8px;color:var(--robot);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+  .prereq ol{margin:0;padding-left:18px;color:#f0e2c4}
+  .prereq li{margin:4px 0;font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px;color:var(--muted);font-size:12px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .foot{margin-top:18px;color:var(--muted);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Orbit Design Brain → the wider team</h1>
+  <p class="sub">How edits flow from the people who write the brain to the AI tools and engineers who use it.</p>
+
+  <div class="rule"><span class="dot">●</span> The one rule: <b>&nbsp;edit the Vault. Never edit the copy.</b></div>
+
+  <div class="col">
+
+    <!-- AUTHORS -->
+    <div class="people" style="width:100%">
+      <div class="node">
+        <div class="lab">Who edits · non-technical, in Obsidian</div>
+        <div class="triple">
+          <div class="mini"><div class="ic">🎨</div><b>Designers</b><span>principles, examples</span></div>
+          <div class="mini"><div class="ic">📋</div><b>PMs</b><span>discovery packs</span></div>
+          <div class="mini"><div class="ic">✅</div><b>POs</b><span>requirements</span></div>
+        </div>
+        <p style="margin-top:10px;text-align:center">shared between authors via <b style="color:var(--people)">Obsidian Sync</b> (or a shared cloud folder)</p>
+      </div>
+    </div>
+
+    <div class="conn"><div class="line"></div><div class="pill">they edit&nbsp;<small>↓</small></div><div class="line"></div><div class="chev">▼</div></div>
+
+    <!-- VAULT -->
+    <div class="node vault">
+      <div class="lab" style="color:#bff0d4">Canonical · single source of truth</div>
+      <h3>📚 The Vault &nbsp;<span style="font-size:12px;color:#bff0d4;font-weight:400">(Obsidian · your machine + Sync)</span></h3>
+      <p>Everything is authored here, and only here.</p>
+      <div class="chips">
+        <span class="chip">AGENTS.md</span><span class="chip">defaults.md</span><span class="chip">component contracts</span>
+        <span class="chip">patterns</span><span class="chip">platforms + personas</span><span class="chip">discovery/</span>
+        <span class="chip">golden examples</span>
+      </div>
+    </div>
+
+    <!-- branch: Lovable -->
+    <div class="conn"><div class="line"></div></div>
+    <div class="branchrow">
+      <div class="conn" style="width:auto"><div class="pill robotpill">🤖 export_brain.py&nbsp;<small>+ drift-check (CI)</small></div></div>
+      <div class="barrow">— paste projections →</div>
+    </div>
+    <div class="branchrow">
+      <div></div>
+      <div class="branch"><h4>🟪 Lovable</h4><p>paste <code>lovable/</code> knowledge base, or connect the Enterprise design system</p></div>
+    </div>
+    <div class="conn"><div class="chev">▼</div></div>
+
+    <!-- REPO -->
+    <div class="node repo">
+      <div class="lab" style="color:#bcd0ff">Generated copy · never hand-edited</div>
+      <h3>📦 efficio-orbit repo &nbsp;<span style="font-size:12px;color:#bcd0ff;font-weight:400">(git)</span></h3>
+      <p>The exporter writes <code>AGENTS.md</code> + <code>design-brain/</code> into the product repo. Committed &amp; pushed like any code.</p>
+    </div>
+
+    <div class="conn"><div class="line"></div><div class="pill">git pull&nbsp;<small>— everyone who clones the repo</small></div><div class="line"></div><div class="chev">▼</div></div>
+
+    <!-- CONSUMERS -->
+    <div class="node consume">
+      <div class="lab" style="color:#bff0f6">Who uses it</div>
+      <div class="triple">
+        <div class="mini"><div class="ic">👩‍💻</div><b>Engineers</b><span>read in the repo</span></div>
+        <div class="mini"><div class="ic">🟢</div><b>Codex</b><span>reads AGENTS.md</span></div>
+        <div class="mini"><div class="ic">✴️</div><b>Claude Code</b><span>auto-loads AGENTS.md</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="feedback">↩ <b>Feedback loop:</b> when an AI gets Orbit wrong and a human corrects it, the fix goes back into the <b>Vault</b> (never the repo copy) → re-export. The brain sharpens every sprint.</div>
+
+  <!-- PREREQS -->
+  <div class="prereq">
+    <h4>⚠ Clear these before you share</h4>
+    <ol>
+      <li><b>Portability</b> — convert <code>/Users/derekwong/…</code> absolute paths to repo-relative, or links break on every teammate's machine.</li>
+      <li><b>Screenshots</b> — your visual-truth screenshots are "restricted until approved." Sanitize/approve, or exclude them from the export.</li>
+    </ol>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span><i class="sw" style="background:var(--people)"></i> Authors</span>
+    <span><i class="sw" style="background:var(--vault)"></i> Vault (canonical)</span>
+    <span><i class="sw" style="background:var(--robot)"></i> Automation</span>
+    <span><i class="sw" style="background:var(--repo)"></i> Product repo</span>
+    <span><i class="sw" style="background:var(--consume)"></i> Consumers</span>
+  </div>
+  <p class="foot">Fastest first share = fix portability → export + commit into efficio-orbit. Authors (Obsidian Sync) &amp; the drift-check automation follow.</p>
+</div>
+</body>
+</html>

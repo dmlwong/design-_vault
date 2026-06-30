@@ -1,0 +1,87 @@
+---
+type: example
+status: in-review
+owner: design-system
+surfaces: [ClauseIQ]
+platform: orbit-client-connected-platform
+source: code
+last_reviewed: 2026-06-14
+maturity_score: 74
+tags: [orbit, design-brain, example]
+---
+
+# Golden Example: ClauseIQ Guided Results Workflow
+
+## Demonstrates
+- Source-backed ClauseIQ workflow using Orbit components.
+- Guided conversational workflow pattern.
+- Modal initiative selection with search, ownership toggle, and selectable table.
+- Upload validation, processing state, and results state.
+- Result actions and next-step actions after analysis completes.
+
+## Real Source Links
+- Prototype implementation:
+  `apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.tsx`
+- Prototype state reducer:
+  `apps/prototypes/components/feature/clauseiq/state.ts`
+- Prototype data:
+  `apps/prototypes/data/clauseiq-mock.ts`
+- Upload validation:
+  `apps/prototypes/components/feature/clauseiq/upload.ts`
+- Prototype tests:
+  `apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.test.tsx`
+- Results benchmark:
+  `apps/docs/app/design-system/benchmarks/clauseiq-results/ClauseIQResultsBenchmark.tsx`
+- Benchmark screenshot reference pack:
+  `_benchmarks/results/2026-06-15-golden-visual-reference.md`
+
+## Benchmark Screenshot Evidence
+Use these screenshots for benchmark-route evidence of the ClauseIQ results-table shape
+across Efficio/Orbit themes and default/compact density. Do not treat them as canonical
+platform visual precedent until current ClauseIQ product screenshots are linked:
+
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-efficio-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-efficio-compact.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-orbit-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-orbit-compact.png`
+
+## Source-Backed Shape
+ClauseIQ renders inside `OrbitAppShell` with a `PageHeader`, then moves through these
+states:
+1. Welcome.
+2. Select initiative.
+3. Select analysis parameter.
+4. Upload contract.
+5. Processing.
+6. Results.
+
+The results card includes:
+- `Chip` label `Analysis Result`.
+- timestamp.
+- heading `Here is your Analysis Result`.
+- `Toggle` for `Save To My Documents`.
+- file upload status line.
+- reviewed-clause status line.
+- summary copy.
+- severity chips for missing/high/medium/low deviation counts.
+- primary `View Result` action.
+- secondary `Run Another Analysis` and `Download Report` actions.
+- `ToolNextStepsCard` with next actions after the result.
+
+The tests verify the core flow, keyboard initiative selection, upload validation,
+processing-to-results transition, next-step actions, preserved previous analysis when
+running another analysis, and absence of console warnings/errors through the core flow.
+
+## Acceptance Notes
+Use this as the current precedent for Orbit AI-assisted workflows. It is not a pure
+focus-mode results page; it is a guided workflow that ends in a results card. For dense
+review screens with persistent result table plus detail panel, use
+`design-brain/patterns/focus-mode-results.md` and keep it marked as needing a stronger
+product source.
+
+## Known Limits
+- No production product screenshot is linked yet; the available screenshots are docs
+  benchmark captures.
+- The prototype uses mock data.
+- MarketIQ and RFP Analytics examples are still missing.
+- A dedicated focus-mode results screen has not been linked yet.

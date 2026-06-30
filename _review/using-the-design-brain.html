@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Using the Design Brain — Step by Step</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171a2b; --ink:#e8eaf2; --muted:#9aa0b4;
+    --green:#2bb673; --green-soft:#173a2c;
+    --blue:#4c7df0; --blue-soft:#16244a;
+    --purple:#8b7bf0; --purple-soft:#241f44;
+    --teal:#36b6c8; --teal-soft:#103138;
+    --amber:#e0a93b; --amber-soft:#3a2f15;
+    --line:#2a2f47; --danger:#ef6a6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b1f36,#0f1220);
+    color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:36px 16px 72px}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:15px}
+  .principle{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(90deg,var(--green-soft),transparent);
+    border:1px solid var(--green);border-radius:12px;padding:14px 16px;margin:0 0 8px;font-size:14px}
+  .principle b{color:#bff0d4}
+  .principle2{color:var(--muted);font-size:13px;margin:0 0 30px;padding-left:6px}
+  /* part header */
+  .part{display:flex;align-items:center;gap:10px;margin:34px 0 14px}
+  .tag{font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;border:1px solid}
+  .tag.setup{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+  .tag.a{color:var(--blue);border-color:var(--blue);background:var(--blue-soft)}
+  .tag.b{color:var(--purple);border-color:var(--purple);background:var(--purple-soft)}
+  .tag.rules{color:var(--danger);border-color:var(--danger);background:rgba(239,106,106,.08)}
+  .tag.ref{color:var(--teal);border-color:var(--teal);background:var(--teal-soft)}
+  .part h2{margin:0;font-size:19px}
+  .part .note{color:var(--muted);font-size:12.5px;margin-left:auto}
+  /* steps */
+  .steps{display:flex;flex-direction:column;gap:9px}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:13px;align-items:start;
+    border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:var(--panel)}
+  .num{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;background:#0e1120;border:1px solid var(--line)}
+  .step h3{margin:1px 0 3px;font-size:15px}
+  .step p{margin:0;color:#c4c9da;font-size:13.5px}
+  .step p i{color:var(--muted)}
+  code{background:#0e1120;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:#bcd0ff;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:#0b0e1a;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:8px 0 0;
+    font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d6def5}
+  pre .c{color:#6b7390}
+  pre .k{color:#8fd6a8}
+  /* rules grid */
+  .rules{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+  .rule{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--panel)}
+  .rule .ic{font-size:17px}
+  .rule b{font-size:13.5px}
+  .rule span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  td code{white-space:nowrap}
+  .foot{margin-top:30px;border:1px solid var(--danger);border-radius:12px;padding:12px 16px;background:rgba(239,106,106,.06);color:#ffd9d9;font-size:13.5px}
+  .foot b{color:#ff9b9b}
+  @media(max-width:680px){.rules{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Using the Design Brain — Step by Step</h1>
+  <p class="sub">How to build Orbit UI with an AI tool (Codex / Claude Code) using this brain + the <code>efficio-orbit</code> design system.</p>
+
+  <div class="principle">✦&nbsp;<span><b>The core principle:</b> there's no plugin. An AI tool uses the brain when <code>AGENTS.md</code> is present in the folder it's working in — it reads it automatically. <b>Author in the vault, consume in the repo.</b></span></div>
+  <p class="principle2">You author the brain in the Obsidian <b>vault</b> (OneDrive). AI tools consume it in a <b>code repo</b> (<code>efficio-orbit</code>), where it's exported. Run Codex / Claude <b>in the repo, never in the vault</b>. The brain describes Orbit's real components, which live in the <code>@efficio/orbit</code> package — so a project needs that package to build real UI.</p>
+
+  <!-- PART 1 -->
+  <div class="part"><span class="tag setup">PART 1</span><h2>One-time setup: get the brain into the codebase</h2><span class="note">do once per repo · re-run on change</span></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h3>Open Terminal.</h3></div></div>
+    <div class="step"><div class="num">2</div><div><h3>Dry-run first (writes nothing — preview)</h3>
+      <pre><span class="c"># run from the vault</span>
+cd "~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain"
+python3 tools/export_brain.py --target &lt;path-to-efficio-orbit&gt; --profile all --dry-run</pre></div></div>
+    <div class="step"><div class="num">3</div><div><h3>Run it for real — drop <code>--dry-run</code></h3>
+      <pre>python3 tools/export_brain.py --target &lt;path-to-efficio-orbit&gt; --profile all</pre></div></div>
+    <div class="step"><div class="num">4</div><div><h3>What it writes into the repo</h3>
+      <p><code>AGENTS.md</code> + <code>CLAUDE.md</code> at the root; <code>design-brain/</code>, <code>_benchmarks/</code>, <code>_review/</code> under it; <code>.claude/skills</code> + the <code>design-reviewer</code> agent; a <code>DESIGN_BRAIN_EXPORT.md</code> notice.</p></div></div>
+    <div class="step"><div class="num">5</div><div><h3>Commit &amp; push in <code>efficio-orbit</code></h3>
+      <p>So every teammate gets the brain via <code>git pull</code>. <i>Profiles: <code>all</code> (Codex + Claude), <code>codex</code> (AGENTS.md + reference layer), <code>claude</code> (adds CLAUDE.md + .claude/), <code>lovable</code> (projections only).</i></p></div></div>
+  </div>
+
+  <!-- PART 2 -->
+  <div class="part"><span class="tag a">CASE A</span><h2>A new feature / screen in Orbit</h2><span class="note">the common case · no new repo</span></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h3>Open <code>efficio-orbit</code> in your AI tool</h3>
+      <p>Codex: run <code>codex</code> from inside the folder. Claude Code: open the folder.</p></div></div>
+    <div class="step"><div class="num">2</div><div><h3>Confirm it loaded the brain</h3>
+      <p>Ask: <i>"Before writing code, summarise the Orbit constraints you'll follow."</i> It should mention tokens-only, platform-first, the Definition of Done. If not — wrong folder, or not exported.</p></div></div>
+    <div class="step"><div class="num">3</div><div><h3>Give the task — and name the platform</h3>
+      <p>e.g. <i>"Build a Connected Platform workspace card for X."</i> If it's an assigned sprint feature: <i>"…following <code>discovery/&lt;initiative&gt;.md</code>."</i></p></div></div>
+    <div class="step"><div class="num">4</div><div><h3>Let it build to spec</h3>
+      <p>It reads the relevant <code>design-brain/</code> files (routing table in <code>AGENTS.md §3</code>): the platform profile, <code>defaults.md</code>, the component / pattern contract. Tokens only, real components, defaults, the pattern composition.</p></div></div>
+    <div class="step"><div class="num">5</div><div><h3>Validate against the Definition of Done</h3>
+      <p>All states, both themes, both densities, WCAG 2.2 AA, copy, motion, no anti-patterns (<code>AGENTS.md §5</code>). For a thorough pass, ask it to run the <code>design-reviewer</code> — a blocker means not done.</p></div></div>
+    <div class="step"><div class="num">6</div><div><h3>Feed back to the vault</h3>
+      <p>If it gets Orbit wrong and you fix it, update the <b>vault</b> file (in Obsidian) — not just the output, not the exported copy — then <b>re-export</b> (Part 1).</p></div></div>
+  </div>
+
+  <!-- PART 3 -->
+  <div class="part"><span class="tag b">CASE B</span><h2>A brand-new, separate repo / app</h2></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h3>Create or clone the new repo.</h3></div></div>
+    <div class="step"><div class="num">2</div><div><h3>Make <code>@efficio/orbit</code> available in it</h3>
+      <p>The brain references Orbit's package, so the project needs it: <code>npm install @efficio/orbit</code> (if published), or a workspace / linked dependency from your <code>efficio-orbit</code> checkout. <i>If Orbit isn't installable yet, the brain still guides structure/behaviour, but imports won't resolve — flag it to the design-system owner.</i></p></div></div>
+    <div class="step"><div class="num">3</div><div><h3>Export the brain into the new repo</h3>
+      <pre>cd "~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain"
+python3 tools/export_brain.py --target /path/to/new-repo --profile all</pre></div></div>
+    <div class="step"><div class="num">4</div><div><h3>Commit it in the new repo.</h3></div></div>
+    <div class="step"><div class="num">5</div><div><h3>Open Codex / Claude in the new repo</h3>
+      <p>It auto-loads <code>AGENTS.md</code> → same usage as Case A, steps 2–5.</p></div></div>
+    <div class="step"><div class="num">6</div><div><h3>Feed back to the VAULT, not the repo copy</h3>
+      <p>Corrections always go to the canonical vault, then re-export to <b>every</b> repo that uses the brain. <i>You can target as many repos as you like.</i></p></div></div>
+  </div>
+
+  <!-- PART 4 -->
+  <div class="part"><span class="tag rules">RULES</span><h2>Gotchas — don't skip</h2></div>
+  <div class="rules">
+    <div class="rule"><span class="ic">📝</span><div><b>Edit the vault, never the copies</b><span>Repo copies are generated; hand-edits get overwritten and cause drift.</span></div></div>
+    <div class="rule"><span class="ic">🔁</span><div><b>Re-export after vault changes</b><span>To each repo that uses the brain. (CI drift-check is on the roadmap.)</span></div></div>
+    <div class="rule"><span class="ic">📂</span><div><b>Run AI in the repo, not the vault</b><span>The vault is Obsidian-only authoring.</span></div></div>
+    <div class="rule"><span class="ic">📦</span><div><b>The brain needs <code>@efficio/orbit</code></b><span>Without it, you get guidance with nothing to import.</span></div></div>
+    <div class="rule"><span class="ic">✅</span><div><b>Verify the brain loaded</b><span>Ask the AI to summarise the constraints before trusting output.</span></div></div>
+    <div class="rule"><span class="ic">🟪</span><div><b>Lovable is separate</b><span>It can't read the repo — paste <code>design-brain/lovable/</code>, or connect the Enterprise design system.</span></div></div>
+  </div>
+
+  <!-- PART 5 -->
+  <div class="part"><span class="tag ref">REFERENCE</span><h2>Quick reference</h2></div>
+  <pre><span class="c"># Export the brain into a repo (run from the vault)</span>
+cd "~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain"
+python3 tools/export_brain.py --target &lt;repo&gt; --profile all --dry-run   <span class="c"># preview</span>
+python3 tools/export_brain.py --target &lt;repo&gt; --profile all             <span class="c"># apply</span>
+
+<span class="c"># Then, in the repo:</span>
+git add -A && git commit -m <span class="k">"Update Orbit Design Brain export"</span>
+codex            <span class="c"># or open the repo in Claude Code — it auto-loads AGENTS.md</span></pre>
+  <table>
+    <tr><th>Where</th><th>What</th></tr>
+    <tr><td>Vault (OneDrive, Obsidian)</td><td>author the brain — the single source of truth</td></tr>
+    <tr><td><code>efficio-orbit</code> (git)</td><td>build Orbit UI; the brain is exported here</td></tr>
+    <tr><td>A new repo</td><td>export the brain into it too + install <code>@efficio/orbit</code></td></tr>
+    <tr><td>Lovable</td><td>paste <code>design-brain/lovable/</code> projections</td></tr>
+  </table>
+
+  <div class="foot">★ <b>The one rule:</b> edit the Vault, never the exported copy — then re-export. Everything downstream flows from that.</div>
+</div>
+</body>
+</html>

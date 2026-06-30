@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Building with Codex + the Design Brain — Full Setup</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171a2b; --ink:#e8eaf2; --muted:#9aa0b4;
+    --green:#2bb673; --green-soft:#173a2c;
+    --blue:#4c7df0; --blue-soft:#16244a;
+    --purple:#8b7bf0; --purple-soft:#241f44;
+    --teal:#36b6c8; --teal-soft:#103138;
+    --amber:#e0a93b; --amber-soft:#3a2f15;
+    --line:#2a2f47; --danger:#ef6a6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b1f36,#0f1220);
+    color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:36px 16px 72px}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:15px}
+  .key{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(90deg,var(--green-soft),transparent);
+    border:1px solid var(--green);border-radius:12px;padding:14px 16px;margin:0 0 26px;font-size:14px}
+  .key b{color:#bff0d4}
+  /* 3 pieces */
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+  .piece{border-radius:14px;padding:15px 16px;border:1px solid var(--line);background:var(--panel)}
+  .piece.obs{border-color:var(--purple);background:linear-gradient(180deg,var(--purple-soft),var(--panel))}
+  .piece.repo{border-color:var(--blue);background:linear-gradient(180deg,var(--blue-soft),var(--panel))}
+  .piece.codex{border-color:var(--green);background:linear-gradient(180deg,var(--green-soft),var(--panel))}
+  .piece .ic{font-size:24px}
+  .piece h3{margin:6px 0 4px;font-size:16px}
+  .piece p{margin:0;color:#c4c9da;font-size:12.5px}
+  .piece .job{margin-top:8px;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  /* connection strip */
+  .conn{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
+    border:1px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:8px;background:#11142455}
+  .conn .box{background:#0e1120;border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:12.5px}
+  .conn .arr{color:var(--teal);font-weight:800}
+  .conn .box.v{border-color:var(--purple)} .conn .box.r{border-color:var(--blue)} .conn .box.c{border-color:var(--green)}
+  .warn{color:var(--muted);font-size:12.5px;margin:0 0 28px;padding-left:4px}
+  .warn b{color:#ffd9a8}
+  /* part header */
+  .part{display:flex;align-items:center;gap:10px;margin:32px 0 14px}
+  .tag{font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;border:1px solid}
+  .tag.setup{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+  .tag.build{color:var(--blue);border-color:var(--blue);background:var(--blue-soft)}
+  .tag.obs{color:var(--purple);border-color:var(--purple);background:var(--purple-soft)}
+  .tag.sprint{color:var(--teal);border-color:var(--teal);background:var(--teal-soft)}
+  .tag.ref{color:var(--green);border-color:var(--green);background:var(--green-soft)}
+  .part h2{margin:0;font-size:19px}
+  .part .note{color:var(--muted);font-size:12.5px;margin-left:auto}
+  /* steps */
+  .steps{display:flex;flex-direction:column;gap:9px}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:13px;align-items:start;
+    border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:var(--panel)}
+  .num{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;background:#0e1120;border:1px solid var(--line)}
+  .step h3{margin:1px 0 3px;font-size:15px}
+  .step p{margin:0;color:#c4c9da;font-size:13.5px}
+  .step p i{color:var(--muted)}
+  code{background:#0e1120;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:#bcd0ff;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:#0b0e1a;border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:8px 0 0;
+    font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d6def5}
+  pre .c{color:#6b7390}
+  pre .k{color:#8fd6a8}
+  .tip{margin-top:8px;font-size:12.5px;color:#bff0d4;background:var(--green-soft);border:1px solid var(--green);border-radius:8px;padding:8px 11px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .foot{margin-top:30px;border:1px solid var(--danger);border-radius:12px;padding:12px 16px;background:rgba(239,106,106,.06);color:#ffd9d9;font-size:13.5px}
+  .foot b{color:#ff9b9b}
+  @media(max-width:680px){.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Building with Codex + the Design Brain</h1>
+  <p class="sub">The full setup — from a clean machine to generating Orbit UI with Codex.</p>
+
+  <div class="key">✦&nbsp;<span><b>Hold onto this:</b> Obsidian and Codex are two separate tools doing two separate jobs, joined by one export step. <b>You build in <code>efficio-orbit</code> with Codex; you edit the brain in Obsidian.</b> Never build in Obsidian; never run Codex in the vault.</span></div>
+
+  <div class="three">
+    <div class="piece obs"><div class="ic">🟪</div><h3>Obsidian + the Vault</h3><p>Where the brain is authored &amp; stored (on OneDrive).</p><div class="job">Your job: edit the brain</div></div>
+    <div class="piece repo"><div class="ic">🟦</div><h3>efficio-orbit (git)</h3><p>The Orbit code + where you build. The brain is exported here.</p><div class="job">Your job: build UI</div></div>
+    <div class="piece codex"><div class="ic">🟢</div><h3>Codex</h3><p>The AI. Run it inside <code>efficio-orbit</code>; it auto-reads the brain.</p><div class="job">Its job: generate to spec</div></div>
+  </div>
+  <div class="conn">
+    <span class="box v">📚 Vault</span><span class="arr">— export →</span>
+    <span class="box r">📦 efficio-orbit / AGENTS.md</span><span class="arr">— reads →</span>
+    <span class="box c">🟢 Codex builds</span>
+  </div>
+  <p class="warn"><b>The mechanism:</b> there's no plugin. Codex uses the brain because <code>AGENTS.md</code> is present in the folder it runs in. The export puts it there.</p>
+
+  <!-- PART A -->
+  <div class="part"><span class="tag setup">PART A</span><h2>One-time setup</h2><span class="note">do once per machine</span></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h3>Obsidian + the vault</h3>
+      <p>Install Obsidian → <b>Open folder as vault</b> → point it at <code>…/OneDrive-Efficio/Orbit Design Brain</code>. Then in Finder, right-click the folder → <b>OneDrive → Always keep on this device.</b></p></div></div>
+    <div class="step"><div class="num">2</div><div><h3>The codebase</h3>
+      <pre>git clone &lt;efficio-orbit repo url&gt;   <span class="c"># if you don't already have it</span>
+cd &lt;path-to-efficio-orbit&gt;
+npm install</pre></div></div>
+    <div class="step"><div class="num">3</div><div><h3>Codex</h3>
+      <p>Install Codex per your org's setup.</p></div></div>
+    <div class="step"><div class="num">4</div><div><h3>Put the brain into the repo (the export)</h3>
+      <pre>cd "~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain"
+python3 tools/export_brain.py --target &lt;path-to-efficio-orbit&gt; --profile all --dry-run   <span class="c"># preview</span>
+python3 tools/export_brain.py --target &lt;path-to-efficio-orbit&gt; --profile all             <span class="c"># apply</span></pre>
+      <p style="margin-top:8px">Then <code>git commit</code> &amp; <code>push</code> in <code>efficio-orbit</code>.</p>
+      <div class="tip">⚡ Teammate shortcut: if someone already committed the export, <b>skip step 4</b> — <code>git pull</code> gives you the brain for free.</div></div></div>
+  </div>
+
+  <!-- PART B -->
+  <div class="part"><span class="tag build">PART B</span><h2>Each time you build something with Codex</h2></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><h3>Get the latest brain</h3>
+      <p><code>git pull</code> in <code>efficio-orbit</code>. <i>(Only re-export if YOU changed the vault.)</i></p></div></div>
+    <div class="step"><div class="num">2</div><div><h3>Open the repo in Terminal</h3>
+      <pre>cd &lt;path-to-efficio-orbit&gt;</pre></div></div>
+    <div class="step"><div class="num">3</div><div><h3>Start Codex</h3>
+      <pre>codex</pre></div></div>
+    <div class="step"><div class="num">4</div><div><h3>Confirm it loaded the brain</h3>
+      <p>Ask: <i>"Before writing code, summarise the Orbit constraints you'll follow."</i> It should mention tokens-only, platform-first, the Definition of Done. <i>If not — wrong folder, or not exported.</i></p></div></div>
+    <div class="step"><div class="num">5</div><div><h3>Give the task — and name the platform</h3>
+      <p><i>"Build a Connected Platform workspace card for X."</i> If it's an assigned sprint feature: <i>"…following <code>discovery/&lt;initiative&gt;.md</code>."</i></p></div></div>
+    <div class="step"><div class="num">6</div><div><h3>Let it build to spec</h3>
+      <p>It reads the relevant <code>design-brain/</code> files (routing table in <code>AGENTS.md §3</code>) — platform profile, <code>defaults.md</code>, the component/pattern contract — and builds to tokens, contracts, defaults.</p></div></div>
+    <div class="step"><div class="num">7</div><div><h3>Validate</h3>
+      <p>Check the Definition of Done (<code>AGENTS.md §5</code>): all states, both themes, both densities, WCAG AA, no anti-patterns. Thorough pass: <i>"Now run the design-reviewer on this."</i> A blocker means not done.</p></div></div>
+    <div class="step"><div class="num">8</div><div><h3>Feed back</h3>
+      <p>If it got Orbit wrong and you fixed it, update the <b>vault</b> file in Obsidian — then <b>re-export</b> (Part A, step 4). The brain sharpens every time.</p></div></div>
+  </div>
+
+  <!-- PART C -->
+  <div class="part"><span class="tag obs">OBSIDIAN</span><h2>Where Obsidian fits</h2></div>
+  <div class="steps">
+    <div class="step" style="grid-template-columns:34px 1fr"><div class="num">📖</div><div>
+      <h3>Teach the AI — don't build in it</h3>
+      <p>Open Obsidian only to <b>edit the brain</b>: write a discovery pack, fix a contract, correct something the AI got wrong. <b>You never build UI in Obsidian.</b> Think: <i>Obsidian = teach the AI · Codex-in-the-repo = the AI builds.</i></p></div></div>
+  </div>
+
+  <!-- PART D -->
+  <div class="part"><span class="tag sprint">PER SPRINT</span><h2>The Discovery flow</h2></div>
+  <div class="conn" style="border-style:solid;border-color:var(--teal)">
+    <span class="box">📝 PM writes the 4D Word doc</span><span class="arr">→</span>
+    <span class="box">✂️ you distil it into <code>discovery/&lt;initiative&gt;.md</code> in Obsidian</span><span class="arr">→</span>
+    <span class="box">🔁 re-export</span><span class="arr">→</span>
+    <span class="box">🟢 Codex reads it when it builds</span>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="part"><span class="tag ref">REFERENCE</span><h2>Quick command reference</h2></div>
+  <pre><span class="c"># 1) Export the brain into the repo (run from the vault)</span>
+cd "~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain"
+python3 tools/export_brain.py --target &lt;repo&gt; --profile all
+
+<span class="c"># 2) Share it (in the repo)</span>
+cd &lt;path-to-efficio-orbit&gt;
+git add -A && git commit -m <span class="k">"Update Orbit Design Brain export"</span> && git push
+
+<span class="c"># 3) Build (in the repo)</span>
+codex            <span class="c"># it auto-loads AGENTS.md → give it the task + platform</span></pre>
+
+  <div class="foot">★ <b>The one rule:</b> edit the Vault, never the exported copy — then re-export. That's what keeps the whole team's AI in sync.</div>
+</div>
+</body>
+</html>

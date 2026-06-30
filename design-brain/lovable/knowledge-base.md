@@ -1,0 +1,91 @@
+---
+type: tool-projection
+status: in-review
+owner: design-system
+surfaces: [shared]
+source: code
+last_reviewed: 2026-06-15
+maturity_score: 78
+tags: [orbit, design-brain, lovable]
+---
+
+# Lovable Knowledge Base (project-level projection)
+
+Paste this into a Lovable project's **Knowledge Base** (Project settings). Lovable does
+not read the repo, so this is a *projection* of the brain — regenerate it when the
+canonical files change. Keep it tight; Lovable applies it on every prompt.
+
+## Project
+Orbit by Efficio — enterprise procurement software (ClauseIQ, MarketIQ, RFP Analytics,
+RFP Builder). B2B, data-dense, long working sessions. Not a consumer app or marketing site.
+
+## Platform split
+Before designing, identify the platform:
+- Connected Platform = internal Efficio users.
+- Orbit / Client Connected Platform = external client users.
+
+Use `design-brain/platforms/connected-platform.md` or
+`design-brain/platforms/orbit-client-connected-platform.md` as the platform profile.
+Do not mix internal Connected Platform visual patterns or terminology into external
+client-facing Orbit screens.
+
+## Design principles (from principles.md)
+Density over whitespace; scannability over delight; predictability over novelty; honest
+system state; progressive disclosure; restraint. Default comfortable density; support compact.
+
+## Tokens / theme (from tokens.md)
+- Use semantic/component design tokens only; never hardcode colours, spacing, radii,
+  type, shadow, or z-index.
+- Source repo: `the efficio-orbit repo`.
+- Token bundle: `packages/orbit/tokens.css`.
+- Token sources: `packages/orbit/styles/tokens/`.
+- Base Efficio / CP theme lives on `:root`; Orbit overrides live in
+  `packages/orbit/styles/tokens/themes/orbit.css` under `[data-theme="orbit"]`.
+- Useful token families: `--orbit-color-text-*`, `--orbit-color-border-*`,
+  `--orbit-color-bg-*`, `--orbit-space-*`, `--orbit-text-*`,
+  `--orbit-radius-*`, `--orbit-shadow-*`, `--orbit-z-*`,
+  `--orbit-color-btn-*`, `--orbit-color-card-*`, `--orbit-dropdown-*`,
+  `--orbit-tab-*`, `--orbit-color-status-*`.
+
+## Components
+Reuse the Orbit component library. Do not invent generic ShadCN-styled components.
+Start with these source-backed contracts:
+- `data-table` = Orbit `Table`
+- `button` = Orbit `Button` / `IconButton`
+- `input` = Orbit `Input`
+- `select-combobox` = Orbit `Dropdown` / `MultiSelectDropdown`
+- `dialog` = Orbit `Overlay`
+- `toast-notification` = Orbit `Toast`
+- `tabs` = Orbit `TabButton` / `PageHeader` tabs
+- `badge-status` = Orbit `Badge`
+- `card-panel` = Orbit `Card`
+- `drawer` = gap; reusable source not found. Use `Overlay` for modal behavior.
+
+ClauseIQ is the current real product-style precedent:
+`apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.tsx`.
+
+Reference or paste the relevant contract before asking Lovable to build a screen.
+
+## Non-negotiables
+- WCAG 2.2 AA: keyboard operable, visible focus, AA contrast, not colour-alone.
+- Every component: default/hover/focus/active/disabled/loading/empty/error.
+- Copy: verb-led actions, plain professional voice, real recovery in errors.
+- Motion: fast, functional, respects reduced-motion.
+- Do NOT ship the default ShadCN/Tailwind look.
+- Do NOT use benchmark/docs screenshots as product visual truth.
+- Do NOT invent a Drawer API until the design-system owners approve one.
+
+## Prime before building
+Start a session with: "Before writing code, review this Knowledge Base and summarise
+the Orbit constraints you'll follow." Then build.
+
+## Port back to Orbit
+Lovable output is a prototype until it passes the `port-to-orbit` workflow:
+inventory components, map to Orbit contracts, translate literals to semantic tokens,
+add missing states, verify accessibility, and check both themes/densities.
+
+Known successful port benchmark: `Test` was translated into
+`apps/docs/app/design-system/benchmarks/lovable-port/`
+with Orbit `PageHeader`, `Table`, `Searchbox`, `Dropdown`, `Button`, `Badge`, `Card`,
+`Text`, `Headings`, and `FaIcon`. Future Lovable work should follow the same mapping
+pattern and report any component gaps instead of importing ShadCN/Tailwind defaults.

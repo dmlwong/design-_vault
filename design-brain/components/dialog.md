@@ -1,0 +1,89 @@
+---
+type: component-contract
+status: in-review
+owner: design-system
+surfaces: [shared]
+source: code
+last_reviewed: 2026-06-14
+maturity_score: 78
+tags: [orbit, design-brain, component-contract]
+---
+
+# Component Contract: `dialog`
+
+Real component: `Overlay` from `@efficio/orbit`.
+
+Source:
+- `packages/orbit/src/feedback/Overlay.tsx`
+- `packages/orbit/src/feedback/Overlay.module.css`
+- `packages/orbit/src/feedback/Overlay.test.tsx`
+- ClauseIQ usage: `InitiativeSelectionModal` in `apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.tsx`
+
+## Purpose
+Interrupt the current workflow for focused decisions, selections, confirmations, or
+compact forms while preserving focus and return path.
+
+## Public API
+
+| Prop | Type | Default | Required | Notes |
+| ---- | ---- | ------- | -------- | ----- |
+| `visible` | `boolean` | none | yes | Controls portal rendering. |
+| `onClose` | `() => void` | none | yes | Called on Escape and backdrop click. |
+| `children` | `React.ReactNode` | none | yes | Dialog content. |
+| `ariaLabel` | `string` | `'Dialog'` | no | Used when `ariaLabelledBy` absent. |
+| `ariaLabelledBy` | `string` | undefined | no | Preferred for visible title. |
+| `size` | `'Default' \| 'Large'` | `'Default'` | no | Medium or large max width. |
+| `height` | `'Viewport' \| 'Content'` | `'Viewport'` | no | Fixed viewport height or content height. |
+
+## Variants
+- `Default` size: medium overlay width.
+- `Large` size: large overlay width.
+- `Viewport` height: default 85vh.
+- `Content` height: auto height with max viewport constraint.
+
+## States
+- Closed: returns `null`.
+- Open: creates portal, locks body scroll, focuses dialog container.
+- Focus trapped: Tab cycles inside dialog.
+- Escape/backdrop close: calls `onClose`.
+- Loading/empty/error/submitting: composed by children, not built into `Overlay`.
+
+## Density
+Content density is controlled by child components. Overlay padding uses spacing tokens.
+
+## Themes
+Works in base Efficio/CP and `[data-theme="orbit"]` through tokens.
+
+## Tokens Used
+`--orbit-space-0`, `--orbit-space-m`, `--orbit-color-overlay-backdrop`,
+`--orbit-z-overlay`, `--orbit-color-bg-default`, `--orbit-radius-lg`,
+`--orbit-shadow-lg`, `--orbit-overlay-width-medium`, `--orbit-overlay-width-large`,
+`--orbit-overlay-height-default`, `--orbit-color-focus-ring`.
+
+## Accessibility
+- Uses `role="dialog"` and `aria-modal="true"`.
+- Supports `aria-label` and `aria-labelledby`.
+- Focuses dialog on open.
+- Traps Tab focus.
+- Restores focus to previously active element on close.
+- Locks body scroll while open.
+- Tests cover focus trap, Escape close, focus restoration, and backdrop close.
+
+## Motion
+No overlay animation in source.
+
+## Content / Copy
+Child content must provide a visible title and specific action labels.
+
+## Do / Don't
+- Do use `ariaLabelledBy` with a visible heading when possible.
+- Do include a close control inside the content.
+- Don't use `Overlay` for long multi-screen workflows better suited to pages.
+
+## Golden Example
+`design-brain/examples/dialog-keyboard.md`
+
+## Gap Report
+- Major: no built-in header/footer/action slots.
+- Major: no built-in loading/error states.
+- Minor: default `ariaLabel="Dialog"` is generic; product usage should override.

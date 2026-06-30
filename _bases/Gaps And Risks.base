@@ -1,0 +1,26 @@
+filters:
+  or:
+    - file.hasTag("gap")
+    - source == "source-required"
+properties:
+  type:
+    displayName: Type
+  status:
+    displayName: Status
+  owner:
+    displayName: Owner
+  source:
+    displayName: Source
+  maturity_score:
+    displayName: Maturity
+views:
+  - type: table
+    name: Gaps and risks
+    order:
+      - file.name
+      - type
+      - status
+      - owner
+      - source
+      - maturity_score
+

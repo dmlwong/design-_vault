@@ -1,0 +1,86 @@
+---
+type: example
+status: in-review
+owner: design-system
+surfaces: [shared]
+platform: shared
+source: code
+last_reviewed: 2026-06-15
+maturity_score: 80
+tags: [orbit, design-brain, example, lovable, migration, benchmark]
+---
+
+# Golden Example: Lovable Initiatives Prototype Port
+
+## Demonstrates
+- `lovable-port` pattern applied to a real Lovable/ShadCN/Tailwind prototype.
+- External table workflow preserved while visual system, states, accessibility, and
+  density are rebuilt with Orbit.
+- Component mapping and token translation that future prototype ports can copy.
+
+## Real Source Links
+- Source prototype root:
+  `Test`
+- Source prototype table:
+  `Test/src/components/initiatives-table.tsx`
+- Source prototype styles:
+  `Test/src/styles.css`
+- Ported benchmark route:
+  `apps/docs/app/design-system/benchmarks/lovable-port/page.tsx`
+- Ported benchmark component:
+  `apps/docs/app/design-system/benchmarks/lovable-port/LovablePortBenchmark.tsx`
+- Ported benchmark styles:
+  `apps/docs/app/design-system/benchmarks/lovable-port/LovablePortBenchmark.module.css`
+- Benchmark result:
+  `_benchmarks/results/2026-06-15-lovable-port.md`
+- Benchmark screenshot reference pack:
+  `_benchmarks/results/2026-06-15-golden-visual-reference.md`
+
+## Benchmark Screenshot Evidence
+Use these screenshots for benchmark-route evidence of Lovable/ShadCN-to-Orbit
+translation, table controls, tabs, density controls, and theme coverage. Do not treat
+them as canonical platform visual precedent until current product screenshots are linked:
+
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/lovable-port-efficio-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/lovable-port-efficio-compact.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/lovable-port-orbit-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/lovable-port-orbit-compact.png`
+
+## Source-Backed Shape
+The original prototype used ShadCN `Button`, `Input`, `Badge`, `Avatar`, dropdown menu
+checkboxes, lucide icons, Tailwind classes, raw OKLCH theme variables, pixel column
+widths, and a virtualized div-table for a 623-row AUT01 initiatives workflow.
+
+The port maps that structure to Orbit:
+- `PageHeader` for the project header and section tabs.
+- `Searchbox` for initiative search.
+- `Dropdown` for status, stage, and column-set controls.
+- `Button` groups with `aria-pressed` for scope, state preview, and density.
+- `Table` for native table semantics, sorting, row selection, pagination, empty state,
+  and compact density.
+- `Badge` for status, stage, active filters, and savings variance.
+- `Card` for selected detail, permission, loading/error, and recovery states.
+- `Text`, `Headings`, and `FaIcon` for Orbit typography and icons.
+
+## Acceptance Notes
+Future ports should keep useful product information architecture, not prototype styling.
+Always produce a report with component mapping, token translation, missing states added,
+accessibility fixes, deviations, commands, browser checks, and open brain updates.
+Loading previews should keep the active table density and visible column set so the
+state does not shift the user's scanning context.
+Repeated row actions such as "View" and "Edit" need row-specific accessible names.
+Resource initials or other compact abbreviations should carry full hidden text in the
+cell instead of depending on `aria-label` on a generic span.
+
+The port may substitute an approved Orbit composition for a missing prototype feature,
+but the substitution must be explicit. In this benchmark, granular dropdown checkbox
+column toggles became column-set presets because Orbit does not yet have a contracted
+menu/checkbox-list pattern.
+
+## Known Limits
+- This is a docs benchmark route, not a production AUT01 initiatives screen.
+- Browser visual accessibility and benchmark screenshot artifacts are linked; manual
+  screen-reader confirmation remains separate.
+- Resource initials are page-local because no Avatar/resource-stack contract exists.
+- Large-table virtualization was replaced with pagination because Orbit `Table` has no
+  source-backed virtualization contract.

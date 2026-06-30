@@ -1,0 +1,59 @@
+---
+type: example
+status: in-review
+owner: design-system
+surfaces: [Connected Platform]
+platform: connected-platform
+source: code
+last_reviewed: 2026-06-24
+maturity_score: 75
+tags: [orbit, design-brain, example, work-card, golden]
+---
+
+# Golden Example: Work Card — CP Research Primer
+
+The canonical reference for the **`work-card`** pattern: a titled content/work card with a
+header (eyebrow + title + status), metadata, a tool-coverage region, an action row, and the
+full set of page-level states. Few-shot precedent moves output more than prose — when an
+agent builds any titled card (a generated output, a tool-coverage item, a record summary),
+**anchor on this**.
+
+## What it demonstrates
+- **work-card anatomy** (`patterns/work-card.md`): header → status → metadata → actions,
+  one Primary action, `Card` never nested.
+- **Defaults applied**: `Button` Primary/Medium, `Card type="Dynamic"` padding `Base`
+  (`Small` when compact), `FaIcon` for all icons (never lucide), Orbit spacing tokens.
+- **Approved status mappings** (`components/badge-status.md`): Completed → `Success`,
+  Running → `Information`, "Shared by client" → `Information` (Badge), Failed → `Error`.
+  `StatusIndicator` (dot+label) for tool-coverage rows; `Badge` for the card-level chip.
+- **All states**: completed, running, loading skeleton (same shape/density), empty, error,
+  disabled/permission-limited; tool-coverage = 2 states (Completed/Running) + empty.
+- **Both themes via tokens only** — no theme-conditional logic.
+
+## Reference implementation
+- Code: `design-brain/examples/work-card-research-primer.tsx`
+  (cleaned: hardcoded border → `--orbit-space-px`; status `[CONFIRM]`s settled).
+
+## Rendered (both themes)
+- Efficio / Connected Platform: `_benchmarks/results/screenshots/2026-06-23-stress-test-cp-research-card/efficio-theme.png`
+- Orbit: `_benchmarks/results/screenshots/2026-06-23-stress-test-cp-research-card/orbit-theme.png`
+
+The Primary "Re-run" button visibly shifts blue → Orbit purple across themes with no
+theme-conditional code — the token system doing its job.
+
+## Source status
+**Benchmark-backed** — produced by the brain arm of the 2026-06-23 Claude A/B stress test
+(scored 17/18, manually verified, visually confirmed in both themes). It is a strong
+**compositional** reference; it is **not** canonical platform *visual* precedent until
+design-system owners confirm against a live product screen.
+
+## Related
+- Pattern: `design-brain/patterns/work-card.md`
+- Components: `card-panel.md`, `button.md`, `dialog.md`, `badge-status.md`, `status-indicator.md`
+- Discovery: `discovery/research-agent-in-initiatives-cp-orbit.md`
+- Stress test: `_benchmarks/results/2026-06-23-claude-stress-test-cp-research-card.md`
+
+## Gap Report
+- Not yet validated against a live CP product screen (compositional reference only).
+- CP personas (`[CONFIRM]`) and CP shell/density biases (`[SCREENSHOT]`, in-review) still
+  pending owner approval; they don't affect this card's tokens.

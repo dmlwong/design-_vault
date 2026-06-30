@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How to use the Orbit Design Brain</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171a2b; --panel2:#1d2236; --ink:#e8eaf2; --muted:#9aa0b4;
+    --green:#2bb673; --green-soft:#173a2c;
+    --blue:#4c7df0; --blue-soft:#16244a;
+    --purple:#8b7bf0; --purple-soft:#241f44;
+    --teal:#36b6c8; --teal-soft:#103138;
+    --amber:#e0a93b; --amber-soft:#3a2f15;
+    --line:#2a2f47; --danger:#ef6a6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b1f36,#0f1220);
+    color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:36px 16px 72px}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:15px}
+  .promise{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(90deg,var(--green-soft),transparent);
+    border:1px solid var(--green);border-radius:12px;padding:14px 16px;margin:0 0 30px;font-size:14px}
+  .promise b{color:#bff0d4}
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:34px 0 14px;border-top:1px solid var(--line);padding-top:18px}
+  /* role cards */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .role{border-radius:14px;padding:16px 18px;border:1px solid var(--line);background:var(--panel)}
+  .role.build{border-color:var(--blue);background:linear-gradient(180deg,var(--blue-soft),var(--panel))}
+  .role.author{border-color:var(--purple);background:linear-gradient(180deg,var(--purple-soft),var(--panel))}
+  .role .who{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .role h3{margin:6px 0 6px;font-size:17px}
+  .role p{margin:0;color:#c4c9da;font-size:13.5px}
+  /* steps */
+  .steps{display:flex;flex-direction:column;gap:10px}
+  .step{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--panel)}
+  .num{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:17px;background:#0e1120;border:1px solid var(--line);color:var(--ink)}
+  .step .stage{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .step h3{margin:2px 0 3px;font-size:16px}
+  .step p{margin:0;color:#c4c9da;font-size:13.5px}
+  .step code{background:#0e1120;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;color:#bcd0ff}
+  /* rules grid */
+  .rules{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .rule{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+  .rule .ic{font-size:18px;line-height:1.2}
+  .rule b{font-size:14px}
+  .rule span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+  /* discovery flow */
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border:1px dashed var(--amber);border-radius:14px;padding:16px;background:var(--amber-soft)}
+  .flow .box{background:#0e1120;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}
+  .flow .arr{color:var(--amber);font-weight:700}
+  /* proof */
+  .proof{display:flex;gap:16px;align-items:center;border:1px solid var(--green);border-radius:14px;padding:16px 18px;background:var(--green-soft)}
+  .proof .score{font-size:30px;font-weight:800;white-space:nowrap}
+  .proof .score b{color:var(--green)}
+  .proof .score s{color:var(--danger);text-decoration:none;opacity:.8}
+  .proof p{margin:0;color:#cfe9da;font-size:13.5px}
+  /* map */
+  .map{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .mrow{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel);font-size:13px}
+  .mrow code{color:#bff0d4;font-weight:700;white-space:nowrap}
+  .mrow span{color:var(--muted)}
+  .foot{margin-top:30px;border:1px solid var(--danger);border-radius:12px;padding:12px 16px;background:rgba(239,106,106,.06);color:#ffd9d9;font-size:13.5px}
+  .foot b{color:#ff9b9b}
+  @media(max-width:680px){.two,.rules,.map{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How to use the Orbit Design Brain</h1>
+  <p class="sub">Your team's shared source of truth for building Orbit UI — with AI in the loop.</p>
+
+  <div class="promise">✦&nbsp;<span><b>The promise:</b> any AI tool (Claude Code, Codex) produces Orbit-correct UI — not a generic look — because the rules, components, and patterns are already in its context. Your job is to point it at the right parts and check the result.</span></div>
+
+  <h2>Two ways you'll use it</h2>
+  <div class="two">
+    <div class="role build">
+      <div class="who">Build with AI · engineers + designers</div>
+      <h3>🟦 Use it to generate UI</h3>
+      <p>You ask an AI to build a screen. The brain is in its context, so it builds to Orbit's tokens, components, and patterns. You guide and review.</p>
+    </div>
+    <div class="role author">
+      <div class="who">Keep it sharp · design / PM / PO</div>
+      <h3>🟪 Improve it in Obsidian</h3>
+      <p>You edit the vault when the system changes or the AI gets something wrong. <b>Edit the vault, never the exported copy.</b></p>
+    </div>
+  </div>
+
+  <h2>Building a screen with AI — the 5 steps</h2>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div>
+      <div class="stage">Start · pull context</div>
+      <h3>Start in the brain, not the design tool</h3>
+      <p>The AI auto-loads <code>AGENTS.md</code>. Tell it the task and have it read what's relevant — the platform profile, <code>defaults.md</code>, the component/pattern contract, and the <code>discovery/</code> pack if it's an assigned feature. <i>If you start with an empty context, you're not using the model — you're working next to it.</i></p>
+    </div></div>
+    <div class="step"><div class="num">2</div><div>
+      <div class="stage">Identify · platform first</div>
+      <h3>Which platform is this?</h3>
+      <p><b>Connected Platform</b> (internal Efficio) or <b>Orbit / Client Connected Platform</b> (external client)? The AI must know before it designs anything — they look and behave differently. If it's unclear, ask.</p>
+    </div></div>
+    <div class="step"><div class="num">3</div><div>
+      <div class="stage">Design · build to spec</div>
+      <h3>Build to the contracts &amp; defaults</h3>
+      <p>Tokens only — never hardcode. Use the real Orbit components, the <code>defaults.md</code> choices, and the pattern composition (e.g. <code>work-card</code>). No freelancing — when unsure, use the default.</p>
+    </div></div>
+    <div class="step"><div class="num">4</div><div>
+      <div class="stage">Validate · definition of done</div>
+      <h3>Check it against the Definition of Done</h3>
+      <p>All states (loading / empty / error / disabled), both <code>efficio</code> + <code>orbit</code> themes, comfortable + compact density, WCAG 2.2 AA, Orbit voice, no anti-patterns. Delegate a pass to the <code>design-reviewer</code>. A blocker means not done.</p>
+    </div></div>
+    <div class="step"><div class="num">5</div><div>
+      <div class="stage">Feed back · keep it true</div>
+      <h3>Fix the brain, not just the output</h3>
+      <p>When the AI gets Orbit wrong and you correct it, update the relevant <b>vault file</b> so the fix sticks for everyone. The brain is living memory — it sharpens every sprint.</p>
+    </div></div>
+  </div>
+
+  <h2>The non-negotiables</h2>
+  <div class="rules">
+    <div class="rule"><span class="ic">🧭</span><div><b>Identify the platform first</b><span>CP (internal) vs Orbit-client (external). Never blend them.</span></div></div>
+    <div class="rule"><span class="ic">🎟️</span><div><b>Tokens only</b><span>Never hardcode a colour, spacing, radius, font, shadow. A literal is a defect.</span></div></div>
+    <div class="rule"><span class="ic">📄</span><div><b>Use the contract, not your imagination</b><span>Read the component/pattern contract before building.</span></div></div>
+    <div class="rule"><span class="ic">🚫</span><div><b>Match Orbit, not the default</b><span>The generic ShadCN/Tailwind look is the #1 quality risk.</span></div></div>
+    <div class="rule"><span class="ic">♿</span><div><b>WCAG 2.2 AA is the floor</b><span>Contrast, keyboard, visible focus, status not by colour alone.</span></div></div>
+    <div class="rule"><span class="ic">📊</span><div><b>Density is first-class</b><span>Comfortable by default, compact supported. Tables/lists must stay legible.</span></div></div>
+    <div class="rule"><span class="ic">🔁</span><div><b>Every state designed</b><span>Default, hover, focus, disabled, loading, empty, error — not just the happy path.</span></div></div>
+    <div class="rule"><span class="ic">✋</span><div><b>Stop &amp; ask on conflicts</b><span>When a request fights the rules, ask — don't silently resolve it.</span></div></div>
+  </div>
+
+  <h2>Per-sprint: Discovery packs</h2>
+  <div class="flow">
+    <span class="box">📝 PM writes the 4D<br>Concept Discovery Pack (Word)</span>
+    <span class="arr">→</span>
+    <span class="box">✂️ distil into<br><code>discovery/&lt;initiative&gt;.md</code></span>
+    <span class="arr">→</span>
+    <span class="box">🤖 AI reads it at START<br>(business rules + requirements)</span>
+    <span class="arr">→</span>
+    <span class="box">📦 builds, then the pack's<br>Part D feeds the hand-over</span>
+  </div>
+
+  <h2>Proof it works</h2>
+  <div class="proof">
+    <div class="score"><b>17</b><span style="color:var(--muted);font-size:18px">/18</span> &nbsp;vs&nbsp; <s>13</s><span style="color:var(--muted);font-size:18px">/18</span></div>
+    <p>In an A/B test, the <b>same card built <u>with</u> the brain</b> scored 17/18 — one clear primary action, full states, correct density, no generic look — vs 13/18 without. See <code>examples/work-card-research-primer</code> for the reference to copy.</p>
+  </div>
+
+  <h2>Where to find things</h2>
+  <div class="map">
+    <div class="mrow"><code>AGENTS.md</code><span>the always-on rules + routing table</span></div>
+    <div class="mrow"><code>defaults.md</code><span>when unsure, use these defaults</span></div>
+    <div class="mrow"><code>platforms/</code><span>CP vs Orbit-client (+ personas)</span></div>
+    <div class="mrow"><code>components/</code><span>one contract per component</span></div>
+    <div class="mrow"><code>patterns/</code><span>page compositions (e.g. work-card)</span></div>
+    <div class="mrow"><code>discovery/</code><span>this sprint's business rules</span></div>
+    <div class="mrow"><code>examples/</code><span>golden examples — copy these</span></div>
+    <div class="mrow"><code>agents/design-reviewer</code><span>audits your work against the DoD</span></div>
+  </div>
+
+  <div class="foot">★ <b>The one rule that holds it together:</b> edit the Vault, never the exported copy. Everything else is the robot's job or a quick review.</div>
+</div>
+</body>
+</html>

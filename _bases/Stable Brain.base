@@ -1,0 +1,25 @@
+filters:
+  and:
+    - status == "stable"
+properties:
+  type:
+    displayName: Type
+  owner:
+    displayName: Owner
+  surfaces:
+    displayName: Surfaces
+  maturity_score:
+    displayName: Maturity
+  last_reviewed:
+    displayName: Last reviewed
+views:
+  - type: table
+    name: Stable brain
+    order:
+      - file.name
+      - type
+      - owner
+      - surfaces
+      - maturity_score
+      - last_reviewed
+

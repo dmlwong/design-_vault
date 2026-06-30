@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How to Run the Export — the simple version</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171a2b; --ink:#e8eaf2; --muted:#9aa0b4;
+    --green:#2bb673; --green-soft:#173a2c;
+    --blue:#4c7df0; --blue-soft:#16244a;
+    --amber:#e0a93b; --amber-soft:#3a2f15;
+    --line:#2a2f47; --danger:#ef6a6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b1f36,#0f1220);
+    color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:36px 16px 72px}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:27px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 22px;font-size:15px}
+  .reassure{background:linear-gradient(90deg,var(--green-soft),transparent);border:1px solid var(--green);
+    border-radius:12px;padding:14px 16px;margin:0 0 28px;font-size:14.5px}
+  .reassure b{color:#bff0d4}
+  .step{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:var(--panel);margin-bottom:14px}
+  .step .h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .num{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:17px;background:#0e1120;border:1px solid var(--line);flex:0 0 auto}
+  .step h2{margin:0;font-size:19px}
+  .step p{margin:6px 0 0;color:#d2d7e6;font-size:14.5px}
+  .step p.kbd b{background:#0e1120;border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:13px;color:#fff}
+  .copylabel{font-size:12.5px;color:var(--amber);font-weight:700;margin:14px 0 4px}
+  pre{background:#0b0e1a;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0;
+    font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:#d6def5;white-space:pre-wrap;word-break:break-word}
+  pre.apply{border-color:var(--amber)}
+  .see{margin-top:10px;background:var(--green-soft);border:1px solid var(--green);border-radius:9px;padding:10px 13px;font-size:13.5px;color:#bff0d4}
+  .see b{color:#dffaea}
+  .done{background:linear-gradient(90deg,var(--blue-soft),transparent);border:1px solid var(--blue);border-radius:12px;padding:14px 16px;margin:6px 0 22px;font-size:14.5px}
+  .done b{color:#bcd0ff}
+  .optional{border:1px dashed var(--line);border-radius:12px;padding:14px 16px;background:#11142455;font-size:13.5px;color:#c4c9da}
+  .optional h3{margin:0 0 6px;font-size:15px;color:var(--ink)}
+  .notes{margin-top:22px}
+  .notes h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .notes li{margin:5px 0;font-size:14px;color:#d2d7e6}
+  code{background:#0e1120;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:13px;color:#bcd0ff;font-family:ui-monospace,Menlo,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How to run the export (Step 4)</h1>
+  <p class="sub">The simple version — copy, paste, press Enter.</p>
+
+  <div class="reassure">😌 <b>Two things to relax about:</b> to use the brain on your own machine you only run <b>one</b> real command. And the <b>preview is 100% safe</b> — it never changes anything, so run it as often as you like.</div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="h"><span class="num">1</span><h2>Open the Terminal app</h2></div>
+    <p class="kbd">Press <b>Cmd + Space</b>, type <b>Terminal</b>, press <b>Enter</b>. A window with a blinking cursor opens — that's where you paste commands.</p>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="h"><span class="num">2</span><h2>Preview it <span style="font-size:13px;color:var(--green);font-weight:600">· safe, changes nothing</span></h2></div>
+    <p>Copy the whole block below, paste into Terminal, press <b>Enter</b>.</p>
+    <div class="copylabel">📋 Copy this whole block (it's ONE command):</div>
+    <pre>python3 "/Users/derekwong/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain/tools/export_brain.py" --target /Users/derekwong/efficio-orbit --profile all --dry-run</pre>
+    <div class="see">✅ <b>What you'll see:</b> a list of files (<code>UPDATE</code> / <code>ADD</code>) ending in <code>Dry run only. No files written.</code> → nothing changed. It's just a preview.</div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="h"><span class="num">3</span><h2>Do it for real</h2></div>
+    <p>The <b>exact same command</b>, just with <code>--dry-run</code> removed from the end. Copy → paste → Enter.</p>
+    <div class="copylabel">📋 Copy this whole block (it's ONE command):</div>
+    <pre class="apply">python3 "/Users/derekwong/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain/tools/export_brain.py" --target /Users/derekwong/efficio-orbit --profile all</pre>
+    <div class="see">✅ <b>What you'll see:</b> <code>Wrote NN file(s).</code> → <b>done.</b> The current brain is now inside your Orbit code.</div>
+  </div>
+
+  <div class="done">🎉 <b>That's it — for using it yourself.</b> Open Codex in <code>efficio-orbit</code> and it reads the new brain. You don't need anything else to use it on your own machine.</div>
+
+  <!-- OPTIONAL -->
+  <div class="optional">
+    <h3>Optional — share it with teammates (do later)</h3>
+    This is a separate thing, only when you want others to get it. It uses <code>git</code>, and your <code>efficio-orbit</code> already has some of your own work-in-progress — so we should be careful not to mix them in one commit. <b>Easiest to do this part together when you're ready</b> — it's not needed just to use the brain yourself.
+  </div>
+
+  <div class="notes">
+    <h3>If anything goes wrong</h3>
+    <ul>
+      <li>The <b>preview (step 2) can't break anything</b> — run it whenever you're unsure.</li>
+      <li>The only command that changes anything is <b>step 3</b>, and all it does is <b>copy files into your Orbit folder</b> — it won't touch your code or your work-in-progress.</li>
+      <li>If the output looks weird, copy it and send it over — it's easy to read what it means.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

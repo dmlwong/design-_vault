@@ -1,0 +1,113 @@
+---
+type: platform-profile
+status: in-review
+owner: design-system
+surfaces: [Connected Platform]
+platform: connected-platform
+source: specified
+last_reviewed: 2026-06-15
+maturity_score: 60
+tags: [orbit, design-brain, platform, connected-platform]
+---
+
+# Platform Profile: Connected Platform
+
+## Audience
+
+Internal Efficio users: consultants, operators, administrators, and delivery teams using
+Efficio-owned workflows.
+
+## Product Intent
+
+Connected Platform should support operational speed, power-user density, internal
+administration, and repeated long-session work. It may expose more operational detail
+than client-facing Orbit screens, as long as hierarchy remains scannable.
+
+## Visual Truth
+
+User-provided screenshots are now listed in the manifest and are the first Connected
+Platform visual truth candidates. Treat them as restricted until design-system owners
+confirm sanitization and approval. Do not treat docs benchmark screenshots as Connected
+Platform visual precedent.
+
+Screenshot manifest:
+`design-brain/examples/screenshots/connected-platform/manifest.md`
+
+Visual truth extraction note:
+`design-brain/platforms/connected-platform-visual-truth.md`
+
+When designing or reviewing a Connected Platform screen, read the visual truth note
+before applying page-level layout, density, shell, table/list, modal, dashboard, or copy
+patterns.
+
+## Copy Rules
+
+- Internal terminology is allowed when it reflects real Efficio operations.
+- Prefer concise operational labels over client-facing explanation.
+- Error and permission copy may reference internal roles or operational state when safe.
+
+## Pattern Preferences
+
+- Shell/navigation: use current Connected Platform screenshots or source before
+  composing new shell patterns.
+- Density: default to comfortable with compact support for tables, queues, and
+  administration screens.
+- Tables/list-detail: preserve high scan density, stable filters, row identity, and
+  recoverable actions.
+- Dashboards/KPIs: prioritize operational signal, exception handling, and drill-down.
+- RBAC/permissions: show internal reason and recovery path when it is safe to disclose.
+
+## Golden Examples
+
+Read the nearest platform-matched example before creating or reviewing a Connected
+Platform screen:
+
+- `design-brain/examples/connected-platform-home-shell-dashboard.md`
+- `design-brain/examples/connected-platform-initiative-list-table.md`
+- `design-brain/examples/connected-platform-clauseiq-contract-wizard-modal.md`
+- `design-brain/examples/connected-platform-supplier-tracker-table.md`
+
+## Relevant Pattern Contracts
+
+- Home/dashboard surfaces: `design-brain/patterns/home-dashboard.md`
+- Dense initiative or supplier lists: `design-brain/patterns/list-detail.md`
+- Multi-step setup/upload modals: `design-brain/patterns/config-wizard.md`
+
+## Difference From Orbit / Client Connected Platform
+
+- Connected Platform can expose more operational metadata, internal process labels, and
+  dense controls.
+- Connected Platform should not inherit Orbit's extra explanatory framing when that slows
+  internal power users down.
+- Connected Platform screens may prioritize immediate action, bulk operations, and
+  operational scanning over client reassurance.
+
+## Audience & Personas
+
+Read before designing. Write each persona as **trait → design consequence**. If a line
+does not end in a design consequence, cut it. These are internal Efficio users.
+
+> **Provisional drafts `[CONFIRM]`** — inferred from the audience definition in `AGENTS.md`
+> and the Connected Platform screenshot pack. Replace with real research; correct names,
+> roles, and traits before promoting to `stable`.
+
+- **Delivery Consultant / Engagement Lead** `[CONFIRM]`
+  - Runs many client initiatives in parallel across long sessions → dense initiative
+    lists, persistent filters, bulk actions ("Bulk Import"), keyboard operability.
+  - Needs operational signal to act fast → expose owner, status, RAG, and dates in-row,
+    not hidden behind clicks.
+- **Category / Sourcing Analyst** `[CONFIRM]`
+  - Compares many suppliers and line items → compact sortable tables, stable row
+    identity, pagination over infinite scroll.
+  - Works the same trackers repeatedly → predictable layout, recoverable row actions,
+    visible shortlist/incumbent status.
+- **Operations / Admin** `[CONFIRM]`
+  - Configures methodologies, teams, and settings → forms with clear validation, explicit
+    permission/RBAC states, concise operational labels.
+
+## Known Gaps
+
+- Screenshot sanitization and design-system approval are still needed.
+- Settings/admin examples are still needed.
+- Platform-specific pattern contracts still need to be connected to the approved visual
+  truth set.

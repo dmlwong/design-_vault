@@ -1,0 +1,111 @@
+---
+type: component-contract
+status: in-review
+owner: design-system
+surfaces: [shared]
+source: code
+last_reviewed: 2026-06-15
+maturity_score: 80
+tags: [orbit, design-brain, component-contract]
+---
+
+# Component Contract: `input`
+
+Real component family: `Input`, `Textbox`, `TextArea`, `Searchbox`, `DateInput`,
+`CurrencyInput` from `@efficio/orbit`. This contract focuses on `Input`.
+
+Source:
+- `packages/orbit/src/inputs/Input.tsx`
+- `packages/orbit/src/inputs/Input.module.css`
+- `packages/orbit/src/inputs/Input.test.tsx`
+- `packages/orbit/src/inputs/naming.ts`
+
+## Purpose
+Capture short user-entered values with explicit accessible naming and clear validation
+state.
+
+## Public API
+
+`InputProps = BaseInputProps & StandaloneFieldNamingProps`.
+
+| Prop | Type | Default | Required | Notes |
+| ---- | ---- | ------- | -------- | ----- |
+| `value` | `string` | none | yes | Controlled value. |
+| `onChange` | `(value: string) => void` | none | yes | Receives next string value. |
+| `placeholder` | `string` | undefined | no | Placeholder text. |
+| `icon` | `React.ReactNode` | undefined | no | Leading icon. |
+| `style` | `React.CSSProperties` | undefined | no | Escape hatch; use sparingly. |
+| `id` | `string` | generated | no | Native input id. |
+| `ariaDescribedBy` | `string` | undefined | no | Maps to `aria-describedby`; use to link helper and validation text. |
+| `required` | `boolean` | `false` | no | Sets native/ARIA required. |
+| `disabled` | `boolean` | `false` | no | Disables input. |
+| `invalid` | `boolean` | `false` | no | Sets error border and `aria-invalid`. |
+| `previewState` | `'hover' \| 'focus'` | undefined | no | Docs/prototype state preview. |
+| `ariaLabel` | `string` | undefined | conditional | Required unless `ariaLabelledBy` names the input. |
+| `ariaLabelledBy` | `string` | undefined | conditional | Preferred when an external visible label exists. |
+
+## Variants
+- Basic text input.
+- Icon-leading input.
+- Required input.
+- Disabled input.
+- Invalid input.
+- Preview hover/focus for docs/prototypes.
+
+## States
+- Default, hover, focus, filled, disabled, invalid.
+- No built-in loading state.
+- Help and error copy are not rendered by `Input`; compose them with a field wrapper or
+  form pattern and link them with `ariaDescribedBy`.
+
+## Density
+Current source does not expose a density prop. Size comes from spacing and typography
+tokens in CSS.
+
+## Themes
+Works in base Efficio/CP and `[data-theme="orbit"]` through input/button-secondary tokens.
+
+## Tokens Used
+`--orbit-space-s`, `--orbit-space-base`, `--orbit-space-micro`,
+`--orbit-color-btn-secondary-bg`, `--orbit-color-btn-secondary-border`,
+`--orbit-color-btn-secondary-border-hover`,
+`--orbit-color-btn-secondary-border-focused`,
+`--orbit-color-btn-secondary-border-error`,
+`--orbit-color-btn-secondary-bg-disabled`,
+`--orbit-color-btn-secondary-border-disabled`,
+`--orbit-color-btn-secondary-fg`, `--orbit-color-btn-secondary-fg-disabled`,
+`--orbit-color-btn-secondary-icon`, `--orbit-color-btn-secondary-icon-disabled`,
+`--orbit-color-text-primary`, `--orbit-color-border-focused`,
+`--orbit-radius-sm`, `--orbit-text-body-size`, `--orbit-text-body-weight`,
+`--orbit-text-body-leading`, `--orbit-font-family-sans`.
+
+## Accessibility
+- `warnIfUnnamed` warns when no accessible name is provided.
+- Supports `ariaLabel` and `ariaLabelledBy`.
+- Supports `ariaDescribedBy`, which maps to native `aria-describedby`.
+- Sets `aria-invalid` and `aria-required` when relevant.
+- Tests cover accessible naming, external label association, controlled `onChange`,
+  `ariaDescribedBy`, filled styling, disabled, invalid, and preview focus.
+
+## Motion
+Source uses `border-color 0.15s ease`; motion tokens do not yet exist.
+
+## Content / Copy
+Do not rely on placeholder as the only label. Error/help text belongs in composed form
+field examples and patterns. Error copy should explain recovery, not simply repeat that
+the field is invalid.
+
+## Do / Don't
+- Do provide `ariaLabel` or `ariaLabelledBy`.
+- Do pair invalid state with visible recovery copy outside the input.
+- Do use `ariaDescribedBy` to connect helper and validation text to the input.
+- Don't rely on colour alone to communicate errors.
+
+## Golden Example
+- `design-brain/examples/form-field-validation.md`
+- `design-brain/patterns/settings-form-validation.md`
+
+## Gap Report
+- Major: no built-in help/error text wrapper in `Input` itself.
+- Major: no density prop.
+- Major: motion values are literals pending motion tokens.

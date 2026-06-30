@@ -1,0 +1,76 @@
+---
+type: foundation
+status: stable
+owner: design-system
+surfaces: [shared]
+source: specified
+last_reviewed: 2026-06-15
+maturity_score: 78
+tags: [orbit, design-brain, anti-patterns]
+---
+
+# anti-patterns.md — Never do this
+
+The cheapest way to lift output quality. Read before building; cite in every contract.
+
+## Visual / system
+- ❌ Shipping the untouched ShadCN / Tailwind default look. This is the #1 failure mode.
+- ❌ Importing a Lovable/ShadCN prototype as-is instead of mapping it to Orbit
+  components, tokens, states, and accessibility behaviour.
+- ❌ Hardcoded colours, spacing, radii, shadows, font sizes — anything not a token.
+- ❌ Reaching past semantic tokens to primitives or raw values.
+- ❌ Importing a third-party icon library (`lucide-react`, `react-icons`, FontAwesome React, etc.). Orbit uses the `FaIcon` primitive only — anything else is a defect and isn't even installed.
+- ❌ Theme-conditional logic inside components (`if theme === 'orbit'`).
+- ❌ Inconsistent spacing rhythm; one-off margins that ignore the scale.
+- ❌ Consumer-grade whitespace on data-dense enterprise views.
+- ❌ Treating docs benchmark screenshots as canonical product visual direction when
+  they do not match the current live platform.
+- ❌ Mixing internal Connected Platform visual patterns, terminology, or shell behavior
+  into external Orbit / Client Connected Platform screens.
+- ❌ Using client-facing Orbit polish to hide operational controls that internal
+  Connected Platform power users need.
+- ❌ Treating a reference diagram as a product UI precedent. The procurement technology
+  landscape image is context only, not a layout source.
+
+## Platform mixing
+- ❌ Designing before identifying the platform: Connected Platform or Orbit / Client
+  Connected Platform.
+- ❌ Borrowing Connected Platform's internal shortcuts, operational labels, or dense
+  admin controls for external Orbit users without source evidence.
+- ❌ Borrowing Orbit's extra guidance, polished tool-intro framing, or client-safe copy
+  for internal Connected Platform workflows when it slows power-user work.
+- ❌ Using Connected Platform screenshot evidence to justify Orbit shell/navigation
+  choices, or the reverse.
+- ❌ Treating in-review/restricted screenshots as public marketing assets. They may
+  inform internal design guidance, but they still require sanitization and approval.
+- ❌ Copying browser chrome, OS dock, toasts from test tooling, or screenshot capture
+  artifacts into design decisions.
+- ❌ Flattening client workflow screens into generic feature-card landing pages. Orbit
+  cards must map to real tools, selected context, reports, next actions, or evidence.
+- ❌ Simplifying internal operational screens into sparse client-friendly flows when
+  the source workflow needs tables, filters, bulk actions, status controls, or owner
+  metadata.
+
+## States & behaviour
+- ❌ Building only the happy path; omitting loading / empty / error / disabled.
+- ❌ Recreating dense tables with clickable div rows, colour-only dots, or raw
+  virtualized row markup when the Orbit `Table` contract covers the current need.
+- ❌ Layout that jumps when data loads or an error appears.
+- ❌ Fake instant success that hides real async state.
+- ❌ Ignoring RBAC / permission states.
+
+## Accessibility
+- ❌ Removing focus outlines without an equivalent visible focus style.
+- ❌ Colour as the only signal (e.g. red text with no icon/label).
+- ❌ Click-only interactions with no keyboard path.
+- ❌ Contrast below WCAG 2.2 AA.
+
+## Motion & copy
+- ❌ Decorative animation that slows scanning or repeats on every render.
+- ❌ Ignoring `prefers-reduced-motion`.
+- ❌ Vague or jokey microcopy in error/empty states (see `ux-copy.md`).
+
+## Process
+- ❌ Building a system component with no contract.
+- ❌ Changing a component's public API without updating its contract first.
+- ❌ Silently resolving a conflict with `AGENTS.md` instead of asking.

@@ -1,0 +1,27 @@
+filters:
+  and:
+    - type == "component-contract"
+properties:
+  status:
+    displayName: Status
+  owner:
+    displayName: Owner
+  surfaces:
+    displayName: Surfaces
+  source:
+    displayName: Source
+  maturity_score:
+    displayName: Maturity
+  last_reviewed:
+    displayName: Last reviewed
+views:
+  - type: table
+    name: Component contracts
+    order:
+      - file.name
+      - status
+      - surfaces
+      - source
+      - maturity_score
+      - last_reviewed
+

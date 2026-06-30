@@ -1,0 +1,80 @@
+---
+type: pattern-contract
+status: in-review
+owner: design-system
+surfaces: [shared]
+platform: shared
+source: code
+last_reviewed: 2026-06-19
+maturity_score: 60
+tags: [orbit, design-brain, pattern, work-card]
+---
+
+# Pattern Contract: `work-card`
+
+> A single titled content/work card — the recurring shape of "a `Card` with a header,
+> status, some metadata, and an action row, in all its states." This exists because `Card`
+> has no built-in header/action slots, so agents compose this shape differently every time:
+> the 2026-06-19 stress test produced two valid-but-different structures for the same card.
+
+## Purpose & precedent
+Serves any surface that shows a discrete unit of work or content in a card — a generated
+output, a tool-coverage item, a research primer, a record summary. Sets precedent: new
+cards of this kind MUST follow this anatomy rather than inventing one. For a full screen of
+these, compose them inside the relevant page pattern (`home-dashboard`, `list-detail`, …).
+
+## When to use / when not to
+Use when a bordered surface groups one item's title, status, metadata, and actions. Do NOT
+use for dense comparative data (use `data-table`), for a whole page (use a page pattern),
+or for marketing tiles (Orbit has none).
+
+## Regions & composition
+- **Surface** — `card-panel` (`Card`), `type="Dynamic"`, padding `Base` (`Small` when
+  dense). Never nest cards.
+- **Header** — optional eyebrow/context label; **title** (concise, truncate to the product
+  limit); **status** via `badge-status` (`Badge` chip) or `status-indicator` (dot + label),
+  using the approved mappings in `badge-status.md`.
+- **Metadata** (optional) — label/value pairs (owner, timestamp, category…), not prose.
+- **Actions** — one **Primary** `button` + others Secondary/Tertiary; icon-only via
+  `IconButton`. Icons via `FaIcon` only (see `defaults.md`).
+
+## Hierarchy & density
+Scan order: title → status → key metadata → actions. Comfortable = padding `Base`; compact
+= `Small` (dense workspaces/lists). One density per context.
+
+## Page-level states
+- **Default / completed** — content + actions.
+- **Loading** — skeleton in the SAME card shape and density (no spinner-only reflow).
+- **Empty** — reason + the one next action ("No category selected → no pack created").
+- **Error** — plain-language message + a recovery action.
+- **Disabled / permission-limited** — actions disabled with a visible reason; use
+  `Card state="Disabled"` only if the user may know the content exists.
+Use the `Card` status states (`Information`/`Success`/`Warning`/`Error`) to tint the surface
+when the card's status warrants it.
+
+## Navigation & focus behaviour
+Actions are keyboard-operable Orbit controls (never raw `<button>`). If an action opens a
+modal (e.g. re-run parameters), use `dialog` (`Overlay`); on close, focus returns to the
+triggering control.
+
+## Responsive behaviour
+The title truncates; the action row wraps. Status and the primary action stay visible at all
+widths. Metadata pairs stack on narrow widths.
+
+## Data & performance notes
+Keep one card lightweight; for many, paginate the containing list/page. Don't animate card
+entry on each data refresh.
+
+## Anti-patterns for this composition
+- Inventing a bespoke header/footer structure instead of this anatomy.
+- Nesting cards; more than one Primary action; raw HTML buttons.
+- Status shown by colour alone, or with an ad-hoc status→colour mapping.
+- Marketing hero copy; summarised body prose where the spec says to omit it.
+- Importing a non-Orbit icon library (use `FaIcon`).
+
+## Golden example
+`design-brain/examples/work-card-research-primer.md` — the canonical work-card reference
+(reference `.tsx`, validated 17/18, rendered in both themes).
+
+## Status
+in review · Last updated: 2026-06-19 · Owner: design-system

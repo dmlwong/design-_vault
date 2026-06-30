@@ -1,0 +1,112 @@
+---
+type: discovery-pack
+status: draft            # draft → active → shipped → archived
+owner: <PM / concept owner>
+platform: <connected-platform | orbit-client-connected-platform | both>
+initiative: <concept name>
+epic: <Jira link>
+ai_designs: <Figma / prototype link, or N/A>
+sprint: <YYYY-MM-DD or sprint id>
+surfaces: [<MarketIQ | ClauseIQ | RFP Analytics | RFP Builder | shared>]
+source: product
+last_reviewed: <YYYY-MM-DD>
+linked_patterns: [<e.g. guided-conversational-workflow, review-and-approve-workflow>]
+linked_components: [<e.g. card-panel, button, data-table>]
+tags: [orbit, discovery]
+---
+
+# Discovery: <concept name>
+
+> The AI-facing version of this sprint's **4D Concept Discovery Pack** (the Word doc).
+> In the operating model this is the **START** context for a piece of work — pull it
+> before designing anything — and it pre-fills the **HAND OVER** Part D delivery context.
+> Keep only the design-relevant signal (drop ToC, stakeholder lists, recommended-tools,
+> disclaimer). The Word doc stays the human source of truth. **Link to the brain; don't
+> restate it.** If you start designing with an empty context window, you're not using the
+> model — you're working next to it.
+
+## Design surface — read first
+> How much UI does this concept actually touch? Some concepts are mostly backend; don't
+> over-build.
+- **Platform(s):** <CP / CCP / both — and which to prioritise>
+- **Front-end in scope:** <the actual UI work, e.g. "output formatting + chatbot slot only">
+- **Out of UI scope:** <what NOT to build this sprint>
+- **States to design:** default / loading / empty / error / success — mark any genuinely
+  **not applicable** explicitly ("not shown" creates clarification cycles; "not applicable"
+  closes them).
+
+## Reference designs & visual truth
+> Existing design input the AI should look at before generating — don't design blind when a
+> reference exists. Mark **N/A** if there genuinely is none.
+- **AI designs / prototype:** <Figma / Figma Make / prototype link>
+- **Current-state screenshots:** <link + what to learn / what's missing today>
+- **Align with:** <existing surfaces to match, e.g. ClauseIQ / Sourcing tools>
+
+## Executive summary
+- **What:** <one or two lines>
+- **Why:** <the reason / what problem or tech-debt it removes>
+- **How:** <the approach, near-term>
+- **Success:** <the single clearest success statement>
+- **Constraints:** <commercial / time / platform constraints the design is judged against>
+
+## Problem statements
+- <user/business problem 1>
+- <problem 2>
+
+## Goals & success criteria (by priority)
+**In scope**
+- <goal> — **Success:** <measurable definition>
+
+**Out of scope**
+- <goal> — **Success:** <definition> *(do NOT build this sprint)*
+
+## User journeys
+> Verify every step against the personas in the linked platform profile — don't invent user
+> behaviour.
+
+**In scope**
+- **Journey A** — As a <role>, I want to <…> so that <…>.
+
+**Out of scope**
+- **Journey B** — As a <role>, I want to <…>.
+
+## Detailed UI / interaction notes (optional)
+> Concrete component/interaction decisions from workshops or appendices — fill only when the
+> concept has real UI detail. Reference brain components by name where they exist.
+- <e.g. "Workspace card: 3 buttons — Download, Re-run (opens parameter modal), Share">
+
+## Prior decisions & rejected alternatives
+> What's already been decided or ruled out — so the AI does not re-propose a rejected idea.
+- **Decided:** <decision> — *why:* <rationale>.
+- **Rejected:** <alternative> — *why not:* <reason>.
+
+## Concept summary table
+| Goal | Metric / target | Owner | Target date | Status |
+| ---- | --------------- | ----- | ----------- | ------ |
+| <goal> | <measurable target> | <team> | <date> | <status> |
+
+## Linked design (bridge to the brain)
+- **Platform profile + personas:** `design-brain/platforms/<platform>.md`
+- **Pattern(s):** `design-brain/patterns/<pattern>.md`
+- **Component(s):** `design-brain/components/<name>.md`
+- **Defaults:** `design-brain/defaults.md`
+
+## Delivery context (pre-fills the HAND OVER package — Part D)
+- **Assumptions:** <what is assumed true while designing>
+- **Dependencies & technical constraints:** <other teams/tools, platform limits, integration
+  boundaries, handover/output format>
+- **Risks:** <what could undermine the design intent>
+- **Open questions / outstanding decisions:** <question> → **owner:** <name> · **answer:**
+  <answer, or "OPEN">
+
+## Delivery learnings to reuse (optional)
+> What similar past work learned — reusable patterns, prompts, or pitfalls.
+- <learning / pattern / prompt to reuse>
+
+## Future vision (context only — do not build)
+- <where this is heading in later phases>
+
+## Status & owner
+- **Status:** draft | active | shipped | archived
+- **Owner:** <name>
+- **Last reviewed:** <YYYY-MM-DD>

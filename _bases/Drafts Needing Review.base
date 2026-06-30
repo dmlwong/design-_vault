@@ -1,0 +1,25 @@
+filters:
+  and:
+    - status == "draft"
+properties:
+  type:
+    displayName: Type
+  owner:
+    displayName: Owner
+  source:
+    displayName: Source
+  maturity_score:
+    displayName: Maturity
+  last_reviewed:
+    displayName: Last reviewed
+views:
+  - type: table
+    name: Drafts needing review
+    order:
+      - file.name
+      - type
+      - owner
+      - source
+      - maturity_score
+      - last_reviewed
+

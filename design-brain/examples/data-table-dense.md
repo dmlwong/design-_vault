@@ -1,0 +1,81 @@
+---
+type: example
+status: in-review
+owner: design-system
+surfaces: [ClauseIQ, shared]
+platform: shared
+source: code
+last_reviewed: 2026-06-14
+maturity_score: 74
+tags: [orbit, design-brain, example]
+---
+
+# Golden Example: Data Table With Dense Rows
+
+## Demonstrates
+- `data-table` contract from the real `Table` component.
+- Selectable rows with accessible row-selection labels.
+- Empty state content inside the table.
+- Separated row treatment for enterprise scanning.
+- Modal table usage inside a real ClauseIQ workflow.
+
+## Real Source Links
+- Component source:
+  `packages/orbit/src/layout/Table.tsx`
+- Component styles:
+  `packages/orbit/src/layout/Table.module.css`
+- Component tests:
+  `packages/orbit/src/layout/Table.test.tsx`
+- Product-style usage:
+  `apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.tsx`
+- Prototype tests:
+  `apps/prototypes/components/feature/clauseiq/ClauseIQPrototype.test.tsx`
+- Benchmark route:
+  `apps/docs/app/design-system/benchmarks/clauseiq-results/ClauseIQResultsBenchmark.tsx`
+- Benchmark result:
+  `_benchmarks/results/2026-06-14-clauseiq-results-table.md`
+- Benchmark screenshot reference pack:
+  `_benchmarks/results/2026-06-15-golden-visual-reference.md`
+
+## Benchmark Screenshot Evidence
+Use the ClauseIQ results screenshots for benchmark-route evidence of dense table layout,
+sorting/filtering rhythm, and default versus compact row density. Do not treat them as
+canonical platform visual precedent until current product screenshots are linked:
+
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-efficio-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-efficio-compact.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-orbit-default.png`
+- `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/clauseiq-results-orbit-compact.png`
+
+## Source-Backed Shape
+ClauseIQ's initiative selection modal uses `Table` with:
+- `ariaLabel="Initiatives"`.
+- `columns={INITIATIVE_COLUMNS}`.
+- filtered `rows`.
+- `getRowKey={(initiative) => initiative.id}`.
+- `onRowSelect={onSelect}`.
+- `getRowSelectionLabel={(initiative, index) => ...}`.
+- `emptyState` copy for no initiatives found.
+- `variant="SeparatedRows"`.
+
+The prototype tests verify that the table exposes role `table`, includes eight rows in
+the default Mine view, filters to the Team view, and lets a user select an initiative by
+keyboard from the row-selection button.
+
+The ClauseIQ results benchmark adds a fuller dense-table example: filtering, sorting,
+pagination, compact density, loading skeleton, empty state, error state, selectable rows,
+and a detail dialog.
+
+## Acceptance Notes
+Generated tables should feel dense, stable, scannable, accessible, and token-driven.
+Use the real table props rather than composing ad hoc table markup. Always provide
+`ariaLabel` or `ariaLabelledBy`, stable row keys, and explicit row-selection labels
+when rows are selectable.
+
+## Known Limits
+- No Storybook source was found in the repo scan.
+- Screenshots are benchmark route captures, not production product screenshots.
+- The benchmark route uses compact density, but it is a docs benchmark rather than a
+  production product screen.
+- Loading and error table states are not built into `Table`; compose them around the
+  table until a source-backed pattern exists.
