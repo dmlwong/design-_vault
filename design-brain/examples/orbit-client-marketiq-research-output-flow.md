@@ -80,6 +80,9 @@ spent config — is a tracked follow-on (to be added with measured evidence, the
 - House-style reference: `examples/work-card-research-primer.tsx`
 
 ## Gap Report
+- The reference `.tsx` does not mount `<OrbitInspector />` (AGENTS.md §2.8) — it is a
+  self-contained component, not a full prototype root. When composing it into a
+  generated prototype, mount the inspector once at the root layout per rule 8.
 - Not validated against a live MarketIQ screen (compositional reference only).
 - `InitiativePicker` is wired with an empty list in the reference — a real build passes
   initiatives; shown to demonstrate the focused-modal escape (#4), not the data.

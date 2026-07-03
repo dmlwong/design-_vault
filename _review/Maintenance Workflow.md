@@ -11,6 +11,14 @@ tags: [orbit, design-brain, maintenance, workflow, governance]
 
 # Maintenance Workflow — Orbit Design Brain
 
+> **Automation status (2026-07-03):** this file describes the target operating model.
+> What exists today: the exporter with a real CI drift-check flag
+> (`tools/export_brain.py --check`, exits 1 on drift) and vault-integrity CI
+> (`.github/workflows/vault-integrity.yml`: link check + required-files check).
+> **Not yet wired:** the scheduled auto re-export into `efficio-orbit` and a drift-check
+> job running against the product repo. Until those exist, re-export manually after
+> vault changes. See `_review/2026-07-03-full-vault-audit.md`, finding A2.
+
 How the Design Brain is kept current and in sync over time. The model has **two
 audiences using two tools**, bridged by automation:
 
@@ -87,8 +95,9 @@ From `_review/Governance.md` and the operating model's forums:
 1. **Auto re-export** — a scheduled job or git hook regenerates the repo copy from the
    vault, so it is never "someone forgot."
 2. **CI drift-check** — `python3 tools/export_brain.py --target <repo> --profile all
-   --dry-run` is run in CI; a non-empty result fails the build. "Out of sync" cannot happen
-   silently.
+   --check` is run in CI; it exits `1` when the repo copy differs from the vault, failing
+   the build. (`--dry-run` only prints; use `--check` for gating.) "Out of sync" cannot
+   happen silently once this job is wired into the product repo's CI.
 3. **One-way discipline** — the repo copy carries the generated-export notice and is never
    hand-edited.
 
@@ -96,7 +105,9 @@ From `_review/Governance.md` and the operating model's forums:
 
 - `_review/Governance.md` — approval rules and review cadence.
 - `_review/Change Request Template.md` — how authors propose governed changes.
-- `_review/Team Sharing Setup.md` — Obsidian Sync setup for authors.
+- `_archive/usage-guides-2026-06/Team Sharing Setup.md` — Obsidian Sync setup for
+  authors (archived; revive as a live doc before sharing the vault to more teams —
+  see `_review/2026-07-03-full-vault-audit.md`, findings A1/A5).
 - `discovery/README.md` — Discovery pack lifecycle and index.
 - `tools/export_brain.py` — the exporter that generates the repo copy.
 - `AGENTS.md` §6 — the feedback loop rule.

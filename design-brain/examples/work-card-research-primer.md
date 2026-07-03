@@ -54,6 +54,9 @@ design-system owners confirm against a live product screen.
 - Stress test: `_benchmarks/results/2026-06-23-claude-stress-test-cp-research-card.md`
 
 ## Gap Report
+- The reference `.tsx` does not mount `<OrbitInspector />` (AGENTS.md §2.8) — it is a
+  single-card reference, not a prototype root. When composing it into a generated
+  prototype, mount the inspector once at the root layout per rule 8.
 - Not yet validated against a live CP product screen (compositional reference only).
 - CP personas (`[CONFIRM]`) and CP shell/density biases (`[SCREENSHOT]`, in-review) still
   pending owner approval; they don't affect this card's tokens.

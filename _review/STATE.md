@@ -4,7 +4,7 @@ status: in-review
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-07-01
+last_reviewed: 2026-07-03
 maturity_score: 0
 tags: [orbit, design-brain, state, resume, handoff]
 ---
@@ -17,11 +17,14 @@ tags: [orbit, design-brain, state, resume, handoff]
 > Keep this current; don't spawn new dated snapshots.
 
 ## Where the vault lives
-- **Canonical (edit here):** `~/Documents/Orbit Design Brain` — Obsidian vault **+ git repo**.
-- **Ignore (stale copies):** `~/Documents/Codex/Design_Brain` (old local) and the former
-  OneDrive path `~/Library/CloudStorage/OneDrive-Efficio/Orbit Design Brain` (no longer exists).
-- **Governs:** `~/efficio-orbit` (coded design system). Author in the vault, then export with
-  `tools/export_brain.py`. **The one rule: edit the vault, never the exported copy — then re-export.**
+- **Canonical (edit here):** the git repository `github.com/dmlwong/design-_vault` — the
+  "Orbit Design Brain" Obsidian vault. Clone it (or open a synced copy in Obsidian) to
+  author; every local copy is a working copy of this repo, not a source of truth.
+- **Ignore (stale copies):** any pre-git local folder (e.g. old `Codex/Design_Brain`
+  copies or former OneDrive paths). If it isn't this repo, don't edit it.
+- **Governs:** the `efficio-orbit` coded design-system repo. Author in the vault, then
+  export with `tools/export_brain.py`. **The one rule: edit the vault, never the
+  exported copy — then re-export.**
 
 ## ⏭️ Active work (both threads blocked on the owner)
 1. **Cycle-2 craft heuristics** — `cycle2-craft-WIP.md`. Adds output-content craft heuristics
@@ -36,7 +39,12 @@ tags: [orbit, design-brain, state, resume, handoff]
    `platforms/connected-platform.md` until all 4 are in. **Next action:** owner **pastes Persona 3**.
 
 ## 📋 Outstanding (beyond the two active threads)
-- [ ] **Promote `in-review` → `stable`** — ~65 files are `in-review` vs ~28 `stable`; needs owner sign-off
+- [ ] **Work the full-vault audit** — `_review/2026-07-03-full-vault-audit.md`. Critical
+      items A1–A5 (team sharing, placeholders, sanitization decision, onboarding) need
+      owner decisions; mechanical fixes (export drift-check, restricted-export
+      exclusions, vault CI, link checker, contradiction/stale-index cleanup) were
+      applied 2026-07-03 — see the audit's "Fixes applied" section.
+- [ ] **Promote `in-review` → `stable`** — ~71 files are `in-review` vs ~32 `stable`; needs owner sign-off
       (the bulk governance item).
 - [ ] **Run the export** into `efficio-orbit` so Codex/Claude consume the current brain.
 - [ ] **Confirm/correct personas** with real research (CP personas 3–4 pending; Orbit-client provisional).
@@ -46,7 +54,7 @@ tags: [orbit, design-brain, state, resume, handoff]
 
 ## 🧭 Snapshot of the brain
 - **Always-on:** `AGENTS.md` (9 rules, routing table, Definition of Done) ← `CLAUDE.md` imports it.
-- **Reference layer** (`design-brain/`): 14 component contracts, 10 page patterns, golden examples
+- **Reference layer** (`design-brain/`): 12 component contracts, 11 page patterns, golden examples
   with real code, 2 platform profiles + visual-truth notes, 3 skills, design-reviewer agent, lovable projections.
 - **Judgment layer:** `interaction-defaults.md` #1–#8 (structure) validated; #9–#13 (craft) in cycle-2 above.
 - **Maturity:** ~82–88/100.

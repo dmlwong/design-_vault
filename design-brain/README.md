@@ -61,12 +61,16 @@ exports.**
 | ---- | ---- |
 | `principles.md` | How Orbit should *feel* — the intent layer. |
 | `tokens.md` | Token contract / governance with real source paths. |
+| `defaults.md` | Default choices when unsure — spacing, padding, component picks (material layer). |
+| `interaction-defaults.md` | The judgment layer: flow shape, IA, interaction model, output craft (#1–#13). |
 | `anti-patterns.md` | The "never do this" list — highest-leverage quality lever. |
 | `accessibility.md` | WCAG 2.2 AA baseline. |
 | `motion.md` | Interaction & motion rules. |
 | `ux-copy.md` | Voice & microcopy. |
 | `data-viz.md` | Charts, KPIs, and analytics views (MarketIQ / RFP Analytics). |
 | `platforms/README.md` | Platform split: Connected Platform vs Orbit / Client Connected Platform. |
+| `platforms/<platform>-visual-truth.md` | Screenshot-derived visual guidance per platform (in-review). |
+| `SETUP.md` | How the brain was set up, phase by phase — the scaling method. |
 
 ### Components & examples
 | File | Role |
@@ -78,7 +82,7 @@ exports.**
 | `examples/<files>` | Source-linked reference implementations and known gaps. |
 | `examples/screenshots/<platform>/manifest.md` | Visual truth intake manifests for real platform screenshots. |
 | `patterns/_TEMPLATE.md` | Page-level pattern contract template (compositions, not bricks). |
-| `patterns/README.md` | How patterns work + index (seed: focus-mode-results, guided workflow). |
+| `patterns/README.md` | How patterns work + the index (11 pattern contracts). |
 
 ### Skills (on-demand workflows)
 | File | Role |

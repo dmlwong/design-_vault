@@ -133,3 +133,6 @@ usage when row identity is available.
   pagination for large datasets until approved.
 - Major: `width` is an inline style escape hatch; use deliberately.
 - Minor: default row-selection label is generic if `getRowSelectionLabel` is omitted.
+- Minor: the source consumes the primitive `--orbit-color-silver` directly instead of a
+  semantic alias (conflicts with the tokens rule "primitives stay behind aliases");
+  needs a semantic token in the coded design system.

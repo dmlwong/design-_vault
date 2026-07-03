@@ -1,0 +1,21 @@
+name: Vault integrity
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export self-check (all required Design Brain files present)
+        run: python3 tools/export_brain.py --self-check
+
+      - name: Link check (no broken vault-internal references)
+        run: python3 tools/check_links.py
+
+      # Drift-check against the product repo requires access to efficio-orbit.
+      # Wire it here (or in the product repo's CI) once a checkout/token is available:
+      #   python3 tools/export_brain.py --target <efficio-orbit checkout> --profile all --check

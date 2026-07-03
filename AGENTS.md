@@ -14,7 +14,7 @@ tags: [orbit, design-brain, agent-context]
 > Canonical, always-on design context for any AI coding agent working on Orbit.
 > This file is the single source of truth. Claude Code imports it via `@AGENTS.md`
 > in `CLAUDE.md`. Codex reads it directly. Lovable consumes the compiled projection
-> in `lovable/knowledge-base.md`. Edit here, project everywhere — never the reverse.
+> in `design-brain/lovable/knowledge-base.md`. Edit here, project everywhere — never the reverse.
 
 > Canonical home: this file lives in the shared **Orbit Design Brain** Obsidian vault.
 > Product-repo copies are generated exports. Do not hand-edit exported copies.

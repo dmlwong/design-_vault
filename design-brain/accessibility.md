@@ -55,7 +55,7 @@ Honour `prefers-reduced-motion`; see `motion.md`.
 
 ## Benchmark Artifact
 Benchmark routes must include three distinct accessibility artifacts under
-`design-brain/_benchmarks/results/`:
+`_benchmarks/results/`:
 
 1. Generated semantic artifact from `npm run bench:a11y`.
 2. Browser visual artifact with screenshots, rendered contrast samples, real-browser

@@ -4,7 +4,7 @@ status: in-review
 owner: design-system
 surfaces: [shared]
 source: code
-last_reviewed: 2026-06-19
+last_reviewed: 2026-06-24
 maturity_score: 80
 tags: [orbit, design-brain, component-contract]
 ---

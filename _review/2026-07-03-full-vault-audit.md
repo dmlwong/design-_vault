@@ -34,10 +34,10 @@ tags: [orbit, design-brain, audit, review, gaps]
   copies to ignore. None of that is actionable for a second person.
 - `.obsidian/workspace.json` (personal session state) is committed; it will churn and
   conflict the moment two people open the vault.
-- The Obsidian Sync setup doc (`Team Sharing Setup.md`) was archived to
-  `_archive/usage-guides-2026-06/` — yet `_review/Maintenance Workflow.md` still links
-  it at `_review/Team Sharing Setup.md` (broken). There is currently **no live
-  instruction for how a teammate gets, opens, and syncs the vault**.
+- The Obsidian Sync setup doc ("Team Sharing Setup") was archived to
+  `_archive/usage-guides-2026-06/` — yet `_review/Maintenance Workflow.md` still linked
+  it at its old `_review/` path (broken; fixed 2026-07-03). There is currently **no
+  live instruction for how a teammate gets, opens, and syncs the vault**.
 - **Fix:** replace machine paths with the git remote + a clone/Sync instruction; restore
   (or rewrite) the team-sharing setup doc as an active file; gitignore
   `.obsidian/workspace.json` (keep shared config only).
@@ -89,7 +89,7 @@ team sharing) were all archived as "old-era" with no replacement. `README.md` ex
 structure; `AGENTS.md` addresses agents. **Nothing current tells a designer, PM, or
 engineer what their workflow with the vault is.** For a multi-team SSOT this is the
 front door.
-- **Fix:** one `USING-THE-BRAIN.md` (or revived guide set) with per-role quickstarts:
+- **Fix:** one "USING-THE-BRAIN" guide (or revived guide set) with per-role quickstarts:
   author (Obsidian), consumer-engineer (repo copy), PM (discovery packs), agent
   (AGENTS.md) — plus the governance path for proposing changes.
 
@@ -126,9 +126,9 @@ or markdown links):
    `examples/README.md`, most benchmark results),
 3. bare sibling names (`tokens.md`, `badge-status.md`).
 Consequences: Obsidian backlinks/graph (a stated reason for using Obsidian) don't work;
-no automated link check is possible; some references are genuinely broken
-(`_review/Team Sharing Setup.md`; `AGENTS.md` cites the Lovable projection at
-`lovable/knowledge-base.md` instead of `design-brain/lovable/…`).
+no automated link check is possible; some references were genuinely broken
+(the "Team Sharing Setup" link in the Maintenance Workflow; AGENTS.md citing the
+Lovable projection at the wrong path — both fixed 2026-07-03).
 - **Fix:** pick one convention (vault-root-relative), state it in `AGENTS.md`, convert
   high-traffic files, and add a tiny link-checker script to `tools/` (run in the same CI
   as A2).
@@ -307,5 +307,48 @@ releases.
 
 ---
 
+## Fixes applied — 2026-07-03 (same session, mechanical items only)
+
+Everything below was fixed directly; findings needing an **owner decision** (A3
+sanitization, A4 real repo/prototype names, A5 onboarding guide, B5 named owners,
+C1–C7 content build-out) remain open.
+
+- **A2 (partial):** `export_brain.py` gained `--check` (exits 1 on drift — the CI gate
+  now actually works), `--self-check`, and `--include-restricted`. Vault CI added:
+  `.github/workflows/vault-integrity.yml` (export self-check + link check). Drift-check
+  against the product repo still needs wiring where an `efficio-orbit` checkout exists.
+  `_review/Maintenance Workflow.md` now states current vs target automation honestly.
+- **A3 (partial):** the exporter now **excludes by default** the in-review platform
+  screenshots (`design-brain/examples/screenshots/**` images) and private `_review/`
+  files (`STATE.md`, both WIP notes); `--include-restricted` re-enables after approval.
+  The sanitization decision itself is still with the owner.
+- **A1 (partial):** `.obsidian/workspace.json` untracked + gitignored; `STATE.md`
+  "Where the vault lives" rewritten machine-agnostic (git remote, not `~/Documents`).
+  Live team-sharing/Sync instructions still need writing (owner input on Sync vs git).
+- **B1:** `interaction-defaults.md` no longer contradicts the WIP/STATE — it now
+  records the cycle-2 re-measure as passed 2026-06-29, awaiting owner red-line.
+- **B2:** root `README.md` maturity essay replaced with a pointer to `STATE.md`
+  (single narrative); structure diagram now includes `discovery/` and the brain
+  subfolders; `STATE.md` counts corrected (12 contracts / 11 patterns, 71 in-review /
+  32 stable).
+- **B3 (partial):** `tools/check_links.py` added (runs in CI; understands the vault's
+  path conventions incl. the export-relative `_benchmarks` alias); genuinely broken
+  links fixed (Maintenance Workflow → archived Team Sharing Setup; AGENTS.md Lovable
+  projection path); `accessibility.md` and `examples/README.md` converted to
+  vault-root-relative `_benchmarks/` paths. Full convention migration remains open.
+- **B4 (partial):** design-reviewer checklist gained step (h) — OrbitInspector mounted
+  exactly once is a blocker for generated prototypes; both golden examples' gap
+  reports now state that their reference `.tsx` files do not mount it and why.
+  Decision to embed it in the reference code (or scope rule 8) stays with the owner.
+- **B6:** `tokens.md` spacing family completed (`--orbit-space-0/px/xl`); the `Table`
+  → `--orbit-color-silver` primitive usage flagged in both `tokens.md` Known Gaps and
+  the `data-table.md` gap report.
+- **D1:** `REQUIRED_FILES` now includes `work-card`, `settings-form-validation`, and
+  `lovable-port` patterns. **D2:** parked-items deduplicated —
+  `_review/Parked Items.md` is canonical; `_benchmarks/parked-items.md` is a pointer
+  stub. **D4 (partial):** `badge-status.md` `last_reviewed` corrected to 2026-06-24.
+  `_exports/README.md` documents the new exporter flags.
+
 ## Status
-draft · produced by full-vault audit 2026-07-03 · for design-system owner review
+draft · produced by full-vault audit 2026-07-03 · mechanical fixes applied same day ·
+for design-system owner review

@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 
+
+# Obsidian personal/session state — never shared (keep shared config like core-plugins.json tracked)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json

@@ -41,6 +41,10 @@ and cite files/lines; no vague "consider improving" feedback.
    e. **Composition** — page follows the matching pattern contract, if one exists.
    f. **Motion & copy** — against `design-brain/motion.md` / `design-brain/ux-copy.md`.
    g. **Anti-patterns** — sweep `design-brain/anti-patterns.md`.
+   h. **Prototype handover inspector** — for generated prototypes, `AGENTS.md` §2.8:
+      `<OrbitInspector />` (from `@efficio/orbit/inspector`) mounted **exactly once**
+      at the root layout, after all app content, no props, no conditional wrapper.
+      Missing or duplicated inspector on a generated prototype is a blocker.
 
 ## Dense table review traps
 - Repeated row actions such as "View" and "Edit" must expose row identity in their

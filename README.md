@@ -4,7 +4,7 @@ status: stable
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-03
 maturity_score: 88
 tags: [orbit, design-brain, obsidian]
 ---
@@ -36,55 +36,32 @@ repo copies.
 
 ```text
 Orbit Design Brain/
-  AGENTS.md
-  CLAUDE.md
-  README.md
-  design-brain/
-    platforms/
-  _bases/
-  _canvases/
-  _review/
-  _exports/
-  _archive/
-  _benchmarks/
-  tools/
+  AGENTS.md            ← canonical brain (agents auto-load this)
+  CLAUDE.md            ← thin Claude Code entry point (@imports AGENTS.md)
+  README.md            ← this index
+  design-brain/        ← reference layer: tokens, defaults, interaction-defaults,
+    components/           component contracts
+    patterns/             page-level pattern contracts
+    platforms/            platform profiles + visual truth
+    examples/             golden examples (+ screenshots/ manifests)
+    skills/  agents/  lovable/
+  discovery/           ← per-initiative business/requirements packs
+  _bases/              ← Obsidian database views
+  _canvases/           ← visual map
+  _review/             ← governance, STATE, audits, WIP
+  _exports/            ← export notice + how-to
+  _archive/            ← superseded docs (recoverable)
+  _benchmarks/         ← benchmark tasks, rubrics, results
+  tools/               ← export_brain.py, check_links.py
 ```
 
-## Current Maturity
+## Current State
 
-Estimated current score: **88/100** after the first real-source integration pass,
-five passing agent benchmarks, a passing platform-separation benchmark, a passing
-benchmark accessibility artifact pass, a passing browser visual accessibility pass, a
-prepared screen-reader artifact, and a benchmark screenshot pack for the benchmark
-routes. User-provided Connected Platform and Orbit / Client Connected Platform
-screenshots are now filed in platform visual truth manifests with visual truth
-extraction notes, and are pending sanitization and design-system approval. Platform
-golden examples are now connected to page pattern contracts so agents can choose the
-right screen shape before composing components.
-
-The structure, governance, export path, token source paths, first top-10 component
-contracts, platform profiles, ClauseIQ guided-workflow example, a passing ClauseIQ
-results-table benchmark, a passing procurement settings form benchmark, a passing
-MarketIQ analytics dashboard benchmark, a passing Lovable-to-Orbit port benchmark, and a
-passing Design Brain review benchmark, a passing platform-separation benchmark, a
-generated accessibility artifact pass for benchmark routes, and a browser visual
-accessibility pass with screenshots, focus-ring evidence, and rendered contrast sampling
-are now in place. A dated benchmark screenshot pack now documents the benchmark routes
-across Efficio/Orbit themes and default/compact density, but those screenshots must
-**not** be treated as canonical platform visual precedent because they do not yet match
-the current live platform. Platform-specific visual truth notes now extract shell,
-density, card, list/table, modal, dashboard, and copy guidance from the user-provided
-screenshots, and the platform-separation benchmark confirms agents can apply CP and
-Orbit rules separately in generated benchmark screens. The score reaches the top end of
-**85-90** after the remaining source and validation gaps are closed:
-
-- Drawer decision or reusable drawer source.
-- Design-system approval of the user-provided platform screenshot manifests.
-- MarketIQ / RFP Analytics examples.
-- Dedicated data-viz tokens.
-- Human review of the new screenshot-backed page pattern contracts.
-- Human-confirmed VoiceOver/NVDA/JAWS screen-reader evidence, parked in
-  `_review/Parked Items.md`.
+**`_review/STATE.md` is the single "where we are" narrative** — active threads,
+outstanding work, and the maturity snapshot live there (this section used to duplicate
+it and drift; it no longer does). For progress detail see
+`_review/Maturity Scorecard.md`; for the latest gap analysis see
+`_review/2026-07-03-full-vault-audit.md`.
 
 ## Team Workflow
 
@@ -95,16 +72,11 @@ Orbit rules separately in generated benchmark screens. The score reaches the top
 4. Generated packs are exported into product repos.
 5. Corrections from agent failures are fed back into this vault.
 
-## First Real-Source Tasks
+## Open Work & Parked Items
 
-1. Decide whether drawer becomes a reusable Orbit component or remains pattern-specific.
-2. Review, sanitize, and approve the new platform screenshot manifests.
-3. Link production MarketIQ / RFP Analytics KPI and dashboard source.
-4. Source and document the next page pattern contract.
-5. Identify whether dedicated data-viz tokens exist or should be specified.
+Tracked in one place each — don't re-list them here:
 
-## Parked For Now
-
-- Human-confirmed VoiceOver/NVDA/JAWS screen-reader checks for benchmark routes are
-  parked in `_review/Parked Items.md`. Keep the current screen-reader result as
-  **NEEDS HUMAN CONFIRMATION** until a real assistive-technology session is completed.
+- Active/outstanding work: `_review/STATE.md`.
+- Deferred work: `_review/Parked Items.md` (e.g. the human-confirmed
+  VoiceOver/NVDA/JAWS screen-reader pass — keep the screen-reader result as
+  **NEEDS HUMAN CONFIRMATION** until a real assistive-technology session runs).

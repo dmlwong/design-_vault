@@ -25,6 +25,32 @@ python3 tools/export_brain.py --target /path/to/orbit-product --profile all
 python3 tools/export_brain.py --target /path/to/orbit-product --profile all --dry-run
 ```
 
+## CI Drift-Check
+
+Exits `1` when the product-repo copy differs from the vault (use this in CI, not
+`--dry-run`, which always exits `0`):
+
+```bash
+python3 tools/export_brain.py --target /path/to/orbit-product --profile all --check
+```
+
+## Restricted Content
+
+By default the exporter **excludes** in-review platform screenshots
+(`design-brain/examples/screenshots/**` images; the manifests still export) and private
+`_review/` files (`STATE.md`, WIP notes). After design-system owners approve
+sanitization, export them explicitly:
+
+```bash
+python3 tools/export_brain.py --target /path/to/orbit-product --profile all --include-restricted
+```
+
+## Self-Check (no target needed)
+
+```bash
+python3 tools/export_brain.py --self-check
+```
+
 ## Profiles
 
 - `all`: root `AGENTS.md`, root `CLAUDE.md`, `design-brain/`, `design-brain/_benchmarks/`, and `.claude/`.

@@ -66,9 +66,9 @@ modes. Do **not** treat it as canonical platform visual precedent if it conflict
 current product screens, Storybook, or design-system owner guidance:
 
 - Artifact:
-  `design-brain/_benchmarks/results/2026-06-15-golden-visual-reference.md`
+  `_benchmarks/results/2026-06-15-golden-visual-reference.md`
 - Screenshot directory:
-  `design-brain/_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/`
+  `_benchmarks/results/screenshots/2026-06-15-golden-visual-reference/`
 
 ## Platform Visual Truth
 
