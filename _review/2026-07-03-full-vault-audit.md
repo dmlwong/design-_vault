@@ -322,9 +322,12 @@ C1–C7 content build-out) remain open.
   screenshots (`design-brain/examples/screenshots/**` images) and private `_review/`
   files (`STATE.md`, both WIP notes); `--include-restricted` re-enables after approval.
   The sanitization decision itself is still with the owner.
-- **A1 (partial):** `.obsidian/workspace.json` untracked + gitignored; `STATE.md`
-  "Where the vault lives" rewritten machine-agnostic (git remote, not `~/Documents`).
-  Live team-sharing/Sync instructions still need writing (owner input on Sync vs git).
+- **A1 / A5 (mostly done, 2026-07-06):** `.obsidian/workspace.json` untracked +
+  gitignored; `STATE.md` "Where the vault lives" rewritten machine-agnostic (git
+  remote, not `~/Documents`). Live sharing + onboarding guide written:
+  `_review/Team Sharing Setup.md` (author onboarding, consuming-repo onboarding,
+  restricted-export note, drift-check wiring). Remaining owner decision: whether to
+  offer Obsidian Sync alongside git for non-git authors.
 - **B1:** `interaction-defaults.md` no longer contradicts the WIP/STATE — it now
   records the cycle-2 re-measure as passed 2026-06-29, awaiting owner red-line.
 - **B2:** root `README.md` maturity essay replaced with a pointer to `STATE.md`

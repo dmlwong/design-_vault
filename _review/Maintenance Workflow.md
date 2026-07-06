@@ -105,9 +105,8 @@ From `_review/Governance.md` and the operating model's forums:
 
 - `_review/Governance.md` — approval rules and review cadence.
 - `_review/Change Request Template.md` — how authors propose governed changes.
-- `_archive/usage-guides-2026-06/Team Sharing Setup.md` — Obsidian Sync setup for
-  authors (archived; revive as a live doc before sharing the vault to more teams —
-  see `_review/2026-07-03-full-vault-audit.md`, findings A1/A5).
+- `_review/Team Sharing Setup.md` — live sharing + onboarding guide (authors and
+  consuming repos). Supersedes the archived Obsidian-Sync draft.
 - `discovery/README.md` — Discovery pack lifecycle and index.
 - `tools/export_brain.py` — the exporter that generates the repo copy.
 - `AGENTS.md` §6 — the feedback loop rule.

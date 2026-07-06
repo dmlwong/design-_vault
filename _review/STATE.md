@@ -39,11 +39,14 @@ tags: [orbit, design-brain, state, resume, handoff]
    `platforms/connected-platform.md` until all 4 are in. **Next action:** owner **pastes Persona 3**.
 
 ## 📋 Outstanding (beyond the two active threads)
-- [ ] **Work the full-vault audit** — `_review/2026-07-03-full-vault-audit.md`. Critical
-      items A1–A5 (team sharing, placeholders, sanitization decision, onboarding) need
-      owner decisions; mechanical fixes (export drift-check, restricted-export
-      exclusions, vault CI, link checker, contradiction/stale-index cleanup) were
-      applied 2026-07-03 — see the audit's "Fixes applied" section.
+- [ ] **Work the full-vault audit** — `_review/2026-07-03-full-vault-audit.md`. Remaining
+      owner decisions: sanitization of the 18 platform screenshots, real names for the
+      placeholder repo/prototype references, cycle-2 red-line, personas 3–4, and
+      whether to offer Obsidian Sync alongside git. Mechanical fixes (export
+      drift-check, restricted-export exclusions, vault CI, link checker,
+      contradiction/stale-index cleanup) applied 2026-07-03; live team-sharing +
+      onboarding guide added 2026-07-06 (`_review/Team Sharing Setup.md`) — see the
+      audit's "Fixes applied" section.
 - [ ] **Promote `in-review` → `stable`** — ~71 files are `in-review` vs ~32 `stable`; needs owner sign-off
       (the bulk governance item).
 - [ ] **Run the export** into `efficio-orbit` so Codex/Claude consume the current brain.
