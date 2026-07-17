@@ -97,6 +97,9 @@ REF_PATTERN = re.compile(
     r"`([A-Za-z_~.][\w\-/ .]*?\.(?:md|tsx|py|css|png|canvas|base))`"
 )
 
+# Obsidian wikilinks (the generated graph layer — see tools/gen_graph_links.py).
+WIKILINK_PATTERN = re.compile(r"\[\[([^\]|#\n]+)")
+
 
 def iter_docs() -> list[Path]:
     docs = []
@@ -174,6 +177,12 @@ def main() -> None:
             ref = match.group(1)
             if not resolves(ref, doc):
                 broken.append((doc.relative_to(ROOT).as_posix(), ref))
+        for match in WIKILINK_PATTERN.finditer(text):
+            target = match.group(1).strip()
+            if "." not in Path(target).name:
+                target += ".md"
+            if not (ROOT / target).is_file():
+                broken.append((doc.relative_to(ROOT).as_posix(), f"[[{match.group(1)}]]"))
 
     broken.extend(check_manifest())
 
