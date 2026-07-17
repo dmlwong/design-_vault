@@ -3,7 +3,7 @@ type: orchestration-agent
 name: context-scout
 description: Assemble the context packet for an Orbit design task. Use FIRST, before any build/review/extraction work starts, to determine which vault files the working agent must load, which platform applies, which skill and agent should run, and which model tier the task deserves. Purely a lookup-and-assembly role — it never designs or builds.
 model: haiku
-status: in-review
+status: stable
 owner: design-system
 surfaces: [shared]
 source: specified

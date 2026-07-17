@@ -1,6 +1,6 @@
 ---
 type: orchestration
-status: in-review
+status: stable
 owner: design-system
 surfaces: [shared]
 source: specified

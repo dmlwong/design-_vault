@@ -3,7 +3,7 @@ type: builder-agent
 name: component-builder
 description: Build or refactor a single Orbit component to its written contract using the component-contract skill. Use for any component-level UI work on Orbit surfaces (ClauseIQ, MarketIQ, RFP Analytics, RFP Builder) — creating, refactoring, or fixing a component that doesn't match the system. Always followed by a design-reviewer pass in a fresh context.
 model: sonnet
-status: in-review
+status: stable
 owner: design-system
 surfaces: [shared]
 source: specified

@@ -3,7 +3,7 @@ type: builder-agent
 name: contract-extractor
 description: Produce an Orbit component contract from real source code and Storybook stories using the extract-contract skill. Use when a component exists in code but has no contract in design-brain/components/, or when an existing contract must be re-verified against source. Extraction only — it documents what IS, plus a gap report of what's missing.
 model: sonnet
-status: in-review
+status: stable
 owner: design-system
 surfaces: [shared]
 source: specified
