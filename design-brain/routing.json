@@ -1,0 +1,129 @@
+{
+  "$comment": "Machine-readable routing manifest for the Orbit Design Brain. Prose canon: AGENTS.md §3 + design-brain/orchestration.md. CI-checked by tools/check_links.py (every concrete path must exist; <placeholder> segments are validated at their deepest concrete parent). Model tiers are aliases, never pinned IDs.",
+  "version": 1,
+  "tasks": {
+    "build-component": {
+      "agent": "component-builder",
+      "model": "sonnet",
+      "skill": "component-contract",
+      "load": [
+        "design-brain/components/<name>.md",
+        "design-brain/tokens.md",
+        "design-brain/defaults.md",
+        "design-brain/platforms/<platform>.md",
+        "design-brain/examples/<nearest>.md",
+        "design-brain/accessibility.md",
+        "design-brain/motion.md",
+        "design-brain/ux-copy.md"
+      ],
+      "then": ["design-review"]
+    },
+    "build-screen": {
+      "agent": "screen-builder",
+      "model": "sonnet",
+      "model_escalation": "opus when no pattern contract exists for the view",
+      "skill": null,
+      "load": [
+        "design-brain/patterns/<name>.md",
+        "design-brain/platforms/<platform>.md",
+        "design-brain/platforms/<platform>-visual-truth.md",
+        "design-brain/interaction-defaults.md",
+        "design-brain/defaults.md",
+        "design-brain/components/<used>.md",
+        "design-brain/examples/<nearest-flow>.md",
+        "discovery/<initiative>.md",
+        "design-brain/anti-patterns.md"
+      ],
+      "then": ["design-review"]
+    },
+    "extract-contract": {
+      "agent": "contract-extractor",
+      "model": "sonnet",
+      "skill": "extract-contract",
+      "load": [
+        "design-brain/components/_TEMPLATE.md",
+        "design-brain/tokens.md",
+        "design-brain/components/data-table.md"
+      ],
+      "then": []
+    },
+    "port-prototype": {
+      "agent": "porter",
+      "model": "sonnet",
+      "skill": "port-to-orbit",
+      "load": [
+        "design-brain/platforms/<platform>.md",
+        "design-brain/tokens.md",
+        "design-brain/defaults.md",
+        "design-brain/components/<used>.md",
+        "design-brain/anti-patterns.md"
+      ],
+      "then": ["design-review"]
+    },
+    "design-review": {
+      "agent": "design-reviewer",
+      "model": "opus",
+      "skill": null,
+      "load": [
+        "AGENTS.md",
+        "design-brain/components/<involved>.md",
+        "design-brain/patterns/<involved>.md",
+        "design-brain/tokens.md",
+        "design-brain/accessibility.md",
+        "design-brain/anti-patterns.md",
+        "design-brain/motion.md",
+        "design-brain/ux-copy.md"
+      ],
+      "fresh_context": true,
+      "then": []
+    },
+    "benchmark-judge": {
+      "agent": "benchmark-judge",
+      "model": "opus",
+      "skill": null,
+      "load": [
+        "_benchmarks/<rubric>.md"
+      ],
+      "fresh_context": true,
+      "blind": true,
+      "then": []
+    },
+    "discovery-distill": {
+      "agent": null,
+      "model": "opus",
+      "skill": null,
+      "load": [
+        "discovery/_TEMPLATE.md",
+        "discovery/README.md",
+        "design-brain/platforms/<platform>.md"
+      ],
+      "then": []
+    },
+    "vault-maintenance": {
+      "agent": "vault-librarian",
+      "model": "haiku",
+      "skill": null,
+      "load": [
+        "design-brain/lessons/INBOX.md",
+        "_review/Parked Items.md",
+        "_review/Maintenance Workflow.md"
+      ],
+      "then": []
+    }
+  },
+  "folder_defaults": {
+    "design-brain/components/": { "context_tier": "task-core", "load_when": ["build-component", "build-screen", "design-review", "port-prototype"] },
+    "design-brain/patterns/": { "context_tier": "task-core", "load_when": ["build-screen", "design-review"] },
+    "design-brain/examples/": { "context_tier": "reference", "load_when": ["build-component", "build-screen"], "lazy": "load a reference .tsx only for the matching component family; never load screenshots into agent context" },
+    "design-brain/agents/": { "context_tier": "reference", "load_when": ["orchestration"] },
+    "design-brain/skills/": { "context_tier": "reference", "load_when": ["build-component", "extract-contract", "port-prototype"] },
+    "design-brain/lovable/": { "context_tier": "reference", "load_when": ["lovable-projection"] },
+    "discovery/": { "context_tier": "task-core", "load_when": ["build-screen", "discovery-distill"] }
+  },
+  "context_tiers": {
+    "always-on": "loaded every session (AGENTS.md via CLAUDE.md import)",
+    "task-core": "loaded when the task key or folder default says so",
+    "reference": "loaded on demand only",
+    "archive": "never auto-loaded"
+  }
+}

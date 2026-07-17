@@ -7,6 +7,8 @@ platform: shared
 source: specified
 last_reviewed: 2026-06-15
 maturity_score: 72
+context_tier: reference
+load_when: [platform-question]
 tags: [orbit, design-brain, platforms]
 ---
 

@@ -6,6 +6,8 @@ surfaces: [shared]
 source: specified
 last_reviewed: 2026-06-15
 maturity_score: 88
+context_tier: task-core
+load_when: [build-component, build-screen, design-review, accessibility-question]
 tags: [orbit, design-brain, accessibility]
 ---
 

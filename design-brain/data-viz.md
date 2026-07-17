@@ -6,6 +6,8 @@ surfaces: [MarketIQ, RFP Analytics]
 source: code
 last_reviewed: 2026-06-15
 maturity_score: 74
+context_tier: reference
+load_when: [build-screen, data-viz-question]
 tags: [orbit, design-brain, data-viz, benchmark]
 ---
 

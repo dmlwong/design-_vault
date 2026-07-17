@@ -22,11 +22,14 @@ records, not living docs.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+MANIFEST = ROOT / "design-brain" / "routing.json"
 
 CHECK_EXTENSIONS = (".md", ".tsx", ".py", ".css", ".png", ".canvas", ".base")
 
@@ -121,6 +124,48 @@ def resolves(ref: str, doc: Path) -> bool:
     return any(c.is_file() for c in candidates)
 
 
+def manifest_path_ok(ref: str) -> bool:
+    """Validate a routing-manifest load path.
+
+    Concrete paths must resolve like any other reference. Paths with
+    `<placeholder>` segments are validated at their deepest concrete parent
+    directory (e.g. `design-brain/components/<name>.md` requires
+    `design-brain/components/` to exist).
+    """
+    if "<" in ref:
+        concrete = ref.split("<", 1)[0]
+        parent = concrete.rsplit("/", 1)[0] if "/" in concrete else concrete
+        return (ROOT / parent).is_dir()
+    return resolves(ref, MANIFEST)
+
+
+def check_manifest() -> list[tuple[str, str]]:
+    """Validate design-brain/routing.json: load paths, agents, skills, folders."""
+    src = MANIFEST.relative_to(ROOT).as_posix()
+    if not MANIFEST.is_file():
+        return [(src, "routing.json is missing")]
+    try:
+        data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [(src, f"invalid JSON: {exc}")]
+
+    broken: list[tuple[str, str]] = []
+    for key, task in data.get("tasks", {}).items():
+        for ref in task.get("load", []):
+            if not manifest_path_ok(ref):
+                broken.append((src, f"tasks.{key}.load -> {ref}"))
+        agent = task.get("agent")
+        if agent and not (ROOT / "design-brain" / "agents" / f"{agent}.md").is_file():
+            broken.append((src, f"tasks.{key}.agent -> {agent} (no agent file)"))
+        skill = task.get("skill")
+        if skill and not (ROOT / "design-brain" / "skills" / skill / "SKILL.md").is_file():
+            broken.append((src, f"tasks.{key}.skill -> {skill} (no SKILL.md)"))
+    for folder in data.get("folder_defaults", {}):
+        if not (ROOT / folder).is_dir():
+            broken.append((src, f"folder_defaults -> {folder} (no such folder)"))
+    return broken
+
+
 def main() -> None:
     broken: list[tuple[str, str]] = []
     for doc in iter_docs():
@@ -130,12 +175,17 @@ def main() -> None:
             if not resolves(ref, doc):
                 broken.append((doc.relative_to(ROOT).as_posix(), ref))
 
+    broken.extend(check_manifest())
+
     if broken:
         print(f"BROKEN REFERENCES ({len(broken)}):")
         for doc, ref in broken:
             print(f"- {doc} -> {ref}")
         raise SystemExit(1)
-    print(f"Link check passed: {len(iter_docs())} docs scanned, no broken references.")
+    print(
+        f"Link check passed: {len(iter_docs())} docs scanned, routing manifest valid, "
+        "no broken references."
+    )
 
 
 if __name__ == "__main__":

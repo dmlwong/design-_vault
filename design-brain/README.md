@@ -4,7 +4,7 @@ status: stable
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-06-14
+last_reviewed: 2026-07-17
 maturity_score: 72
 tags: [orbit, design-brain, index]
 ---
@@ -70,6 +70,9 @@ exports.**
 | `data-viz.md` | Charts, KPIs, and analytics views (MarketIQ / RFP Analytics). |
 | `platforms/README.md` | Platform split: Connected Platform vs Orbit / Client Connected Platform. |
 | `platforms/<platform>-visual-truth.md` | Screenshot-derived visual guidance per platform (in-review). |
+| `orchestration.md` | Multi-agent doctrine: the roster, the build pipeline, model routing. |
+| `routing.json` | Machine-readable routing manifest (task → context packet → agent → model); CI-checked. |
+| `lessons/INBOX.md` | Mid-task correction capture; triaged weekly into brain edits. |
 | `SETUP.md` | How the brain was set up, phase by phase — the scaling method. |
 
 ### Components & examples
@@ -90,7 +93,18 @@ exports.**
 | `skills/component-contract/SKILL.md` | Build/refactor a component to its contract. |
 | `skills/extract-contract/SKILL.md` | Generate a contract from existing source — the populate-the-brain workflow. |
 | `skills/port-to-orbit/SKILL.md` | Bring an external/Lovable prototype onto Orbit. |
-| `agents/design-reviewer.md` | Reviewer subagent definition — audits work against the Definition of Done. |
+
+### Agents (the roster — see `orchestration.md`)
+| File | Model | Role |
+| ---- | ----- | ---- |
+| `agents/context-scout.md` | haiku | Assembles the context packet for a task from `routing.json`. |
+| `agents/vault-librarian.md` | haiku | Vault hygiene: checks, lint, staleness, lessons-inbox triage. |
+| `agents/contract-extractor.md` | sonnet | Contract drafts from real source (extract-contract skill). |
+| `agents/component-builder.md` | sonnet | Builds one component to its contract (component-contract skill). |
+| `agents/screen-builder.md` | sonnet | Composes full screens from patterns + contracted components. |
+| `agents/porter.md` | sonnet | Ports external/Lovable prototypes onto Orbit (port-to-orbit skill). |
+| `agents/design-reviewer.md` | opus | Audits finished work against the Definition of Done. |
+| `agents/benchmark-judge.md` | opus | Blind scorer for benchmarks/A-B tests (fresh context, always). |
 
 ### Lovable projections
 | File | Role |
@@ -109,10 +123,12 @@ exports.**
 ## Where This Lives
 - `AGENTS.md`, `CLAUDE.md` → vault root and generated product repo root.
 - `skills/*` → exported into `.claude/skills/` for Claude Code.
-- `agents/design-reviewer.md` → exported into `.claude/agents/`.
+- `agents/*` → exported into `.claude/agents/` (the whole roster; `model:` frontmatter
+  selects the tier per agent).
 - `lovable/*` → pasted into Lovable or replaced by an Enterprise Design System link.
 
 ## Maintenance
-When an agent gets Orbit wrong and you correct it, update the relevant canonical file,
-then re-project (re-paste the Lovable files; the CLI tools pick up the edit automatically).
+When an agent gets Orbit wrong and you correct it, update the relevant canonical file —
+or, mid-task, drop the correction into `lessons/INBOX.md` for the weekly triage — then
+re-project (re-paste the Lovable files; the CLI tools pick up the edit automatically).
 Treat the brain as living memory.

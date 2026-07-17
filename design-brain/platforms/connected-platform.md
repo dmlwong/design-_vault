@@ -7,6 +7,8 @@ platform: connected-platform
 source: specified
 last_reviewed: 2026-06-15
 maturity_score: 60
+context_tier: task-core
+load_when: [build-component, build-screen, port-prototype, platform-question]
 tags: [orbit, design-brain, platform, connected-platform]
 ---
 

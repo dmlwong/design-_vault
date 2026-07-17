@@ -3,6 +3,11 @@ name: Vault integrity
 on:
   push:
   pull_request:
+  schedule:
+    # weekly maintenance tick (Mon 06:00 UTC) — runs the same checks plus the
+    # informational staleness report; lessons-inbox triage stays a manual agent
+    # session by design (no API secrets in CI — see design-brain/orchestration.md)
+    - cron: "0 6 * * 1"
 
 jobs:
   integrity:
@@ -13,8 +18,14 @@ jobs:
       - name: Export self-check (all required Design Brain files present)
         run: python3 tools/export_brain.py --self-check
 
-      - name: Link check (no broken vault-internal references)
+      - name: Link check (references + routing manifest)
         run: python3 tools/check_links.py
+
+      - name: Frontmatter lint (required keys, status, dates, context tiers)
+        run: python3 tools/lint_frontmatter.py
+
+      - name: Staleness report (informational — never fails the build)
+        run: python3 tools/lint_frontmatter.py --stale-report
 
       # Drift-check against the product repo requires access to efficio-orbit.
       # Wire it here (or in the product repo's CI) once a checkout/token is available:

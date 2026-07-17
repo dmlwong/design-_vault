@@ -6,6 +6,8 @@ surfaces: [shared]
 source: specified
 last_reviewed: 2026-06-14
 maturity_score: 75
+context_tier: reference
+load_when: [build-screen, intent-question]
 tags: [orbit, design-brain, principles]
 ---
 

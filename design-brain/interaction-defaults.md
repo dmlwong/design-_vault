@@ -6,6 +6,8 @@ surfaces: [shared]
 source: specified
 last_reviewed: 2026-06-29
 maturity_score: 72
+context_tier: task-core
+load_when: [build-screen, flow-shape-question]
 tags: [orbit, design-brain, interaction-defaults, judgment-layer]
 ---
 

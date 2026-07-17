@@ -7,6 +7,8 @@ platform: orbit-client-connected-platform
 source: user-provided
 last_reviewed: 2026-06-15
 maturity_score: 65
+context_tier: reference
+load_when: [build-screen, design-review, platform-question]
 tags: [orbit, design-brain, visual-truth, client-connected-platform]
 ---
 

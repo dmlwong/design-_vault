@@ -193,5 +193,26 @@ lives; 6 is minutes.
   change requests.
 - The always-on layer stays thin; this proposal *reduces* average context per task.
 
+## Implemented — 2026-07-17
+
+Owner approved (defaults on all four open decisions). Shipped the same day:
+
+- `design-brain/orchestration.md` — doctrine (roster, pipeline, fan-out, model routing).
+- 7 new agents + updated `design-reviewer.md` in `design-brain/agents/` — all carry
+  `name`/`description`/`model` frontmatter, so exported copies are native Claude Code
+  subagents; exporter now tree-walks the whole folder into `.claude/agents/`.
+- `design-brain/routing.json` — task → context packet → agent → model manifest, with
+  `folder_defaults` tiers; validated by `tools/check_links.py` (`check_manifest()`).
+- `load_when`/`context_tier` frontmatter on the 14 routed reference files.
+- `tools/lint_frontmatter.py` — required keys, status, dates, tiers; `--stale-report`.
+- CI: frontmatter lint + weekly cron with informational staleness report. Lessons-inbox
+  triage deliberately stays a manual agent session (no CI secrets).
+- `design-brain/lessons/INBOX.md` + `AGENTS.md` §3 rows and §6 inbox path.
+
+Deferred (unchanged from proposal): drift-check wiring into the product repo (needs an
+efficio-orbit checkout/token); LLM-in-CI for lessons triage (owner decision).
+
 ## Status
-draft · for design-system owner review · implementation gated on approval
+approved · implemented 2026-07-17 · orchestration layer files are `in-review` pending
+first real-task validation (Phase 4 style: run one build through the pipeline, tune, then
+promote to stable)

@@ -66,6 +66,17 @@ REQUIRED_FILES = [
     "design-brain/examples/screenshots/orbit-client-connected-platform/manifest.md",
     "design-brain/lovable/knowledge-base.md",
     "design-brain/lovable/workspace-knowledge.md",
+    "design-brain/orchestration.md",
+    "design-brain/routing.json",
+    "design-brain/lessons/INBOX.md",
+    "design-brain/agents/design-reviewer.md",
+    "design-brain/agents/context-scout.md",
+    "design-brain/agents/vault-librarian.md",
+    "design-brain/agents/contract-extractor.md",
+    "design-brain/agents/component-builder.md",
+    "design-brain/agents/screen-builder.md",
+    "design-brain/agents/porter.md",
+    "design-brain/agents/benchmark-judge.md",
     "discovery/_TEMPLATE.md",
     "discovery/README.md",
 ]
@@ -81,6 +92,7 @@ REQUIRED_DIRS = [
     "design-brain/examples/screenshots/orbit-client-connected-platform",
     "design-brain/skills",
     "design-brain/agents",
+    "design-brain/lessons",
     "design-brain/lovable",
     "discovery",
 ]
@@ -209,12 +221,8 @@ def build_ops(target: Path, profile: str, include_restricted: bool = False) -> l
     if profile in {"all", "claude"}:
         ops.append(CopyOp(ROOT / "CLAUDE.md", target / "CLAUDE.md"))
         ops.extend(iter_tree(ROOT / "design-brain" / "skills", target / ".claude" / "skills"))
-        ops.append(
-            CopyOp(
-                ROOT / "design-brain" / "agents" / "design-reviewer.md",
-                target / ".claude" / "agents" / "design-reviewer.md",
-            )
-        )
+        # every agent in the roster becomes a Claude Code subagent
+        ops.extend(iter_tree(ROOT / "design-brain" / "agents", target / ".claude" / "agents"))
 
     if profile == "lovable":
         ops.extend(iter_tree(ROOT / "design-brain" / "lovable", target / "design-brain" / "lovable"))

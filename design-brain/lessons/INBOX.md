@@ -1,0 +1,38 @@
+---
+type: lessons-inbox
+status: stable
+owner: design-system
+surfaces: [shared]
+source: specified
+last_reviewed: 2026-07-17
+maturity_score: 60
+context_tier: task-core
+load_when: [vault-maintenance, correction-capture]
+tags: [orbit, design-brain, lessons, feedback-loop]
+---
+
+# Lessons Inbox
+
+Low-friction capture for the feedback loop (`AGENTS.md` §6). When a human corrects an
+agent's wrong assumption about Orbit **mid-task**, the agent appends an entry here and
+continues — instead of stopping to edit the brain file immediately. The
+`vault-librarian` triages entries into proposed edits; the owner approves; the entry is
+deleted when the fix lands in the canonical file. **This file must trend toward empty.**
+
+Governed files (tokens, contracts, `AGENTS.md`, defaults, projections) are never edited
+directly from here — entries against them become change requests
+(`_review/Change Request Template.md`).
+
+## Entry template
+
+```
+### YYYY-MM-DD · <task, one line>
+- Wrong assumption: <what the agent believed>
+- Correction: <what is actually true — quote the human where possible>
+- Proposed target: <the brain file that should change, and roughly how>
+- Status: new | triaged | approved
+```
+
+## Entries
+
+*(none — inbox is empty)*

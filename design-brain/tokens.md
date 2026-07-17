@@ -6,6 +6,8 @@ surfaces: [shared]
 source: code
 last_reviewed: 2026-06-15
 maturity_score: 82
+context_tier: task-core
+load_when: [build-component, build-screen, port-prototype, extract-contract, design-review, token-question]
 tags: [orbit, design-brain, tokens]
 ---
 

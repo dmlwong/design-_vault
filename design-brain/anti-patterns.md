@@ -6,6 +6,8 @@ surfaces: [shared]
 source: specified
 last_reviewed: 2026-06-15
 maturity_score: 78
+context_tier: task-core
+load_when: [build-screen, port-prototype, design-review, generic-output]
 tags: [orbit, design-brain, anti-patterns]
 ---
 

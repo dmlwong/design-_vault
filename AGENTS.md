@@ -96,6 +96,8 @@ All paths are relative to the repo root.
 | Porting a Lovable/external proto   | `design-brain/skills/port-to-orbit/SKILL.md`      |
 | Writing a contract from source     | `design-brain/skills/extract-contract/SKILL.md`   |
 | Reviewing finished UI work         | `design-brain/agents/design-reviewer.md`          |
+| Multi-agent work / choosing a model | `design-brain/orchestration.md` (+ machine-readable `design-brain/routing.json`) |
+| Recording a correction mid-task    | `design-brain/lessons/INBOX.md`                   |
 
 ## 4. Token contract (summary — full detail in `design-brain/tokens.md`)
 
@@ -152,6 +154,11 @@ A component or screen is done only when **all** are true:
 When you make an incorrect assumption about Orbit and the user corrects you, **update
 the relevant brain file so the fix persists**, then continue. Treat this file and its
 references as living memory, not static docs. Propose the edit; let the user approve.
+
+Mid-task, if stopping to edit the brain would derail the work, append the correction to
+`design-brain/lessons/INBOX.md` instead (template inside) and continue — the
+vault-librarian triages entries into proposed edits weekly. Either way, the correction
+must land somewhere durable before the task is called done.
 
 ## 7. Governance
 

@@ -6,6 +6,8 @@ surfaces: [shared]
 source: specified
 last_reviewed: 2026-06-14
 maturity_score: 70
+context_tier: reference
+load_when: [build-component, build-screen, design-review, copy-question]
 tags: [orbit, design-brain, ux-copy]
 ---
 

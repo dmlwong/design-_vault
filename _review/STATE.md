@@ -58,7 +58,11 @@ tags: [orbit, design-brain, state, resume, handoff]
 ## 🧭 Snapshot of the brain
 - **Always-on:** `AGENTS.md` (9 rules, routing table, Definition of Done) ← `CLAUDE.md` imports it.
 - **Reference layer** (`design-brain/`): 12 component contracts, 11 page patterns, golden examples
-  with real code, 2 platform profiles + visual-truth notes, 3 skills, design-reviewer agent, lovable projections.
+  with real code, 2 platform profiles + visual-truth notes, 3 skills, lovable projections.
+- **Orchestration layer** (added 2026-07-17, in-review): `orchestration.md` doctrine,
+  8-agent roster in `agents/` with per-agent model tiers, machine-readable
+  `routing.json` (CI-checked), `lessons/INBOX.md` correction capture, frontmatter lint
+  + weekly staleness CI. See `_review/2026-07-17-orchestration-and-optimisation-proposal.md`.
 - **Judgment layer:** `interaction-defaults.md` #1–#8 (structure) validated; #9–#13 (craft) in cycle-2 above.
 - **Maturity:** ~82–88/100.
 

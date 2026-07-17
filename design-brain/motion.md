@@ -6,6 +6,8 @@ surfaces: [shared]
 source: code
 last_reviewed: 2026-06-14
 maturity_score: 55
+context_tier: reference
+load_when: [build-component, design-review, motion-question]
 tags: [orbit, design-brain, motion, gap]
 ---
 
