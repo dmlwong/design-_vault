@@ -72,7 +72,10 @@
         "design-brain/accessibility.md",
         "design-brain/anti-patterns.md",
         "design-brain/motion.md",
-        "design-brain/ux-copy.md"
+        "design-brain/ux-copy.md",
+        "design-brain/interaction-defaults.md",
+        "design-brain/platforms/<platform>.md",
+        "design-brain/platforms/<platform>-visual-truth.md"
       ],
       "fresh_context": true,
       "then": []

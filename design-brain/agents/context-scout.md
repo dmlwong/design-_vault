@@ -43,7 +43,10 @@ SKILL:      <skill name or none>
 LOAD (in order):
   1. <path> — <why>
   2. …
-MISSING:    <contracts/files the manifest expects but don't exist>
+MISSING:    <everything expected but absent — manifest paths that don't resolve, AND
+            any component the artifact/task uses that has no contract in
+            `design-brain/components/` (check the artifact's companion note and its
+            imports; contract-less components are exactly what review must know about)>
 THEN:       <follow-on task keys, e.g. design-review>
 ```
 
