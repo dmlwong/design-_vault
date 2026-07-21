@@ -112,6 +112,29 @@
         "_review/Maintenance Workflow.md"
       ],
       "then": []
+    },
+    "brief-review": {
+      "agent": "brief-reviewer",
+      "model": "opus",
+      "skill": null,
+      "load": [
+        "design-brain/brief-contract.md",
+        "discovery/briefs/<brief>.md",
+        "design-brain/platforms/<platform>.md"
+      ],
+      "fresh_context": true,
+      "then": ["explore"]
+    },
+    "explore": {
+      "agent": null,
+      "model": "opus",
+      "skill": "explore",
+      "load": [
+        "design-brain/platforms/<platform>.md",
+        "discovery/briefs/<brief>.md",
+        "design-brain/principles.md"
+      ],
+      "then": ["port-prototype"]
     }
   },
   "folder_defaults": {
@@ -119,9 +142,10 @@
     "design-brain/patterns/": { "context_tier": "task-core", "load_when": ["build-screen", "design-review"] },
     "design-brain/examples/": { "context_tier": "reference", "load_when": ["build-component", "build-screen"], "lazy": "load a reference .tsx only for the matching component family; never load screenshots into agent context" },
     "design-brain/agents/": { "context_tier": "reference", "load_when": ["orchestration"] },
-    "design-brain/skills/": { "context_tier": "reference", "load_when": ["build-component", "extract-contract", "port-prototype"] },
+    "design-brain/skills/": { "context_tier": "reference", "load_when": ["build-component", "extract-contract", "port-prototype", "explore"] },
     "design-brain/lovable/": { "context_tier": "reference", "load_when": ["lovable-projection"] },
-    "discovery/": { "context_tier": "task-core", "load_when": ["build-screen", "discovery-distill"] }
+    "discovery/": { "context_tier": "task-core", "load_when": ["build-screen", "discovery-distill"] },
+    "discovery/briefs/": { "context_tier": "task-core", "load_when": ["brief-review", "explore"] }
   },
   "context_tiers": {
     "always-on": "loaded every session (AGENTS.md via CLAUDE.md import)",
