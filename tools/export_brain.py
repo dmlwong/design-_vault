@@ -78,6 +78,7 @@ REQUIRED_FILES = [
     "design-brain/agents/porter.md",
     "design-brain/agents/benchmark-judge.md",
     "design-brain/agents/brief-reviewer.md",
+    "design-brain/agents/brief-coach.md",
     "design-brain/brief-contract.md",
     "discovery/_TEMPLATE.md",
     "discovery/README.md",

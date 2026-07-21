@@ -113,6 +113,17 @@
       ],
       "then": []
     },
+    "brief-coach": {
+      "agent": "brief-coach",
+      "model": "opus",
+      "skill": null,
+      "load": [
+        "design-brain/brief-contract.md",
+        "discovery/briefs/_TEMPLATE.md",
+        "design-brain/platforms/<platform>.md"
+      ],
+      "then": ["brief-review"]
+    },
     "brief-review": {
       "agent": "brief-reviewer",
       "model": "opus",

@@ -54,6 +54,7 @@ Code; other tools paste them as personas). Each declares `model:` in frontmatter
 | `porter` | Ports external/Lovable prototypes (`port-to-orbit` skill) | sonnet | Mapping to an explicit target |
 | `design-reviewer` | Audits finished work against the brain | opus-class | Judgment-dense, last line of defence |
 | `benchmark-judge` | Blind A/B scoring for benchmarks | opus-class | Scoring integrity |
+| `brief-coach` | Helps a stakeholder write a strong brief (Socratic, draws it out) | opus-class | Judgment-dense authoring help |
 | `brief-reviewer` | Reviews a concept brief at intake against the brief contract | opus-class | Judgment on intent, at the cheapest gate |
 
 ## The standard build pipeline
@@ -89,15 +90,19 @@ concept into a testable prototype. It fixes context-free Lovable hand-offs by ca
 intent at intake and gating it before generation.
 
 ```
-intake form ──> brief-review ──> explore ──> (human steers the bet) ──> port-prototype
-(Layer 1:        brief-reviewer   explore skill                          the winner
- in-browser      opus, FRESH      (concept, NOT                          becomes
- completeness)   context,         Orbit-bound)                           Orbit-correct
-                 vs brief-contract
-                 → Ready / Needs work / Blocked
+(brief-coach) ──> intake form ──> brief-review ──> explore ──> (human steers) ──> port-prototype
+ optional,        (Layer 1:        brief-reviewer   explore skill                  the winner
+ draws a strong   in-browser       opus, FRESH      (concept, NOT                  becomes
+ brief OUT of     completeness)    context,         Orbit-bound)                   Orbit-correct
+ the stakeholder                   vs brief-contract
+ (Socratic)                        → Ready / Needs work / Blocked
 ```
 
 Hard rules:
+- **Coach ≠ reviewer (a firewall).** `brief-coach` helps a stakeholder *write* a strong brief
+  (Socratic, draws it out, never fabricates, never gives a verdict). `brief-reviewer` then
+  *judges* it blind, in a fresh context. The same agent must never both coach and judge the
+  same brief — it would pass what it authored. Two roles, one contract.
 - **Two funnels, one seam.** `explore` diverges (fast, throwaway, not Orbit-bound);
   `port-prototype` converges (on-system). Never ask one pass to do both — that is the
   "correctness engine doing a creation job" failure.

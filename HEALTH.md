@@ -9,28 +9,29 @@ _Snapshot 2026-07-21. Regenerate with `tools/vault_health.py`._
 
 | Area | Count |
 | --- | ---: |
-| Agents | 9 |
+| Agents | 10 |
 | Skills | 4 |
 | Component contracts | 12 |
 | Pattern contracts | 11 |
 | Examples | 18 |
 | Platform profiles | 2 |
-| Total docs | 134 |
+| Total docs | 135 |
 
 ## Status mix
 
-_130 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
+_131 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
 
 | Status | Count | Share |
 | --- | ---: | ---: |
 | stable | 38 | 29% |
 | in-review | 73 | 56% |
-| draft | 19 | 15% |
+| draft | 20 | 15% |
 
 ## Inventory
 
-### Agents (9)
+### Agents (10)
 - benchmark-judge — in-review
+- brief-coach — draft
 - brief-reviewer — draft
 - component-builder — stable
 - context-scout — stable
