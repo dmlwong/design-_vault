@@ -427,16 +427,21 @@ STYLE = """
   .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
   .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
   .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
-  /* Slide-in drawer (left → right) + scrim. */
-  .scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);opacity:0;visibility:hidden;
-    transition:opacity .28s ease,visibility 0s linear .28s;z-index:40}
-  .drawer{position:fixed;top:0;left:0;height:100dvh;width:400px;max-width:92vw;
-    background:var(--panel);border-right:1px solid var(--line);box-shadow:var(--shadow);
-    transform:translateX(-100%);visibility:hidden;z-index:41;display:flex;flex-direction:column;
+  /* Side panel: docked right, slides in from the right, pushes content left —
+     no overlay, no scrim. --dw is the panel width (full-width on small screens). */
+  :root{--dw:400px}
+  html{overflow-x:hidden}
+  #shell{transition:margin-right .28s cubic-bezier(.4,0,.2,1)}
+  body.drawer-open #shell{margin-right:var(--dw)}
+  .drawer{position:fixed;top:0;right:0;height:100dvh;width:var(--dw);
+    background:var(--panel);border-left:1px solid var(--line);
+    box-shadow:-14px 0 34px rgba(10,14,20,.12);
+    transform:translateX(100%);visibility:hidden;z-index:30;display:flex;flex-direction:column;
     transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s}
-  body.drawer-open .scrim{opacity:1;visibility:visible;transition:opacity .28s ease}
   body.drawer-open .drawer{transform:translateX(0);visibility:visible;
     transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  @media (max-width:820px){:root{--dw:100vw}
+    body.drawer-open #shell{margin-right:0}}
   .drawer .dhead{display:flex;align-items:center;gap:10px;padding:20px 20px 15px;
     border-bottom:1px solid var(--line)}
   .drawer .dhead h3{margin:0;font-size:15px;font-weight:650}
@@ -455,7 +460,7 @@ STYLE = """
   .items li:first-child{border-top:none}
   .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   @media (prefers-reduced-motion:reduce){
-    .kpi-btn,.kpi-btn:hover,.scrim,.drawer{transition:none;transform:none}
+    .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
     body.drawer-open .drawer{transition:none}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:22px;box-shadow:var(--shadow)}
@@ -600,7 +605,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     reveal = ("Agents, Skills, Components and Patterns"
               if public else "Every card")
 
-    return f"""<div class="wrap">
+    return f"""<div id="shell"><div class="wrap">
   <header>
     <div class="eyebrow">Orbit Design Brain</div>
     <h1>Vault Health</h1>
@@ -659,14 +664,13 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   </section>
 
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
-</div>
+</div></div>
 
-<div class="scrim" hidden></div>
-<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+<aside class="drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
   <div class="dhead">
     <h3 id="drawer-title"></h3>
     <span class="dcount"></span>
-    <button type="button" class="drawer-close" aria-label="Close">&times;</button>
+    <button type="button" class="drawer-close" aria-label="Close panel">&times;</button>
   </div>
   <p class="dgloss"></p>
   <div class="drawer-body"></div>
@@ -675,7 +679,6 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
 <script>
 (function(){{
   var body=document.body,
-      scrim=document.querySelector('.scrim'),
       drawer=document.querySelector('.drawer'),
       title=drawer.querySelector('#drawer-title'),
       count=drawer.querySelector('.dcount'),
@@ -691,7 +694,6 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     gloss.textContent=src.getAttribute('data-gloss')||'';
     dbody.innerHTML='';
     dbody.appendChild(src.querySelector('.items').cloneNode(true));
-    scrim.hidden=false;
     body.classList.add('drawer-open');
     drawer.setAttribute('aria-hidden','false');
     closeBtn.focus();
@@ -699,14 +701,15 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   function close(){{
     body.classList.remove('drawer-open');
     drawer.setAttribute('aria-hidden','true');
-    setTimeout(function(){{ scrim.hidden=true; }},280);
     if(last) last.focus();
   }}
   document.querySelectorAll('.kpi-btn').forEach(function(btn){{
-    btn.addEventListener('click',function(){{ last=btn; open(btn.getAttribute('data-area')); }});
+    btn.addEventListener('click',function(){{
+      if(body.classList.contains('drawer-open')&&last===btn){{ close(); return; }}
+      last=btn; open(btn.getAttribute('data-area'));
+    }});
   }});
   closeBtn.addEventListener('click',close);
-  scrim.addEventListener('click',close);
   document.addEventListener('keydown',function(e){{
     if(e.key==='Escape'&&body.classList.contains('drawer-open')) close();
   }});
