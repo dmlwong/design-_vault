@@ -37,6 +37,7 @@ from check_links import (  # noqa: E402
     EXTERNAL_PREFIXES,
     REF_PATTERN,
     ROOT,
+    SKIP_FILES,
     WELL_KNOWN_DIRS,
     iter_docs,
 )
@@ -67,6 +68,9 @@ def resolve_to_path(ref: str, doc: Path) -> Path | None:
         candidates.extend(ROOT / d / ref for d in WELL_KNOWN_DIRS)
     for c in candidates:
         if c.is_file():
+            # Generated reports resolve as files but are not part of the graph.
+            if c.resolve().relative_to(ROOT).as_posix() in SKIP_FILES:
+                return None
             return c
     return None
 

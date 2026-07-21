@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Design Brain — Vault Health</title>
+<style>
+  :root {
+    --bg:#f7f8fa; --panel:#fff; --ink:#1a1d24; --muted:#5b6472;
+    --line:#e4e7ec; --ok:#1f9d55; --warn:#c2410c;
+    --stable:#1f9d55; --review:#c98a00; --draft:#6b7280; --track:#eceef1;
+  }
+  html[data-theme="dark"] {
+    --bg:#0f1218; --panel:#171b23; --ink:#e8ebf0; --muted:#9aa4b2;
+    --line:#262c37; --ok:#3ecf7f; --warn:#f0894e;
+    --stable:#3ecf7f; --review:#e5b84b; --draft:#8a94a3; --track:#232935;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); }
+  .wrap { max-width:840px; margin:0 auto; padding:32px 20px 56px; }
+  header { display:flex; justify-content:space-between; align-items:flex-start;
+    gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; }
+  .badge { font-weight:600; font-size:13px; padding:6px 14px; border-radius:999px;
+    border:1px solid var(--line); }
+  .badge.ok { color:var(--ok); } .badge.warn { color:var(--warn); }
+  .toggle { background:none; border:1px solid var(--line); color:var(--muted);
+    border-radius:8px; padding:5px 10px; font-size:12px; cursor:pointer; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:20px; margin-bottom:16px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--muted); margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+  .card { background:var(--bg); border:1px solid var(--line); border-radius:10px;
+    padding:16px; text-align:center; }
+  .num { font-size:26px; font-weight:650; }
+  .lbl { font-size:12px; color:var(--muted); margin-top:4px; }
+  .bar-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .bar-lbl { width:78px; font-size:13px; color:var(--muted); }
+  .bar-track { flex:1; height:10px; background:var(--track); border-radius:999px; overflow:hidden; }
+  .bar-fill { display:block; height:100%; border-radius:999px; }
+  .b-stable { background:var(--stable); } .b-review { background:var(--review); }
+  .b-draft { background:var(--draft); }
+  .bar-val { width:88px; text-align:right; font-size:13px; font-variant-numeric:tabular-nums; }
+  ul.integ { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+  ul.integ li { font-size:13px; padding:5px 12px; border-radius:8px; border:1px solid var(--line); }
+  ul.integ li.ok { color:var(--ok); } ul.integ li.warn { color:var(--warn); }
+  .spark { width:100%; height:52px; }
+  .spark path { fill:none; stroke:var(--review); stroke-width:2; }
+  footer { color:var(--muted); font-size:12px; text-align:center; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Orbit Design Brain — Vault Health</h1>
+      <div class="sub">Aggregate health of the shared design vault · updated 2026-07-21</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="badge ok">Healthy</span>
+      <button class="toggle" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'">Theme</button>
+    </div>
+  </header>
+
+  <section>
+    <h2>Contents</h2>
+    <div class="grid"><div class="card"><div class="num">8</div><div class="lbl">Agents</div></div><div class="card"><div class="num">4</div><div class="lbl">Skills</div></div><div class="card"><div class="num">12</div><div class="lbl">Component contracts</div></div><div class="card"><div class="num">11</div><div class="lbl">Pattern contracts</div></div><div class="card"><div class="num">18</div><div class="lbl">Examples</div></div><div class="card"><div class="num">2</div><div class="lbl">Platform profiles</div></div><div class="card"><div class="num">127</div><div class="lbl">Total docs</div></div></div>
+  </section>
+
+  <section>
+    <h2>Maturity — 123 documents</h2>
+    <div class="bar-row"><span class="bar-lbl">stable</span><span class="bar-track"><span class="bar-fill b-stable" style="width:30%"></span></span><span class="bar-val">37 · 30%</span></div><div class="bar-row"><span class="bar-lbl">in-review</span><span class="bar-track"><span class="bar-fill b-review" style="width:59%"></span></span><span class="bar-val">72 · 59%</span></div><div class="bar-row"><span class="bar-lbl">draft</span><span class="bar-track"><span class="bar-fill b-draft" style="width:11%"></span></span><span class="bar-val">14 · 11%</span></div>
+  </section>
+
+  <section>
+    <h2>Integrity checks</h2>
+    <ul class="integ"><li class="ok">export self-check: pass</li><li class="ok">link check: pass</li><li class="ok">frontmatter lint: pass</li><li class="ok">graph links: pass</li></ul>
+  </section>
+
+  <section>
+    <h2>Total documents over time</h2>
+    <div class="sub">Trend appears once there are at least two daily snapshots.</div>
+  </section>
+
+  <footer>Sanitized aggregate view · no internal content is exposed on this page.</footer>
+</div>
+</body>
+</html>

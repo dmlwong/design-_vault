@@ -1,0 +1,22 @@
+[
+  {
+    "date": "2026-07-21",
+    "areas": {
+      "Agents": 8,
+      "Skills": 4,
+      "Component contracts": 12,
+      "Pattern contracts": 11,
+      "Examples": 18,
+      "Platform profiles": 2,
+      "Total docs": 127
+    },
+    "status": {
+      "stable": 37,
+      "in-review": 72,
+      "draft": 14
+    },
+    "stale": 0,
+    "malformed": 0,
+    "integrity_ok": true
+  }
+]

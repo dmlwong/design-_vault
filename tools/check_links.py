@@ -35,6 +35,9 @@ CHECK_EXTENSIONS = (".md", ".tsx", ".py", ".css", ".png", ".canvas", ".base")
 
 SKIP_DIRS = {".git", ".obsidian", "_archive"}
 SKIP_TREES = ("_benchmarks/results",)  # historical artifacts, not living docs
+# Generated reports (tools/vault_health.py) — not authored docs; excluded from
+# reference checking and the graph layer.
+SKIP_FILES = {"HEALTH.md"}
 
 # References into the product repo or scratch areas — not resolvable here.
 EXTERNAL_PREFIXES = (
@@ -108,6 +111,8 @@ def iter_docs() -> list[Path]:
         if any(part in SKIP_DIRS for part in rel.parts):
             continue
         if any(rel.as_posix().startswith(tree) for tree in SKIP_TREES):
+            continue
+        if rel.as_posix() in SKIP_FILES:
             continue
         docs.append(path)
     return docs
