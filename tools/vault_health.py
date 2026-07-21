@@ -64,6 +64,20 @@ CONTRACT_AREAS = {
 }
 AREA_ORDER = ("Agents", "Skills", "Component contracts", "Pattern contracts",
               "Examples", "Platform profiles", "Total docs")
+# Cards shown in the dashboard grid (Total is promoted into the hero line).
+CARD_ORDER = ("Agents", "Skills", "Component contracts", "Pattern contracts",
+              "Examples", "Platform profiles")
+
+# Plain-language gloss per area, so a stakeholder who doesn't know the vault can
+# still read the dashboard. Generic (safe for the public page).
+AREA_GLOSS = {
+    "Agents": "AI agents that build & review designs",
+    "Skills": "Guided workflows the team runs",
+    "Component contracts": "Specs for reusable UI components",
+    "Pattern contracts": "Specs for page-level layouts",
+    "Examples": "Reference screens to build from",
+    "Platform profiles": "The products the vault serves",
+}
 
 # Which areas may reveal their item names on the *public* page. Agents, skills,
 # components and patterns are generic design-system vocabulary; examples and
@@ -71,6 +85,21 @@ AREA_ORDER = ("Agents", "Skills", "Component contracts", "Pattern contracts",
 PUBLIC_EXPANDABLE = {"Agents", "Skills", "Component contracts", "Pattern contracts"}
 # The private Artifact may expand everything with items (never the Total).
 PRIVATE_EXPANDABLE = PUBLIC_EXPANDABLE | {"Examples", "Platform profiles"}
+
+# Plain-language names + one-liners for the technical integrity checks.
+CHECK_LABELS = {
+    "export self-check": ("All required files present", "Nothing the system depends on is missing."),
+    "link check": ("Every internal link works", "No broken references between documents."),
+    "frontmatter lint": ("Document metadata is valid", "Every doc is tagged and dated correctly."),
+    "graph links": ("Navigation index up to date", "The cross-links between docs are current."),
+}
+
+# What each maturity status means, in plain words (for the legend).
+STATUS_MEANING = {
+    "stable": "reviewed & approved",
+    "in-review": "being worked on",
+    "draft": "just started",
+}
 
 # Gating tools run for the integrity read-out (name -> argv).
 INTEGRITY_CHECKS = {
@@ -374,66 +403,83 @@ STYLE = """
     box-shadow:0 0 0 4px color-mix(in srgb,var(--verdict) 22%,transparent);flex:none}
   .banner .verdict{font-size:17px;font-weight:650}
   .banner .meta{color:var(--muted);font-size:13px;margin-left:auto;text-align:right}
-  section{margin-top:28px}
-  h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-    font-weight:600;margin:0 0 14px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .banner .summary-line{color:var(--muted);font-size:13.5px;margin-top:3px;
+    font-variant-numeric:tabular-nums}
+  section{margin-top:34px}
+  .s-head{margin:0 0 4px;font-size:16px;font-weight:650;letter-spacing:-.01em}
+  .s-sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .kpi,details.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    box-shadow:var(--shadow)}
-  .kpi{padding:18px 16px}
-  .kpi.total{grid-column:span 2;background:
-    linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,var(--panel)),var(--panel))}
-  .kpi .n{font-size:32px;font-weight:650;letter-spacing:-.02em;line-height:1}
-  .kpi .k{font-size:12.5px;color:var(--muted);margin-top:8px}
-  .kpi.total .n{color:var(--accent)}
+    box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .kpi{padding:17px 17px 18px}
+  .kpi .n,details.kpi .n{font-size:29px;font-weight:650;letter-spacing:-.02em;line-height:1}
+  .kpi .k,details.kpi .k{font-size:14px;font-weight:650;margin-top:9px}
+  .gloss{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+  /* Expandable cards read as controls: accent hint + hover lift. */
   details.kpi{padding:0}
-  details.kpi>summary{padding:18px 16px;cursor:pointer;list-style:none;position:relative}
+  details.kpi>summary{padding:17px 17px 16px;cursor:pointer;list-style:none;
+    display:flex;flex-direction:column;border-radius:14px}
   details.kpi>summary::-webkit-details-marker{display:none}
-  details.kpi>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
-  details.kpi .chev{position:absolute;top:16px;right:15px;color:var(--muted);font-size:15px;
-    transition:transform .15s ease}
-  details.kpi[open]{grid-column:1/-1}
-  details.kpi[open] .chev{transform:rotate(90deg)}
-  .items{list-style:none;margin:0;padding:0 16px 14px;display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 18px;
-    max-height:280px;overflow:auto}
+  details.kpi>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  details.kpi{transition:border-color .12s ease,transform .12s ease}
+  details.kpi:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .expand-hint{margin-top:12px;font-size:12px;font-weight:650;color:var(--accent);
+    display:flex;align-items:center;gap:6px}
+  .expand-hint .chev{transition:transform .15s ease;font-size:14px;line-height:1}
+  details.kpi[open]{grid-column:1/-1;transform:none}
+  details.kpi[open] .expand-hint .chev{transform:rotate(90deg)}
+  details.kpi[open] .expand-hint .lbl-open{display:inline}
+  details.kpi[open] .expand-hint .lbl-closed{display:none}
+  .expand-hint .lbl-open{display:none}
+  .items{list-style:none;margin:0;padding:2px 17px 16px;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:2px 20px;
+    max-height:300px;overflow:auto}
   .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+    padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
   .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
   .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
   .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
   .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
-  @media (prefers-reduced-motion:reduce){details.kpi .chev{transition:none}}
+  @media (prefers-reduced-motion:reduce){
+    details.kpi,details.kpi:hover,.expand-hint .chev{transition:none;transform:none}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:22px;box-shadow:var(--shadow)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 16px;padding-bottom:16px;
+    border-bottom:1px solid var(--line)}
+  .legend .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .legend .lg b{color:var(--ink);font-weight:600}
+  .legend .sw{width:9px;height:9px;border-radius:2px;flex:none}
   .row{display:flex;align-items:center;gap:14px;padding:11px 0}
   .row+.row{border-top:1px solid var(--line)}
   .row .name{width:96px;font-size:13.5px;font-weight:550}
-  .swatch{width:9px;height:9px;border-radius:2px;flex:none}
   .track{flex:1;height:9px;background:var(--track);border-radius:999px;overflow:hidden}
   .fill{display:block;height:100%;border-radius:999px}
   .row .val{width:104px;text-align:right;font-size:13.5px;color:var(--muted)}
   .row .val b{color:var(--ink);font-weight:600}
-  .cap{color:var(--muted);font-size:12.5px;margin:0 0 16px}
-  .split{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
-  .chips{display:flex;flex-wrap:wrap;gap:9px}
-  .chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:8px 13px;
-    border-radius:10px;border:1px solid var(--line);background:var(--panel-2)}
-  .chip .tick{color:var(--stable);font-weight:700}
-  .chip .cross{color:var(--warn);font-weight:700}
-  .fresh{display:flex;gap:26px}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
+  .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    font-size:12px;font-weight:700;margin-top:1px}
+  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+  .check .ct{font-weight:600}
+  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .fresh{display:flex;gap:16px;flex-wrap:wrap}
+  .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
   .fresh .item .n{font-size:26px;font-weight:650}
-  .fresh .item .k{font-size:12.5px;color:var(--muted);margin-top:3px}
-  .note{color:var(--muted);font-size:12.5px;margin-top:12px;padding-top:14px;
-    border-top:1px dashed var(--line)}
+  .fresh .item .k{font-size:13px;font-weight:600}
+  .fresh .item .d{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .fresh .item.good .n{color:var(--stable)}
   .spark{width:100%;height:56px}
   .spark path{fill:none;stroke:var(--accent);stroke-width:2}
-  footer{margin-top:30px;color:var(--muted);font-size:12px;text-align:center}
+  .cap{color:var(--muted);font-size:12.5px;margin:0}
+  footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .kpi.total{grid-column:span 2}.split{grid-template-columns:1fr}
+    .checks{grid-template-columns:1fr}
     .banner .meta{margin-left:0;text-align:left}}
 """
 
@@ -445,22 +491,27 @@ def _status_pill(status: str | None) -> str:
     return f'<span class="pill {cls}">{html.escape(status)}</span>'
 
 
-def _card(label: str, count: int, delta: str, inventory: dict, expandable: set[str]) -> str:
+def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
     esc = html.escape(label)
+    gloss = html.escape(AREA_GLOSS.get(label, ""))
     if label in expandable and inventory.get(label):
         items = "".join(
             f'<li><span class="nm">{html.escape(it["name"])}</span>'
             f'{_status_pill(it["status"])}</li>'
             for it in inventory[label]
         )
+        hint = (f'<span class="expand-hint">'
+                f'<span class="chev">›</span>'
+                f'<span class="lbl-closed">See all {count}</span>'
+                f'<span class="lbl-open">Hide list</span></span>')
         return (
             f'<details class="kpi">'
             f'<summary><span class="n mono">{count}</span>'
-            f'<span class="k">{esc}{delta}</span><span class="chev">›</span></summary>'
+            f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</summary>'
             f'<ul class="items">{items}</ul></details>'
         )
-    cls = "kpi total" if label == "Total docs" else "kpi"
-    return f'<div class="{cls}"><div class="n mono">{count}</div><div class="k">{esc}{delta}</div></div>'
+    return (f'<div class="kpi"><div class="n mono">{count}</div>'
+            f'<div class="k">{esc}</div><div class="gloss">{gloss}</div></div>')
 
 
 def _sparkline(points: list[int]) -> str:
@@ -485,31 +536,47 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     vcolor = "var(--stable)" if healthy else "var(--warn)"
     vtext = "Healthy" if healthy else "Needs attention"
 
-    cards = "".join(
-        _card(label, a[label], "", inv, expandable) for label in AREA_ORDER
-    )
+    cards = "".join(_card(label, a[label], inv, expandable) for label in CARD_ORDER)
 
     def bar(key: str, name: str) -> str:
         pct = round(100 * s[key] / total)
         color = {"stable": "var(--stable)", "in-review": "var(--review)",
                  "draft": "var(--draft)"}[key]
-        return (f'<div class="row"><span class="swatch" style="background:{color}"></span>'
-                f'<span class="name">{name}</span>'
+        return (f'<div class="row"><span class="name">{name}</span>'
                 f'<span class="track"><span class="fill" style="width:{pct}%;background:{color}"></span></span>'
                 f'<span class="val"><b>{s[key]}</b> · {pct}%</span></div>')
 
-    integ = "".join(
-        f'<span class="chip"><span class="{"tick" if ok else "cross"}">'
-        f'{"✓" if ok else "✕"}</span> {html.escape(name.title())}</span>'
+    legend = "".join(
+        f'<span class="lg"><span class="sw" style="background:{c}"></span>'
+        f'<b>{n}</b> — {STATUS_MEANING[k]}</span>'
+        for k, n, c in (("stable", "Stable", "var(--stable)"),
+                        ("in-review", "In review", "var(--review)"),
+                        ("draft", "Draft", "var(--draft)"))
+    )
+
+    checks = "".join(
+        f'<div class="check {"ok" if ok else "bad"}"><span class="mk">{"✓" if ok else "✕"}</span>'
+        f'<span><span class="ct">{html.escape(CHECK_LABELS.get(name, (name, ""))[0])}</span>'
+        f'<span class="cd">{html.escape(CHECK_LABELS.get(name, (name, ""))[1])}</span></span></div>'
         for name, ok in scanned["integrity"].items()
     )
-    integ_note = ("All four structural checks pass. These are the same gates CI enforces on "
-                  "every push." if all(scanned["integrity"].values())
-                  else "One or more structural checks are failing — see the internal report.")
+    n_fail = sum(1 for ok in scanned["integrity"].values() if not ok)
+    checks_sub = ("Run automatically on every change — all passing."
+                  if n_fail == 0 else f"{n_fail} failing — see the internal report.")
 
+    # Plain-language hero summary — the at-a-glance answer.
+    overdue = len(scanned["stale"]) + len(scanned["malformed"])
+    summary = " · ".join([
+        f"{a['Total docs']} documents",
+        "all checks passing" if n_fail == 0 else f"{n_fail} check{'s' if n_fail != 1 else ''} failing",
+        "nothing overdue" if overdue == 0 else f"{overdue} item{'s' if overdue != 1 else ''} need attention",
+    ])
+
+    stale_good = "good" if not scanned["stale"] else "bad"
+    mal_good = "good" if not scanned["malformed"] else "bad"
     spark = _sparkline([h["areas"].get("Total docs", 0) for h in history])
-    hint = ("Click Agents, Skills, Component or Pattern contracts to see what's inside."
-            if public else "Click any area to see what's inside.")
+    reveal = ("Agents, Skills, Components and Patterns"
+              if public else "Every card")
 
     return f"""<div class="wrap">
   <header>
@@ -517,48 +584,58 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     <h1>Vault Health</h1>
     <div class="banner" style="--verdict:{vcolor}">
       <span class="dot"></span>
-      <span class="verdict">{vtext}</span>
-      <span class="meta">Snapshot {scanned['date']} · regenerated daily<br>Aggregate view — no internal content exposed</span>
+      <div>
+        <div class="verdict">{vtext}</div>
+        <div class="summary-line">{summary}</div>
+      </div>
+      <span class="meta">Updated {scanned['date']}<br>Refreshes daily</span>
     </div>
   </header>
 
   <section>
-    <h2>Contents — {hint}</h2>
+    <h2 class="s-head">What's inside</h2>
+    <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
     <div class="kpis">{cards}</div>
   </section>
 
   <section>
-    <h2>Maturity</h2>
+    <h2 class="s-head">How ready it is</h2>
+    <p class="s-sub">Where the {scanned['status_total']} documents sit on the way to approved. A large
+      in-review share is normal while the team is actively building the vault.</p>
     <div class="panel">
-      <p class="cap">{scanned['status_total']} documents carry a status field. Most of the vault is
-        still in review — expected while contributors are actively adding context.</p>
+      <div class="legend">{legend}</div>
       {bar('stable','Stable')}{bar('in-review','In review')}{bar('draft','Draft')}
     </div>
   </section>
 
   <section>
-    <h2>Integrity &amp; freshness</h2>
-    <div class="split">
-      <div class="panel">
-        <div class="chips">{integ}</div>
-        <p class="note">{integ_note}</p>
-      </div>
-      <div class="panel">
-        <div class="fresh">
-          <div class="item"><div class="n mono">{len(scanned['stale'])}</div><div class="k">Stale &gt; {STALE_AFTER_DAYS} days</div></div>
-          <div class="item"><div class="n mono">{len(scanned['malformed'])}</div><div class="k">Malformed frontmatter</div></div>
-        </div>
-        <p class="note">Nothing overdue for review; every governed doc has valid frontmatter.</p>
+    <h2 class="s-head">Is anything wrong?</h2>
+    <p class="s-sub">{checks_sub}</p>
+    <div class="panel">
+      <div class="checks">{checks}</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Needs attention</h2>
+    <p class="s-sub">Documents that have drifted out of good standing.</p>
+    <div class="panel">
+      <div class="fresh">
+        <div class="item {stale_good}"><div class="n mono">{len(scanned['stale'])}</div>
+          <div><div class="k">Overdue for review</div><div class="d">Not looked at in {STALE_AFTER_DAYS}+ days</div></div></div>
+        <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
+          <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
       </div>
     </div>
   </section>
 
   <section>
-    <h2>Trend</h2>
+    <h2 class="s-head">Trend</h2>
+    <p class="s-sub">How the vault is growing over time.</p>
     <div class="panel">{spark}</div>
   </section>
 
-  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault · never internal file paths</footer>
+  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div>"""
 
 

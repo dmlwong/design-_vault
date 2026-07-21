@@ -44,66 +44,83 @@
     box-shadow:0 0 0 4px color-mix(in srgb,var(--verdict) 22%,transparent);flex:none}
   .banner .verdict{font-size:17px;font-weight:650}
   .banner .meta{color:var(--muted);font-size:13px;margin-left:auto;text-align:right}
-  section{margin-top:28px}
-  h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-    font-weight:600;margin:0 0 14px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .banner .summary-line{color:var(--muted);font-size:13.5px;margin-top:3px;
+    font-variant-numeric:tabular-nums}
+  section{margin-top:34px}
+  .s-head{margin:0 0 4px;font-size:16px;font-weight:650;letter-spacing:-.01em}
+  .s-sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .kpi,details.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    box-shadow:var(--shadow)}
-  .kpi{padding:18px 16px}
-  .kpi.total{grid-column:span 2;background:
-    linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,var(--panel)),var(--panel))}
-  .kpi .n{font-size:32px;font-weight:650;letter-spacing:-.02em;line-height:1}
-  .kpi .k{font-size:12.5px;color:var(--muted);margin-top:8px}
-  .kpi.total .n{color:var(--accent)}
+    box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .kpi{padding:17px 17px 18px}
+  .kpi .n,details.kpi .n{font-size:29px;font-weight:650;letter-spacing:-.02em;line-height:1}
+  .kpi .k,details.kpi .k{font-size:14px;font-weight:650;margin-top:9px}
+  .gloss{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+  /* Expandable cards read as controls: accent hint + hover lift. */
   details.kpi{padding:0}
-  details.kpi>summary{padding:18px 16px;cursor:pointer;list-style:none;position:relative}
+  details.kpi>summary{padding:17px 17px 16px;cursor:pointer;list-style:none;
+    display:flex;flex-direction:column;border-radius:14px}
   details.kpi>summary::-webkit-details-marker{display:none}
-  details.kpi>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
-  details.kpi .chev{position:absolute;top:16px;right:15px;color:var(--muted);font-size:15px;
-    transition:transform .15s ease}
-  details.kpi[open]{grid-column:1/-1}
-  details.kpi[open] .chev{transform:rotate(90deg)}
-  .items{list-style:none;margin:0;padding:0 16px 14px;display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 18px;
-    max-height:280px;overflow:auto}
+  details.kpi>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  details.kpi{transition:border-color .12s ease,transform .12s ease}
+  details.kpi:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .expand-hint{margin-top:12px;font-size:12px;font-weight:650;color:var(--accent);
+    display:flex;align-items:center;gap:6px}
+  .expand-hint .chev{transition:transform .15s ease;font-size:14px;line-height:1}
+  details.kpi[open]{grid-column:1/-1;transform:none}
+  details.kpi[open] .expand-hint .chev{transform:rotate(90deg)}
+  details.kpi[open] .expand-hint .lbl-open{display:inline}
+  details.kpi[open] .expand-hint .lbl-closed{display:none}
+  .expand-hint .lbl-open{display:none}
+  .items{list-style:none;margin:0;padding:2px 17px 16px;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:2px 20px;
+    max-height:300px;overflow:auto}
   .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+    padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
   .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
   .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
   .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
   .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
-  @media (prefers-reduced-motion:reduce){details.kpi .chev{transition:none}}
+  @media (prefers-reduced-motion:reduce){
+    details.kpi,details.kpi:hover,.expand-hint .chev{transition:none;transform:none}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:22px;box-shadow:var(--shadow)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 16px;padding-bottom:16px;
+    border-bottom:1px solid var(--line)}
+  .legend .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .legend .lg b{color:var(--ink);font-weight:600}
+  .legend .sw{width:9px;height:9px;border-radius:2px;flex:none}
   .row{display:flex;align-items:center;gap:14px;padding:11px 0}
   .row+.row{border-top:1px solid var(--line)}
   .row .name{width:96px;font-size:13.5px;font-weight:550}
-  .swatch{width:9px;height:9px;border-radius:2px;flex:none}
   .track{flex:1;height:9px;background:var(--track);border-radius:999px;overflow:hidden}
   .fill{display:block;height:100%;border-radius:999px}
   .row .val{width:104px;text-align:right;font-size:13.5px;color:var(--muted)}
   .row .val b{color:var(--ink);font-weight:600}
-  .cap{color:var(--muted);font-size:12.5px;margin:0 0 16px}
-  .split{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
-  .chips{display:flex;flex-wrap:wrap;gap:9px}
-  .chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:8px 13px;
-    border-radius:10px;border:1px solid var(--line);background:var(--panel-2)}
-  .chip .tick{color:var(--stable);font-weight:700}
-  .chip .cross{color:var(--warn);font-weight:700}
-  .fresh{display:flex;gap:26px}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
+  .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    font-size:12px;font-weight:700;margin-top:1px}
+  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+  .check .ct{font-weight:600}
+  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .fresh{display:flex;gap:16px;flex-wrap:wrap}
+  .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
   .fresh .item .n{font-size:26px;font-weight:650}
-  .fresh .item .k{font-size:12.5px;color:var(--muted);margin-top:3px}
-  .note{color:var(--muted);font-size:12.5px;margin-top:12px;padding-top:14px;
-    border-top:1px dashed var(--line)}
+  .fresh .item .k{font-size:13px;font-weight:600}
+  .fresh .item .d{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .fresh .item.good .n{color:var(--stable)}
   .spark{width:100%;height:56px}
   .spark path{fill:none;stroke:var(--accent);stroke-width:2}
-  footer{margin-top:30px;color:var(--muted);font-size:12px;text-align:center}
+  .cap{color:var(--muted);font-size:12.5px;margin:0}
+  footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .kpi.total{grid-column:span 2}.split{grid-template-columns:1fr}
+    .checks{grid-template-columns:1fr}
     .banner .meta{margin-left:0;text-align:left}}
 </style>
 </head>
@@ -114,48 +131,58 @@
     <h1>Vault Health</h1>
     <div class="banner" style="--verdict:var(--stable)">
       <span class="dot"></span>
-      <span class="verdict">Healthy</span>
-      <span class="meta">Snapshot 2026-07-21 · regenerated daily<br>Aggregate view — no internal content exposed</span>
+      <div>
+        <div class="verdict">Healthy</div>
+        <div class="summary-line">127 documents · all checks passing · nothing overdue</div>
+      </div>
+      <span class="meta">Updated 2026-07-21<br>Refreshes daily</span>
     </div>
   </header>
 
   <section>
-    <h2>Contents — Click Agents, Skills, Component or Pattern contracts to see what's inside.</h2>
-    <div class="kpis"><details class="kpi"><summary><span class="n mono">8</span><span class="k">Agents</span><span class="chev">›</span></summary><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in-review</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">stable</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">stable</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">stable</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">stable</span></li><li><span class="nm">porter</span><span class="pill s-review">in-review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in-review</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in-review</span></li></ul></details><details class="kpi"><summary><span class="n mono">4</span><span class="k">Skills</span><span class="chev">›</span></summary><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li></ul></details><details class="kpi"><summary><span class="n mono">12</span><span class="k">Component contracts</span><span class="chev">›</span></summary><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in-review</span></li><li><span class="nm">button</span><span class="pill s-review">in-review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in-review</span></li><li><span class="nm">chip</span><span class="pill s-review">in-review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in-review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in-review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in-review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in-review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in-review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in-review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in-review</span></li></ul></details><details class="kpi"><summary><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="chev">›</span></summary><ul class="items"><li><span class="nm">analytics-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">config-wizard</span><span class="pill s-review">in-review</span></li><li><span class="nm">focus-mode-results</span><span class="pill s-review">in-review</span></li><li><span class="nm">guided-conversational-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">home-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">list-detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">lovable-port</span><span class="pill s-review">in-review</span></li><li><span class="nm">review-and-approve-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">settings-form-validation</span><span class="pill s-review">in-review</span></li><li><span class="nm">tool-hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">work-card</span><span class="pill s-review">in-review</span></li></ul></details><div class="kpi"><div class="n mono">18</div><div class="k">Examples</div></div><div class="kpi"><div class="n mono">2</div><div class="k">Platform profiles</div></div><div class="kpi total"><div class="n mono">127</div><div class="k">Total docs</div></div></div>
+    <h2 class="s-head">What's inside</h2>
+    <p class="s-sub">The building blocks the vault holds. Agents, Skills, Components and Patterns can be opened to list what's in them.</p>
+    <div class="kpis"><details class="kpi"><summary><span class="n mono">8</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span><span class="lbl-closed">See all 8</span><span class="lbl-open">Hide list</span></span></summary><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in-review</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">stable</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">stable</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">stable</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">stable</span></li><li><span class="nm">porter</span><span class="pill s-review">in-review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in-review</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in-review</span></li></ul></details><details class="kpi"><summary><span class="n mono">4</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span><span class="lbl-closed">See all 4</span><span class="lbl-open">Hide list</span></span></summary><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li></ul></details><details class="kpi"><summary><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Specs for reusable UI components</span><span class="expand-hint"><span class="chev">›</span><span class="lbl-closed">See all 12</span><span class="lbl-open">Hide list</span></span></summary><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in-review</span></li><li><span class="nm">button</span><span class="pill s-review">in-review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in-review</span></li><li><span class="nm">chip</span><span class="pill s-review">in-review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in-review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in-review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in-review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in-review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in-review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in-review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in-review</span></li></ul></details><details class="kpi"><summary><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Specs for page-level layouts</span><span class="expand-hint"><span class="chev">›</span><span class="lbl-closed">See all 11</span><span class="lbl-open">Hide list</span></span></summary><ul class="items"><li><span class="nm">analytics-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">config-wizard</span><span class="pill s-review">in-review</span></li><li><span class="nm">focus-mode-results</span><span class="pill s-review">in-review</span></li><li><span class="nm">guided-conversational-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">home-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">list-detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">lovable-port</span><span class="pill s-review">in-review</span></li><li><span class="nm">review-and-approve-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">settings-form-validation</span><span class="pill s-review">in-review</span></li><li><span class="nm">tool-hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">work-card</span><span class="pill s-review">in-review</span></li></ul></details><div class="kpi"><div class="n mono">18</div><div class="k">Examples</div><div class="gloss">Reference screens to build from</div></div><div class="kpi"><div class="n mono">2</div><div class="k">Platform profiles</div><div class="gloss">The products the vault serves</div></div></div>
   </section>
 
   <section>
-    <h2>Maturity</h2>
+    <h2 class="s-head">How ready it is</h2>
+    <p class="s-sub">Where the 123 documents sit on the way to approved. A large
+      in-review share is normal while the team is actively building the vault.</p>
     <div class="panel">
-      <p class="cap">123 documents carry a status field. Most of the vault is
-        still in review — expected while contributors are actively adding context.</p>
-      <div class="row"><span class="swatch" style="background:var(--stable)"></span><span class="name">Stable</span><span class="track"><span class="fill" style="width:30%;background:var(--stable)"></span></span><span class="val"><b>37</b> · 30%</span></div><div class="row"><span class="swatch" style="background:var(--review)"></span><span class="name">In review</span><span class="track"><span class="fill" style="width:59%;background:var(--review)"></span></span><span class="val"><b>72</b> · 59%</span></div><div class="row"><span class="swatch" style="background:var(--draft)"></span><span class="name">Draft</span><span class="track"><span class="fill" style="width:11%;background:var(--draft)"></span></span><span class="val"><b>14</b> · 11%</span></div>
+      <div class="legend"><span class="lg"><span class="sw" style="background:var(--stable)"></span><b>Stable</b> — reviewed & approved</span><span class="lg"><span class="sw" style="background:var(--review)"></span><b>In review</b> — being worked on</span><span class="lg"><span class="sw" style="background:var(--draft)"></span><b>Draft</b> — just started</span></div>
+      <div class="row"><span class="name">Stable</span><span class="track"><span class="fill" style="width:30%;background:var(--stable)"></span></span><span class="val"><b>37</b> · 30%</span></div><div class="row"><span class="name">In review</span><span class="track"><span class="fill" style="width:59%;background:var(--review)"></span></span><span class="val"><b>72</b> · 59%</span></div><div class="row"><span class="name">Draft</span><span class="track"><span class="fill" style="width:11%;background:var(--draft)"></span></span><span class="val"><b>14</b> · 11%</span></div>
     </div>
   </section>
 
   <section>
-    <h2>Integrity &amp; freshness</h2>
-    <div class="split">
-      <div class="panel">
-        <div class="chips"><span class="chip"><span class="tick">✓</span> Export Self-Check</span><span class="chip"><span class="tick">✓</span> Link Check</span><span class="chip"><span class="tick">✓</span> Frontmatter Lint</span><span class="chip"><span class="tick">✓</span> Graph Links</span></div>
-        <p class="note">All four structural checks pass. These are the same gates CI enforces on every push.</p>
-      </div>
-      <div class="panel">
-        <div class="fresh">
-          <div class="item"><div class="n mono">0</div><div class="k">Stale &gt; 90 days</div></div>
-          <div class="item"><div class="n mono">0</div><div class="k">Malformed frontmatter</div></div>
-        </div>
-        <p class="note">Nothing overdue for review; every governed doc has valid frontmatter.</p>
+    <h2 class="s-head">Is anything wrong?</h2>
+    <p class="s-sub">Run automatically on every change — all passing.</p>
+    <div class="panel">
+      <div class="checks"><div class="check ok"><span class="mk">✓</span><span><span class="ct">All required files present</span><span class="cd">Nothing the system depends on is missing.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Every internal link works</span><span class="cd">No broken references between documents.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Document metadata is valid</span><span class="cd">Every doc is tagged and dated correctly.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Navigation index up to date</span><span class="cd">The cross-links between docs are current.</span></span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Needs attention</h2>
+    <p class="s-sub">Documents that have drifted out of good standing.</p>
+    <div class="panel">
+      <div class="fresh">
+        <div class="item good"><div class="n mono">0</div>
+          <div><div class="k">Overdue for review</div><div class="d">Not looked at in 90+ days</div></div></div>
+        <div class="item good"><div class="n mono">0</div>
+          <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
       </div>
     </div>
   </section>
 
   <section>
-    <h2>Trend</h2>
+    <h2 class="s-head">Trend</h2>
+    <p class="s-sub">How the vault is growing over time.</p>
     <div class="panel"><p class="cap" style="margin:0">This is the first daily snapshot. The trend line — document count and status mix over time — appears here once a few days of history accumulate, so you can watch whether the in-review backlog is clearing or growing.</p></div>
   </section>
 
-  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault · never internal file paths</footer>
+  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div>
 </body>
 </html>
