@@ -409,41 +409,54 @@ STYLE = """
   .s-head{margin:0 0 4px;font-size:16px;font-weight:650;letter-spacing:-.01em}
   .s-sub{margin:0 0 16px;color:var(--muted);font-size:13px}
   .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .kpi,details.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    box-shadow:var(--shadow);display:flex;flex-direction:column}
-  .kpi{padding:17px 17px 18px}
-  .kpi .n,details.kpi .n{font-size:29px;font-weight:650;letter-spacing:-.02em;line-height:1}
-  .kpi .k,details.kpi .k{font-size:14px;font-weight:650;margin-top:9px}
+  .kpi,.kpi-btn{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;padding:17px 17px 18px}
+  .kpi .n,.kpi-btn .n{font-size:29px;font-weight:650;letter-spacing:-.02em;line-height:1}
+  .kpi .k,.kpi-btn .k{font-size:14px;font-weight:650;margin-top:9px}
   .gloss{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
-  /* Expandable cards read as controls: accent hint + hover lift. */
-  details.kpi{padding:0}
-  details.kpi>summary{padding:17px 17px 16px;cursor:pointer;list-style:none;
-    display:flex;flex-direction:column;border-radius:14px}
-  details.kpi>summary::-webkit-details-marker{display:none}
-  details.kpi>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  details.kpi{transition:border-color .12s ease,transform .12s ease}
-  details.kpi:hover{border-color:var(--accent);transform:translateY(-1px)}
+  /* Expandable cards are buttons that open the slide-in drawer. */
+  .kpi-btn{cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%;
+    transition:border-color .12s ease,transform .12s ease}
+  .kpi-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .kpi-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .expand-hint{margin-top:12px;font-size:12px;font-weight:650;color:var(--accent);
     display:flex;align-items:center;gap:6px}
-  .expand-hint .chev{transition:transform .15s ease;font-size:14px;line-height:1}
-  details.kpi[open]{grid-column:1/-1;transform:none}
-  details.kpi[open] .expand-hint .chev{transform:rotate(90deg)}
-  details.kpi[open] .expand-hint .lbl-open{display:inline}
-  details.kpi[open] .expand-hint .lbl-closed{display:none}
-  .expand-hint .lbl-open{display:none}
-  .items{list-style:none;margin:0;padding:2px 17px 16px;display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:2px 20px;
-    max-height:300px;overflow:auto}
-  .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
-  .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .expand-hint .chev{font-size:14px;line-height:1}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
   .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
   .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
   .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  /* Slide-in drawer (left → right) + scrim. */
+  .scrim{position:fixed;inset:0;background:rgba(10,14,20,.45);opacity:0;visibility:hidden;
+    transition:opacity .28s ease,visibility 0s linear .28s;z-index:40}
+  .drawer{position:fixed;top:0;left:0;height:100dvh;width:400px;max-width:92vw;
+    background:var(--panel);border-right:1px solid var(--line);box-shadow:var(--shadow);
+    transform:translateX(-100%);visibility:hidden;z-index:41;display:flex;flex-direction:column;
+    transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s}
+  body.drawer-open .scrim{opacity:1;visibility:visible;transition:opacity .28s ease}
+  body.drawer-open .drawer{transform:translateX(0);visibility:visible;
+    transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .drawer .dhead{display:flex;align-items:center;gap:10px;padding:20px 20px 15px;
+    border-bottom:1px solid var(--line)}
+  .drawer .dhead h3{margin:0;font-size:15px;font-weight:650}
+  .drawer .dcount{font-size:12px;font-weight:650;color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:999px;padding:2px 9px}
+  .drawer-close{margin-left:auto;background:none;border:1px solid var(--line);border-radius:8px;
+    width:30px;height:30px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;
+    display:grid;place-items:center}
+  .drawer-close:hover{border-color:var(--accent);color:var(--ink)}
+  .drawer-close:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .drawer .dgloss{padding:14px 20px 0;color:var(--muted);font-size:12.5px}
+  .drawer-body{padding:10px 20px 24px;overflow:auto}
+  .items{list-style:none;margin:0;padding:0}
+  .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .items li:first-child{border-top:none}
+  .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   @media (prefers-reduced-motion:reduce){
-    details.kpi,details.kpi:hover,.expand-hint .chev{transition:none;transform:none}}
+    .kpi-btn,.kpi-btn:hover,.scrim,.drawer{transition:none;transform:none}
+    body.drawer-open .drawer{transition:none}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:22px;box-shadow:var(--shadow)}
   .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 16px;padding-bottom:16px;
@@ -495,23 +508,28 @@ def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
     esc = html.escape(label)
     gloss = html.escape(AREA_GLOSS.get(label, ""))
     if label in expandable and inventory.get(label):
-        items = "".join(
-            f'<li><span class="nm">{html.escape(it["name"])}</span>'
-            f'{_status_pill(it["status"])}</li>'
-            for it in inventory[label]
-        )
-        hint = (f'<span class="expand-hint">'
-                f'<span class="chev">›</span>'
-                f'<span class="lbl-closed">See all {count}</span>'
-                f'<span class="lbl-open">Hide list</span></span>')
+        hint = (f'<span class="expand-hint"><span class="chev">›</span>See all {count}</span>')
         return (
-            f'<details class="kpi">'
-            f'<summary><span class="n mono">{count}</span>'
-            f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</summary>'
-            f'<ul class="items">{items}</ul></details>'
+            f'<button type="button" class="kpi-btn" data-area="{esc}" '
+            f'aria-haspopup="dialog" aria-label="See all {count} {esc}">'
+            f'<span class="n mono">{count}</span>'
+            f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</button>'
         )
     return (f'<div class="kpi"><div class="n mono">{count}</div>'
             f'<div class="k">{esc}</div><div class="gloss">{gloss}</div></div>')
+
+
+def _panel_src(label: str, inventory: dict) -> str:
+    """Hidden per-area list the drawer clones on open."""
+    items = "".join(
+        f'<li><span class="nm">{html.escape(it["name"])}</span>'
+        f'{_status_pill(it["status"])}</li>'
+        for it in inventory[label]
+    )
+    return (f'<div class="panel-src" data-area="{html.escape(label)}" '
+            f'data-count="{len(inventory[label])}" '
+            f'data-gloss="{html.escape(AREA_GLOSS.get(label, ""))}" hidden>'
+            f'<ul class="items">{items}</ul></div>')
 
 
 def _sparkline(points: list[int]) -> str:
@@ -537,6 +555,10 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     vtext = "Healthy" if healthy else "Needs attention"
 
     cards = "".join(_card(label, a[label], inv, expandable) for label in CARD_ORDER)
+    panel_srcs = "".join(
+        _panel_src(label, inv) for label in CARD_ORDER
+        if label in expandable and inv.get(label)
+    )
 
     def bar(key: str, name: str) -> str:
         pct = round(100 * s[key] / total)
@@ -597,6 +619,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
     <div class="kpis">{cards}</div>
   </section>
+  <div hidden>{panel_srcs}</div>
 
   <section>
     <h2 class="s-head">How ready it is</h2>
@@ -636,7 +659,59 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   </section>
 
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
-</div>"""
+</div>
+
+<div class="scrim" hidden></div>
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+  <div class="dhead">
+    <h3 id="drawer-title"></h3>
+    <span class="dcount"></span>
+    <button type="button" class="drawer-close" aria-label="Close">&times;</button>
+  </div>
+  <p class="dgloss"></p>
+  <div class="drawer-body"></div>
+</aside>
+
+<script>
+(function(){{
+  var body=document.body,
+      scrim=document.querySelector('.scrim'),
+      drawer=document.querySelector('.drawer'),
+      title=drawer.querySelector('#drawer-title'),
+      count=drawer.querySelector('.dcount'),
+      gloss=drawer.querySelector('.dgloss'),
+      dbody=drawer.querySelector('.drawer-body'),
+      closeBtn=drawer.querySelector('.drawer-close'),
+      last=null;
+  function open(area){{
+    var src=document.querySelector('.panel-src[data-area="'+area+'"]');
+    if(!src) return;
+    title.textContent=area;
+    count.textContent=src.getAttribute('data-count');
+    gloss.textContent=src.getAttribute('data-gloss')||'';
+    dbody.innerHTML='';
+    dbody.appendChild(src.querySelector('.items').cloneNode(true));
+    scrim.hidden=false;
+    body.classList.add('drawer-open');
+    drawer.setAttribute('aria-hidden','false');
+    closeBtn.focus();
+  }}
+  function close(){{
+    body.classList.remove('drawer-open');
+    drawer.setAttribute('aria-hidden','true');
+    setTimeout(function(){{ scrim.hidden=true; }},280);
+    if(last) last.focus();
+  }}
+  document.querySelectorAll('.kpi-btn').forEach(function(btn){{
+    btn.addEventListener('click',function(){{ last=btn; open(btn.getAttribute('data-area')); }});
+  }});
+  closeBtn.addEventListener('click',close);
+  scrim.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){{
+    if(e.key==='Escape'&&body.classList.contains('drawer-open')) close();
+  }});
+}})();
+</script>"""
 
 
 def render_standalone(scanned: dict, history: list[dict], healthy: bool) -> str:
