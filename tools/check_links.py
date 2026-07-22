@@ -34,7 +34,9 @@ MANIFEST = ROOT / "design-brain" / "routing.json"
 CHECK_EXTENSIONS = (".md", ".tsx", ".py", ".css", ".png", ".canvas", ".base")
 
 SKIP_DIRS = {".git", ".obsidian", "_archive"}
-SKIP_TREES = ("_benchmarks/results",)  # historical artifacts, not living docs
+# Historical artifacts and generated projection bundles (tools/build_project_bundles.py)
+# — not authored, navigable notes; excluded from reference checking and the graph layer.
+SKIP_TREES = ("_benchmarks/results", "design-brain/projects")
 # Generated reports (tools/vault_health.py) — not authored docs; excluded from
 # reference checking and the graph layer.
 SKIP_FILES = {"HEALTH.md"}
