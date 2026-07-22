@@ -1,0 +1,42 @@
+[
+  {
+    "date": "2026-07-21",
+    "areas": {
+      "Agents": 10,
+      "Skills": 4,
+      "Component contracts": 12,
+      "Pattern contracts": 11,
+      "Examples": 18,
+      "Platform profiles": 2,
+      "Total docs": 135
+    },
+    "status": {
+      "stable": 38,
+      "in-review": 73,
+      "draft": 20
+    },
+    "stale": 0,
+    "malformed": 0,
+    "integrity_ok": true
+  },
+  {
+    "date": "2026-07-22",
+    "areas": {
+      "Agents": 10,
+      "Skills": 4,
+      "Component contracts": 12,
+      "Pattern contracts": 11,
+      "Examples": 18,
+      "Platform profiles": 2,
+      "Total docs": 138
+    },
+    "status": {
+      "stable": 38,
+      "in-review": 73,
+      "draft": 23
+    },
+    "stale": 0,
+    "malformed": 0,
+    "integrity_ok": true
+  }
+]

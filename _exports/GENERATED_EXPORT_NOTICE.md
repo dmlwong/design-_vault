@@ -20,4 +20,3 @@ python3 tools/export_brain.py --target /path/to/orbit-product --profile all
 ```
 
 Canonical source: shared Obsidian vault `Orbit Design Brain`.
-

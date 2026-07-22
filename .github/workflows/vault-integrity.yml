@@ -1,0 +1,117 @@
+name: Vault integrity
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # daily health tick (06:00 UTC) — runs the integrity checks, then the
+    # health job regenerates HEALTH.md / vault-health.html, commits the trend,
+    # and raises a soft drift alert. lessons-inbox triage stays a manual agent
+    # session by design (no API secrets in CI — see design-brain/orchestration.md)
+    - cron: "0 6 * * *"
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export self-check (all required Design Brain files present)
+        run: python3 tools/export_brain.py --self-check
+
+      - name: Link check (references + routing manifest)
+        run: python3 tools/check_links.py
+
+      - name: Frontmatter lint (required keys, status, dates, context tiers)
+        run: python3 tools/lint_frontmatter.py
+
+      - name: Graph links current (Obsidian footer blocks match references)
+        run: python3 tools/gen_graph_links.py --check
+
+      - name: Staleness report (informational — never fails the build)
+        run: python3 tools/lint_frontmatter.py --stale-report
+
+      # Drift-check against the product repo requires access to efficio-orbit.
+      # Wire it here (or in the product repo's CI) once a checkout/token is available:
+      #   python3 tools/export_brain.py --target <efficio-orbit checkout> --profile all --check
+
+  # Regenerate the health report, commit the trend, and raise a soft drift
+  # alert. Only runs on the default branch (scheduled ticks + pushes to main),
+  # so feature branches and PRs never commit a report. Pushes made with
+  # GITHUB_TOKEN do not retrigger workflows, so the daily commit cannot loop.
+  health:
+    needs: integrity
+    if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    env:
+      # Set in repo Actions secrets to publish the stakeholder page to the
+      # companion public repo (dmlwong/vault-health). Absent → publish is skipped.
+      HEALTH_PAGE_TOKEN: ${{ secrets.HEALTH_PAGE_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate health report
+        id: health
+        run: |
+          python3 tools/vault_health.py --json > health.json
+          cat health.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d = json.load(open("health.json"))
+          print(f"healthy={str(d['healthy']).lower()}")
+          PY
+          python3 -c "import json;print(chr(10).join(json.load(open('health.json'))['reasons']))" > health-reasons.txt
+
+      - name: Commit refreshed report (if changed)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add HEALTH.md vault-health.html tools/health_history.json
+          if git diff --cached --quiet; then
+            echo "No health changes to commit."
+          else
+            git commit -m "chore: refresh vault health report [skip ci]"
+            git push
+          fi
+
+      - name: Raise or clear drift alert
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create vault-health --color FBCA04 \
+            --description "Automated vault-health drift alert" 2>/dev/null || true
+          existing=$(gh issue list --label vault-health --state open \
+            --json number --jq '.[0].number // empty')
+          if [ "${{ steps.health.outputs.healthy }}" = "false" ]; then
+            body="$(printf 'Automated vault-health check reported drift on %s (UTC):\n\n%s\n\nSee HEALTH.md for the full report.' \
+              "$(date -u +%F)" "$(cat health-reasons.txt)")"
+            if [ -n "$existing" ]; then
+              gh issue comment "$existing" --body "$body"
+            else
+              gh issue create --title "Vault health: attention needed" \
+                --label vault-health --body "$body"
+            fi
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" \
+              --comment "Vault health returned to HEALTHY on $(date -u +%F). Closing."
+          fi
+
+      - name: Publish stakeholder page
+        if: ${{ env.HEALTH_PAGE_TOKEN != '' }}
+        run: |
+          git clone --depth 1 \
+            "https://x-access-token:${HEALTH_PAGE_TOKEN}@github.com/dmlwong/vault-health.git" /tmp/vh
+          cp vault-health.html /tmp/vh/index.html
+          cd /tmp/vh
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Stakeholder page unchanged."
+          else
+            git commit -m "Update vault health page"
+            git push
+          fi

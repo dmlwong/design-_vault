@@ -48,6 +48,9 @@ REQUIRED_FILES = [
     "design-brain/patterns/config-wizard.md",
     "design-brain/patterns/analytics-dashboard.md",
     "design-brain/patterns/review-and-approve-workflow.md",
+    "design-brain/patterns/settings-form-validation.md",
+    "design-brain/patterns/lovable-port.md",
+    "design-brain/patterns/work-card.md",
     "design-brain/examples/README.md",
     "design-brain/examples/connected-platform-home-shell-dashboard.md",
     "design-brain/examples/connected-platform-initiative-list-table.md",
@@ -63,8 +66,24 @@ REQUIRED_FILES = [
     "design-brain/examples/screenshots/orbit-client-connected-platform/manifest.md",
     "design-brain/lovable/knowledge-base.md",
     "design-brain/lovable/workspace-knowledge.md",
+    "design-brain/orchestration.md",
+    "design-brain/routing.json",
+    "design-brain/lessons/INBOX.md",
+    "design-brain/agents/design-reviewer.md",
+    "design-brain/agents/context-scout.md",
+    "design-brain/agents/vault-librarian.md",
+    "design-brain/agents/contract-extractor.md",
+    "design-brain/agents/component-builder.md",
+    "design-brain/agents/screen-builder.md",
+    "design-brain/agents/porter.md",
+    "design-brain/agents/benchmark-judge.md",
+    "design-brain/agents/brief-reviewer.md",
+    "design-brain/agents/brief-coach.md",
+    "design-brain/brief-contract.md",
     "discovery/_TEMPLATE.md",
     "discovery/README.md",
+    "discovery/briefs/_TEMPLATE.md",
+    "discovery/briefs/README.md",
 ]
 
 REQUIRED_DIRS = [
@@ -78,11 +97,34 @@ REQUIRED_DIRS = [
     "design-brain/examples/screenshots/orbit-client-connected-platform",
     "design-brain/skills",
     "design-brain/agents",
+    "design-brain/lessons",
     "design-brain/lovable",
     "discovery",
 ]
 
 EXCLUDED_NAMES = {".DS_Store", "__pycache__"}
+
+# Restricted or personal content that must NOT leave the vault by default.
+# - Platform screenshots are in-review and restricted until design-system owners
+#   approve sanitization (see the screenshot manifests). Manifests themselves export.
+# - _review WIP/state files carry personal paths and in-flight work, not brain content.
+# Pass --include-restricted only after sanitization approval.
+RESTRICTED_PREFIXES = (
+    "design-brain/examples/screenshots/connected-platform/",
+    "design-brain/examples/screenshots/orbit-client-connected-platform/",
+)
+RESTRICTED_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif")
+PRIVATE_REL_PATHS = {
+    "_review/STATE.md",
+    "_review/cp-personas-WIP.md",
+    "_review/cycle2-craft-WIP.md",
+}
+
+
+def is_restricted(rel_posix: str) -> bool:
+    return rel_posix.startswith(RESTRICTED_PREFIXES) and rel_posix.endswith(
+        RESTRICTED_SUFFIXES
+    )
 
 
 @dataclass(frozen=True)
@@ -93,7 +135,10 @@ class CopyOp:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--target", required=True, help="Product repo path to export into.")
+    parser.add_argument(
+        "--target",
+        help="Product repo path to export into. Required unless --self-check is used.",
+    )
     parser.add_argument(
         "--profile",
         choices=["all", "codex", "claude", "lovable"],
@@ -101,6 +146,22 @@ def parse_args() -> argparse.Namespace:
         help="Export profile. 'all' is the normal product-repo pack.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print changes without writing.")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="CI drift-check: like --dry-run, but exit 1 if the target differs from the vault.",
+    )
+    parser.add_argument(
+        "--include-restricted",
+        action="store_true",
+        help="Also export restricted screenshots and private _review files. "
+        "Only use after design-system owners approve sanitization.",
+    )
+    parser.add_argument(
+        "--self-check",
+        action="store_true",
+        help="Validate that all required Design Brain files exist, then exit (no target needed).",
+    )
     return parser.parse_args()
 
 
@@ -121,37 +182,52 @@ def ensure_required() -> None:
         fail("Missing required Design Brain files:\n" + "\n".join(f"- {item}" for item in missing))
 
 
-def iter_tree(source_dir: Path, destination_dir: Path) -> list[CopyOp]:
+def iter_tree(
+    source_dir: Path, destination_dir: Path, include_restricted: bool = False
+) -> list[CopyOp]:
     ops: list[CopyOp] = []
     for source in sorted(source_dir.rglob("*")):
         if any(part in EXCLUDED_NAMES for part in source.parts):
             continue
         if source.is_dir():
             continue
+        root_rel = source.relative_to(ROOT).as_posix()
+        if not include_restricted and (
+            is_restricted(root_rel) or root_rel in PRIVATE_REL_PATHS
+        ):
+            continue
         rel = source.relative_to(source_dir)
         ops.append(CopyOp(source, destination_dir / rel))
     return ops
 
 
-def build_ops(target: Path, profile: str) -> list[CopyOp]:
+def build_ops(target: Path, profile: str, include_restricted: bool = False) -> list[CopyOp]:
     ops: list[CopyOp] = []
 
     if profile in {"all", "codex", "claude"}:
         ops.append(CopyOp(ROOT / "AGENTS.md", target / "AGENTS.md"))
-        ops.extend(iter_tree(ROOT / "design-brain", target / "design-brain"))
-        ops.extend(iter_tree(ROOT / "_benchmarks", target / "design-brain" / "_benchmarks"))
-        ops.extend(iter_tree(ROOT / "_review", target / "design-brain" / "_review"))
-        ops.extend(iter_tree(ROOT / "discovery", target / "discovery"))
+        ops.extend(
+            iter_tree(ROOT / "design-brain", target / "design-brain", include_restricted)
+        )
+        ops.extend(
+            iter_tree(
+                ROOT / "_benchmarks",
+                target / "design-brain" / "_benchmarks",
+                include_restricted,
+            )
+        )
+        ops.extend(
+            iter_tree(
+                ROOT / "_review", target / "design-brain" / "_review", include_restricted
+            )
+        )
+        ops.extend(iter_tree(ROOT / "discovery", target / "discovery", include_restricted))
 
     if profile in {"all", "claude"}:
         ops.append(CopyOp(ROOT / "CLAUDE.md", target / "CLAUDE.md"))
         ops.extend(iter_tree(ROOT / "design-brain" / "skills", target / ".claude" / "skills"))
-        ops.append(
-            CopyOp(
-                ROOT / "design-brain" / "agents" / "design-reviewer.md",
-                target / ".claude" / "agents" / "design-reviewer.md",
-            )
-        )
+        # every agent in the roster becomes a Claude Code subagent
+        ops.extend(iter_tree(ROOT / "design-brain" / "agents", target / ".claude" / "agents"))
 
     if profile == "lovable":
         ops.extend(iter_tree(ROOT / "design-brain" / "lovable", target / "design-brain" / "lovable"))
@@ -200,15 +276,27 @@ def apply_ops(ops: list[CopyOp], dry_run: bool) -> int:
 def main() -> None:
     args = parse_args()
     ensure_required()
+    if args.self_check:
+        print("Self-check passed: all required Design Brain files present.")
+        return
+    if not args.target:
+        fail("--target is required (or use --self-check).")
     target = Path(args.target).expanduser().resolve()
     if not target.exists():
         fail(f"Target does not exist: {target}")
     if not target.is_dir():
         fail(f"Target is not a directory: {target}")
-    ops = build_ops(target, args.profile)
+    ops = build_ops(target, args.profile, args.include_restricted)
     if not ops:
         fail(f"No export operations built for profile: {args.profile}")
-    apply_ops(ops, args.dry_run)
+    changed = apply_ops(ops, args.dry_run or args.check)
+    if args.check and changed:
+        print(
+            f"DRIFT: {changed} file(s) differ between the vault and {target}. "
+            "Re-run the export (edit the vault, never the copy).",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

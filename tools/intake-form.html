@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Design Brain — Concept Brief Intake</title>
+<style>
+  :root{
+    --bg:#f5f7fa;--panel:#fff;--panel-2:#f0f3f8;--ink:#141922;--muted:#59626f;
+    --line:#e4e9f0;--accent:#0e7c86;--accent-ink:#0a5b62;
+    --stable:#1f9d55;--warn:#c2410c;--track:#eaeef4;
+    --shadow:0 1px 2px rgba(20,25,34,.04),0 10px 28px rgba(20,25,34,.06);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0c0f14;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--accent:#2dd4bf;--accent-ink:#7ff0dd;
+    --stable:#3ecf7f;--warn:#f0894e;--track:#1c232e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4);}}
+  :root[data-theme=light]{
+    --bg:#f5f7fa;--panel:#fff;--panel-2:#f0f3f8;--ink:#141922;--muted:#59626f;
+    --line:#e4e9f0;--accent:#0e7c86;--accent-ink:#0a5b62;
+    --stable:#1f9d55;--warn:#c2410c;--track:#eaeef4;
+    --shadow:0 1px 2px rgba(20,25,34,.04),0 10px 28px rgba(20,25,34,.06);}
+  :root[data-theme=dark]{
+    --bg:#0c0f14;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--accent:#2dd4bf;--accent-ink:#7ff0dd;
+    --stable:#3ecf7f;--warn:#f0894e;--track:#1c232e;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 72px}
+  .eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:650}
+  h1{font-size:24px;letter-spacing:-.02em;margin:8px 0 0;font-weight:700}
+  .lede{margin:12px 0 0;font-size:14.5px;color:var(--muted);max-width:64ch}
+  .privacy{margin-top:14px;font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+  .group{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:20px 22px;margin-top:16px}
+  .glabel{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
+  .gdesc{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+  .field{margin-top:14px}
+  .field:first-of-type{margin-top:0}
+  label{display:block;font-size:13.5px;font-weight:620;margin-bottom:5px}
+  label .req{color:var(--warn);font-weight:700;margin-left:3px}
+  label .opt{color:var(--muted);font-weight:500;font-size:12px;margin-left:5px}
+  .hint{font-size:12px;color:var(--muted);margin:-2px 0 6px}
+  input,textarea,select{width:100%;font:inherit;font-size:14px;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  textarea{resize:vertical;min-height:64px;line-height:1.5}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .field.err input,.field.err textarea,.field.err select{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 6%,var(--panel-2))}
+  .emsg{display:none;color:var(--warn);font-size:12px;margin-top:5px;font-weight:600}
+  .field.err .emsg{display:block}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center}
+  button{font:inherit;font-weight:650;font-size:14px;cursor:pointer;border-radius:10px;padding:11px 20px;border:1px solid transparent}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{filter:brightness(1.05)}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--accent)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .summary{display:none;margin-top:14px;font-size:13px;font-weight:600;color:var(--warn)}
+  .summary.show{display:block}
+  /* Import + output */
+  .tool{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;margin-top:16px}
+  .tool h2{font-size:14px;margin:0 0 4px;font-weight:660}
+  .tool p{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+  #out{width:100%;min-height:280px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12.5px;line-height:1.5;white-space:pre;overflow:auto;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;padding:14px}
+  #output{display:none}
+  #output.show{display:block}
+  .ok{color:var(--stable);font-weight:650}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:13px;
+    font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Orbit Design Brain</div>
+    <h1>Concept Brief Intake</h1>
+    <p class="lede">Capture the concept before the prototype. Fill this in, and it generates a
+      structured brief the design team reviews against the brief contract, then feeds to the
+      <span class="mono">explore</span> skill. Sharp beats long — a thin brief comes back for rework.</p>
+    <p class="privacy">🔒 Everything stays in your browser. Nothing is sent anywhere — you copy or download the result and share it yourself.</p>
+  </header>
+
+  <div class="tool">
+    <h2>Editing an existing brief?</h2>
+    <p>Paste a brief's markdown here and the form repopulates, so a "Needs work" verdict is a quick fix — not a retype.</p>
+    <textarea id="importbox" rows="3" placeholder="Paste an existing brief's markdown, then press Import…"></textarea>
+    <div class="actions" style="margin-top:12px">
+      <button type="button" class="btn-ghost" id="importbtn">Import &amp; repopulate</button>
+    </div>
+  </div>
+
+  <form id="form" novalidate></form>
+
+  <div class="actions">
+    <button type="button" class="btn-primary" id="genbtn">Generate brief</button>
+    <button type="button" class="btn-ghost" id="clearbtn">Clear</button>
+  </div>
+  <div class="summary" id="summary"></div>
+
+  <div class="tool" id="output">
+    <h2 class="ok">✓ Brief ready</h2>
+    <p>Copy or download, then send it to the design team to commit under
+      <span class="mono">discovery/briefs/</span>. Suggested filename: <span class="mono" id="fname"></span></p>
+    <textarea id="out" readonly spellcheck="false"></textarea>
+    <div class="actions" style="margin-top:12px">
+      <button type="button" class="btn-primary" id="copybtn">Copy markdown</button>
+      <button type="button" class="btn-ghost" id="dlbtn">Download .md</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var PLATFORMS=[
+    {v:"connected-platform",label:"Connected Platform (internal)"},
+    {v:"orbit-client-connected-platform",label:"Orbit / Client Connected Platform (external)"},
+    {v:"both",label:"Both"}
+  ];
+  var SURFACES=["ClauseIQ","MarketIQ","RFP Analytics","RFP Builder","Other / shared"];
+  var JUNK=["n/a","na","tbd","tba","-","--","none","test","asdf","xxx"];
+
+  // group: [title, desc], fields config
+  var GROUPS=[
+    {key:"F",title:"About",desc:"Who's asking, and what to call this.",fields:[
+      {id:"title",label:"Brief title",type:"text",req:true,min:4,ph:"e.g. Clause change review for RFP rounds"},
+      {id:"requester",label:"Your name",type:"text",req:true,min:2,ph:"Requester name"},
+      {id:"team",label:"Team",type:"text",req:true,min:2,ph:"e.g. Sourcing Product"},
+      {id:"date",label:"Date",type:"date",req:true}
+    ]},
+    {key:"A",title:"Which corner of Efficio",desc:"Tells the vault which context to load.",fields:[
+      {id:"platform",label:"Platform",type:"select",req:true,options:PLATFORMS.map(function(p){return {v:p.v,t:p.label};})},
+      {id:"surface",label:"Surface / feature area",type:"select",req:true,options:SURFACES.map(function(s){return {v:s,t:s};})}
+    ]},
+    {key:"B",title:"The problem",desc:"The heart of the brief — what hurts, and why now.",fields:[
+      {id:"problem",label:"Problem statement",type:"textarea",req:true,min:20,
+        hint:"A user pain, not a pre-chosen feature.",ph:"e.g. Reviewers can't tell which contract clauses changed between supplier rounds, so reviews stall."},
+      {id:"why_now",label:"Why now / evidence",type:"textarea",req:false,
+        hint:"The signal that prompted this.",ph:"e.g. Three escalations last quarter about missed clause changes."}
+    ]},
+    {key:"C",title:"Who and what they do",desc:"Becomes the one user and the one flow the prototype tests.",fields:[
+      {id:"user_situation",label:"Primary user + situation",type:"textarea",req:true,min:12,
+        hint:"One user, one moment.",ph:"e.g. A sourcing analyst mid-review, comparing round 2 vs round 3 of an RFP."},
+      {id:"journey",label:"Key journey / tasks",type:"textarea",req:true,journey:true,
+        hint:"One step per line — at least 3, in order.",ph:"Open the two rounds side by side\nSee what changed\nFlag the clauses that need action"}
+    ]},
+    {key:"D",title:"Success and edges",desc:"What “it worked” means, and the fences.",fields:[
+      {id:"outcomes",label:"Key outcomes",type:"textarea",req:true,min:12,
+        hint:"Observable or measurable.",ph:"e.g. Reviewer spots every changed clause in under a minute."},
+      {id:"non_goals",label:"Out of scope / non-goals",type:"textarea",req:false,
+        hint:"What you're deliberately not solving.",ph:"e.g. Not redlining the clause text itself this round."},
+      {id:"constraints",label:"Known constraints",type:"textarea",req:false,
+        hint:"Tech, data, RBAC, integrations, scale — or flag unknown.",ph:"e.g. Round data comes from the existing RFP store; no new integration."}
+    ]},
+    {key:"E",title:"What already exists",desc:"Anything the vault should read before it invents.",fields:[
+      {id:"existing_material",label:"Existing material",type:"textarea",req:false,
+        hint:"Lovable link, screenshots, discovery pack, Figma, docs.",ph:"e.g. Lovable prototype: <link>"},
+      {id:"open_questions",label:"Open questions / assumptions you're unsure about",type:"textarea",req:false,
+        hint:"Anything you had to assume — this is gold.",ph:"e.g. Assumed clause IDs are stable across rounds."}
+    ]}
+  ];
+
+  var form=document.getElementById("form");
+  var F={}; // id -> input element
+
+  GROUPS.forEach(function(g){
+    var box=document.createElement("div"); box.className="group";
+    var gl=document.createElement("div"); gl.className="glabel"; gl.textContent=g.key+" · "+g.title; box.appendChild(gl);
+    var gd=document.createElement("div"); gd.className="gdesc"; gd.textContent=g.desc; box.appendChild(gd);
+    g.fields.forEach(function(f){
+      var wrap=document.createElement("div"); wrap.className="field"; wrap.dataset.for=f.id;
+      var lab=document.createElement("label"); lab.setAttribute("for",f.id);
+      lab.textContent=f.label;
+      var mk=document.createElement("span");
+      if(f.req){mk.className="req";mk.textContent="*";} else {mk.className="opt";mk.textContent="(optional)";}
+      lab.appendChild(mk); wrap.appendChild(lab);
+      if(f.hint){var h=document.createElement("div");h.className="hint";h.textContent=f.hint;wrap.appendChild(h);}
+      var el;
+      if(f.type==="textarea"){el=document.createElement("textarea");el.rows=f.journey?4:2;}
+      else if(f.type==="select"){
+        el=document.createElement("select");
+        var o0=document.createElement("option");o0.value="";o0.textContent="Choose…";el.appendChild(o0);
+        f.options.forEach(function(op){var o=document.createElement("option");o.value=op.v;o.textContent=op.t;el.appendChild(o);});
+      } else {el=document.createElement("input");el.type=(f.type==="date"?"date":"text");}
+      el.id=f.id; if(f.ph)el.placeholder=f.ph;
+      wrap.appendChild(el);
+      var em=document.createElement("div"); em.className="emsg"; em.id="err-"+f.id; wrap.appendChild(em);
+      box.appendChild(wrap); F[f.id]=el;
+    });
+    form.appendChild(box);
+  });
+
+  // default date = today (browser-local; not the workflow sandbox)
+  F.date.value=new Date().toISOString().slice(0,10);
+
+  function allFields(){var a=[];GROUPS.forEach(function(g){g.fields.forEach(function(f){a.push(f);});});return a;}
+  function val(id){return (F[id].value||"").trim();}
+  function isJunk(s){return JUNK.indexOf(s.toLowerCase())>-1;}
+  function journeySteps(s){return s.split(/\n+/).map(function(x){return x.replace(/^\s*\d+[.)]\s*/,"").trim();}).filter(Boolean);}
+
+  function clearErrors(){allFields().forEach(function(f){F[f.id].parentNode.classList.remove("err");document.getElementById("err-"+f.id).textContent="";});document.getElementById("summary").classList.remove("show");}
+
+  function validate(){
+    clearErrors(); var errs=[];
+    allFields().forEach(function(f){
+      var v=val(f.id);
+      function fail(m){errs.push({id:f.id,m:m});}
+      if(f.req){
+        if(!v){fail(f.label+" is required.");return;}
+        if(isJunk(v)){fail("Give a real answer, not a placeholder.");return;}
+        if(f.min && v.length<f.min){fail("Too short — add more detail (at least "+f.min+" characters).");return;}
+        if(f.journey && journeySteps(v).length<3){fail("List at least 3 steps, one per line.");return;}
+      }
+    });
+    errs.forEach(function(e){
+      F[e.id].parentNode.classList.add("err");
+      document.getElementById("err-"+e.id).textContent=e.m;
+    });
+    if(errs.length){
+      var s=document.getElementById("summary");
+      s.textContent=errs.length+" field"+(errs.length>1?"s":"")+" need"+(errs.length>1?"":"s")+" attention before this brief is ready.";
+      s.classList.add("show");
+      F[errs[0].id].focus();
+    }
+    return errs.length===0;
+  }
+
+  function platformLabel(v){for(var i=0;i<PLATFORMS.length;i++)if(PLATFORMS[i].v===v)return PLATFORMS[i].label;return v;}
+  function oneLine(s){return s.replace(/\s*\n+\s*/g," ").trim();}
+  function orDash(s,d){s=oneLine(s);return s?s:(d||"—");}
+
+  function generate(){
+    var v={}; allFields().forEach(function(f){v[f.id]=val(f.id);});
+    var steps=journeySteps(v.journey);
+    var journeyMd=steps.map(function(s,i){return "  "+(i+1)+". "+s;}).join("\n");
+    var L=[];
+    L.push("---");
+    L.push("type: concept-brief");
+    L.push("status: draft");
+    L.push("owner: "+oneLine(v.requester));
+    L.push("platform: "+v.platform);
+    L.push("surfaces: ["+v.surface+"]");
+    L.push("source: product");
+    L.push("last_reviewed: "+v.date);
+    L.push("tags: [orbit, discovery, concept-brief]");
+    L.push("---");
+    L.push("");
+    L.push("# Concept brief: "+oneLine(v.title));
+    L.push("");
+    L.push("**Requester:** "+oneLine(v.requester)+" · **Team:** "+oneLine(v.team)+" · **Submitted:** "+v.date);
+    L.push("");
+    L.push("## A · Which corner of Efficio");
+    L.push("- **Platform:** "+platformLabel(v.platform));
+    L.push("- **Surface / feature area:** "+v.surface);
+    L.push("");
+    L.push("## B · The problem");
+    L.push("- **Problem statement:** "+oneLine(v.problem));
+    L.push("- **Why now / evidence:** "+orDash(v.why_now));
+    L.push("");
+    L.push("## C · Who and what they do");
+    L.push("- **Primary user + situation:** "+oneLine(v.user_situation));
+    L.push("- **Key journey / tasks:**");
+    L.push(journeyMd);
+    L.push("");
+    L.push("## D · Success and edges");
+    L.push("- **Key outcomes:** "+oneLine(v.outcomes));
+    L.push("- **Out of scope / non-goals:** "+orDash(v.non_goals));
+    L.push("- **Known constraints:** "+orDash(v.constraints,"flagged unknown"));
+    L.push("");
+    L.push("## E · What already exists");
+    L.push("- **Existing material:** "+orDash(v.existing_material,"N/A"));
+    L.push("- **Open questions / assumptions you're unsure about:** "+orDash(v.open_questions));
+    L.push("");
+    L.push("## Gate log");
+    L.push("");
+    L.push("| Date | Verdict | By | Notes / gaps / override reason |");
+    L.push("| ---- | ------- | -- | ------------------------------ |");
+    L.push("| — | — | — | — |");
+    L.push("");
+    L.push("## Graduation");
+    L.push("- **Discovery pack:** not yet");
+    L.push("");
+    return L.join("\n");
+  }
+
+  function slug(s){return oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,50)||"brief";}
+
+  function showOutput(md){
+    document.getElementById("out").value=md;
+    document.getElementById("fname").textContent=val("date")+"-"+slug(val("title"))+".md";
+    var out=document.getElementById("output"); out.classList.add("show");
+    out.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1600);}
+
+  // --- import: parse a generated brief back into the form ---
+  function bulletAfter(md,label){
+    var re=new RegExp("- \\*\\*"+label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+":\\*\\* (.*)");
+    var m=md.match(re); return m?m[1].trim():"";
+  }
+  function undash(s){return (s==="—"||s==="N/A"||s==="flagged unknown")?"":s;}
+  function parse(md){
+    var v={};
+    var fm=md.match(/^---\n([\s\S]*?)\n---/);
+    var f=fm?fm[1]:"";
+    function fmv(k){var m=f.match(new RegExp("^"+k+":\\s*(.*)$","m"));return m?m[1].trim():"";}
+    v.requester=fmv("owner");
+    v.platform=fmv("platform");
+    v.date=fmv("last_reviewed");
+    var surf=fmv("surfaces").replace(/^\[|\]$/g,"").trim(); v.surface=surf;
+    var tm=md.match(/^#\s+Concept brief:\s*(.*)$/m); v.title=tm?tm[1].trim():"";
+    var meta=md.match(/\*\*Requester:\*\*\s*(.*?)\s*·\s*\*\*Team:\*\*\s*(.*?)\s*·\s*\*\*Submitted:\*\*\s*(.*)/);
+    if(meta){v.requester=meta[1].trim()||v.requester;v.team=meta[2].trim();if(!v.date)v.date=meta[3].trim();}
+    v.problem=bulletAfter(md,"Problem statement");
+    v.why_now=undash(bulletAfter(md,"Why now / evidence"));
+    v.user_situation=bulletAfter(md,"Primary user + situation");
+    v.outcomes=bulletAfter(md,"Key outcomes");
+    v.non_goals=undash(bulletAfter(md,"Out of scope / non-goals"));
+    v.constraints=undash(bulletAfter(md,"Known constraints"));
+    v.existing_material=undash(bulletAfter(md,"Existing material"));
+    v.open_questions=undash(bulletAfter(md,"Open questions / assumptions you're unsure about"));
+    // journey: numbered lines under the journey bullet
+    var jm=md.match(/- \*\*Key journey \/ tasks:\*\*\n([\s\S]*?)\n(?:- \*\*|\n?## )/);
+    if(jm){v.journey=jm[1].split(/\n/).map(function(x){return x.replace(/^\s*\d+[.)]\s*/,"").trim();}).filter(Boolean).join("\n");}
+    return v;
+  }
+  function populate(v){
+    Object.keys(F).forEach(function(id){ if(v[id]!==undefined && v[id]!==null) F[id].value=v[id]; });
+    clearErrors();
+  }
+
+  document.getElementById("genbtn").addEventListener("click",function(){
+    if(validate()) showOutput(generate());
+  });
+  document.getElementById("clearbtn").addEventListener("click",function(){
+    allFields().forEach(function(f){F[f.id].value="";});
+    F.date.value=new Date().toISOString().slice(0,10);
+    clearErrors(); document.getElementById("output").classList.remove("show");
+  });
+  document.getElementById("importbtn").addEventListener("click",function(){
+    var raw=document.getElementById("importbox").value.trim();
+    if(!raw){toast("Paste a brief first");return;}
+    try{ populate(parse(raw)); toast("Imported — edit and regenerate"); form.scrollIntoView({behavior:"smooth",block:"start"}); }
+    catch(e){ toast("Couldn't parse that brief"); }
+  });
+  document.getElementById("copybtn").addEventListener("click",function(){
+    var t=document.getElementById("out"); t.select();
+    try{navigator.clipboard.writeText(t.value);}catch(e){document.execCommand&&document.execCommand("copy");}
+    toast("Copied");
+  });
+  document.getElementById("dlbtn").addEventListener("click",function(){
+    var md=document.getElementById("out").value;
+    var blob=new Blob([md],{type:"text/markdown"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=val("date")+"-"+slug(val("title"))+".md";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
+  // expose for headless verification
+  window.__brief={generate:generate,parse:parse,populate:populate,validate:validate};
+})();
+</script>
+</body>
+</html>

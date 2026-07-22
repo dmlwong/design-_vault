@@ -6,6 +6,8 @@ surfaces: [shared]
 source: code
 last_reviewed: 2026-06-19
 maturity_score: 72
+context_tier: task-core
+load_when: [build-component, build-screen, port-prototype, default-choice]
 tags: [orbit, design-brain, defaults]
 ---
 

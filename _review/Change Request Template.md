@@ -24,4 +24,3 @@ Choose one: code / design / user correction / product decision.
 ## Risk if wrong
 
 ## Approved by
-
