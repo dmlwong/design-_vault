@@ -15,17 +15,17 @@ _Snapshot 2026-07-23. Regenerate with `tools/vault_health.py`._
 | Pattern contracts | 11 |
 | Examples | 18 |
 | Platform profiles | 2 |
-| Total docs | 138 |
+| Total docs | 139 (+1) |
 
 ## Status mix
 
-_134 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
+_135 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
 
 | Status | Count | Share |
 | --- | ---: | ---: |
 | stable | 38 | 28% |
 | in-review | 73 | 54% |
-| draft | 23 | 17% |
+| draft | 24 (+1) | 18% |
 
 ## Inventory
 
