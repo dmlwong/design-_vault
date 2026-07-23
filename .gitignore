@@ -6,3 +6,6 @@ __pycache__/
 # Obsidian personal/session state — never shared (keep shared config like core-plugins.json tracked)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+
+# Generated public site (tools/build_site.py) — built on demand / in CI, not stored.
+site/
