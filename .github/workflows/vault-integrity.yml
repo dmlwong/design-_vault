@@ -3,6 +3,7 @@ name: Vault integrity
 on:
   push:
   pull_request:
+  workflow_dispatch:  # manual "Run workflow" button — lets an owner publish/verify on demand
   schedule:
     # daily health tick (06:00 UTC) — runs the integrity checks, then the
     # health job regenerates HEALTH.md / vault-health.html, commits the trend,
@@ -41,7 +42,7 @@ jobs:
   # GITHUB_TOKEN do not retrigger workflows, so the daily commit cannot loop.
   health:
     needs: integrity
-    if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
