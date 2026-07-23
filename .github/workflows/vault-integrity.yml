@@ -99,19 +99,25 @@ jobs:
               --comment "Vault health returned to HEALTHY on $(date -u +%F). Closing."
           fi
 
-      - name: Publish stakeholder page
+      - name: Publish stakeholder site
         if: ${{ env.HEALTH_PAGE_TOKEN != '' }}
         run: |
+          # Build the PUBLIC site (hub + intake form + health page). --public
+          # sanitises product/company names and fails the build if any survive,
+          # so nothing private can reach the public URL.
+          python3 tools/build_site.py --out site --public
           git clone --depth 1 \
             "https://x-access-token:${HEALTH_PAGE_TOKEN}@github.com/dmlwong/vault-health.git" /tmp/vh
-          cp vault-health.html /tmp/vh/index.html
+          # Replace the published surface with the freshly built site.
+          find /tmp/vh -maxdepth 1 -type f \( -name '*.html' -o -name '.nojekyll' \) -delete
+          cp site/index.html site/intake-form.html site/health.html site/.nojekyll /tmp/vh/
           cd /tmp/vh
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add -A
           if git diff --cached --quiet; then
-            echo "Stakeholder page unchanged."
+            echo "Stakeholder site unchanged."
           else
-            git commit -m "Update vault health page"
+            git commit -m "Update team-share site (hub + intake + health)"
             git push
           fi

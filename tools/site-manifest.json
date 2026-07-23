@@ -1,0 +1,27 @@
+{
+  "_comment": "Curated definition of the public team-share site. Data only — the generator is tools/build_site.py. Only list surfaces that are provably public-safe: the --public build genericizes product-surface/company names via SANITIZE in build_site.py and fails if any BLOCKLIST term survives. One-off prototypes and explainers stay private Claude Artifacts (per-person Share); they are intentionally NOT here.",
+  "site": {
+    "title": "Orbit Design Brain — Team Tools",
+    "eyebrow": "Orbit Design Brain",
+    "tagline": "The living tools for turning a rough idea into a testable concept — capture it, and watch the vault that grounds it stay healthy.",
+    "canonical_url": "https://dmlwong.github.io/vault-health/"
+  },
+  "tools": [
+    {
+      "id": "intake",
+      "title": "Concept Brief Intake",
+      "blurb": "Capture a concept — the problem, the one user and moment, the testable bet, the outcome. Outputs a brief to hand to the design team. Everything stays in your browser; nothing is sent anywhere.",
+      "href": "intake-form.html",
+      "source": "tools/intake-form.html",
+      "tag": "Capture"
+    },
+    {
+      "id": "health",
+      "title": "Vault Health",
+      "blurb": "The sanitized, auto-updating health of the design brain: how many docs, how mature, which checks pass, how fresh. Refreshes daily.",
+      "href": "health.html",
+      "source": "vault-health.html",
+      "tag": "Monitor"
+    }
+  ]
+}
