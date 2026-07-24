@@ -50,6 +50,9 @@ ROOT = lf.ROOT
 HISTORY_PATH = ROOT / "tools" / "health_history.json"
 HEALTH_MD = ROOT / "HEALTH.md"
 HEALTH_HTML = ROOT / "vault-health.html"
+# Hand-maintained index of Claude Artifacts (deliverables). Rendered only on the
+# private/full dashboard — never the public page (titles name product surfaces).
+ARTIFACTS_MANIFEST = ROOT / "tools" / "artifacts-manifest.json"
 
 STALE_AFTER_DAYS = lf.STALE_AFTER_DAYS
 HISTORY_CAP = 180
@@ -499,6 +502,29 @@ STYLE = """
     .kpis{grid-template-columns:repeat(2,1fr)}
     .checks{grid-template-columns:1fr}
     .banner .meta{margin-left:0;text-align:left}}
+  /* Artifacts index — private dashboard only. */
+  .agroup+.agroup{margin-top:20px}
+  .agroup .gh{display:flex;align-items:baseline;gap:9px;margin:0 0 3px}
+  .agroup .gh .gn{font-size:13.5px;font-weight:650}
+  .agroup .gh .gc{font-size:11.5px;font-weight:600;color:var(--muted);
+    font-variant-numeric:tabular-nums}
+  .agroup .gb{font-size:12px;color:var(--muted);margin:0 0 11px}
+  .alist{display:flex;flex-direction:column;gap:8px}
+  a.arow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+    text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:11px;box-shadow:var(--shadow);padding:12px 15px;
+    transition:border-color .12s ease,transform .12s ease}
+  a.arow:hover{border-color:var(--accent);transform:translateY(-1px)}
+  a.arow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  a.arow .at{font-size:13.5px;font-weight:600;letter-spacing:-.005em;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  a.arow .atag{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);
+    border-radius:999px;padding:3px 9px;white-space:nowrap}
+  a.arow .ao{font-size:12px;font-weight:650;color:var(--accent);white-space:nowrap}
+  a.arow:hover .ao{text-decoration:underline}
+  @media (prefers-reduced-motion:reduce){a.arow,a.arow:hover{transition:none}}
+  @media (max-width:640px){a.arow{grid-template-columns:1fr auto}a.arow .ao{display:none}}
 """
 
 
@@ -548,6 +574,50 @@ def _sparkline(points: list[int]) -> str:
     coords = [f"{round(100*i/(n-1),2)},{round(50-44*(v-lo)/span,2)}" for i, v in enumerate(points)]
     return (f'<svg class="spark" viewBox="0 0 100 56" preserveAspectRatio="none">'
             f'<path d="M{"L".join(coords)}"/></svg>')
+
+
+def _artifacts_section() -> str:
+    """Rendered only on the private dashboard — the hand-maintained artifact index.
+
+    Returns "" if the manifest is missing or empty so the section simply
+    disappears rather than erroring. Never called for the public page.
+    """
+    if not ARTIFACTS_MANIFEST.is_file():
+        return ""
+    try:
+        data = json.loads(ARTIFACTS_MANIFEST.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return ""
+    groups = [g for g in data.get("groups", []) if g.get("items")]
+    if not groups:
+        return ""
+    total = sum(len(g["items"]) for g in groups)
+
+    blocks = []
+    for g in groups:
+        rows = "".join(
+            f'<a class="arow" href="{html.escape(it["url"])}" target="_blank" rel="noopener">'
+            f'<span class="at">{html.escape(it["title"])}</span>'
+            f'<span class="atag">{html.escape(it.get("tag", ""))}</span>'
+            f'<span class="ao">Open&nbsp;&rarr;</span></a>'
+            for it in g["items"]
+        )
+        blocks.append(
+            f'<div class="agroup"><div class="gh">'
+            f'<span class="gn">{html.escape(g["name"])}</span>'
+            f'<span class="gc">{len(g["items"])}</span></div>'
+            f'<p class="gb">{html.escape(g.get("blurb", ""))}</p>'
+            f'<div class="alist">{rows}</div></div>'
+        )
+
+    return (
+        '<section>\n'
+        '    <h2 class="s-head">Artifacts</h2>\n'
+        f'    <p class="s-sub">The {total} deliverables built from the vault so far — forms, dashboards, '
+        'explainers, and concept prototypes. Hand-curated; opens in a new tab.</p>\n'
+        f'    <div class="panel">{"".join(blocks)}</div>\n'
+        '  </section>'
+    )
 
 
 def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bool) -> str:
@@ -604,6 +674,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     spark = _sparkline([h["areas"].get("Total docs", 0) for h in history])
     reveal = ("Agents, Skills, Components and Patterns"
               if public else "Every card")
+    # Artifact index is private-only: several titles name product surfaces, so it
+    # never renders on the public/sanitized page (consistent with hiding platform profiles).
+    artifacts = "" if public else _artifacts_section()
 
     return f"""<div id="shell"><div class="wrap">
   <header>
@@ -662,6 +735,8 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     <p class="s-sub">How the vault is growing over time.</p>
     <div class="panel">{spark}</div>
   </section>
+
+  {artifacts}
 
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div></div>
