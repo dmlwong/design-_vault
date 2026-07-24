@@ -1,0 +1,363 @@
+<title>Status Prep — Initiative RAID &amp; Commentary</title>
+<style>
+  :root{
+    --bg:#eef1f6;--panel:#ffffff;--panel-2:#f4f6fa;--ink:#16202e;--muted:#5b6676;
+    --line:#e0e5ee;--line-2:#eaeef4;--accent:#3f51d6;--accent-ink:#2c3aa8;--accent-wash:#eaecfb;
+    --risk:#d1344b;--issue:#bd7a06;--decision:#7c4dd6;--action:#0f8a6b;--comment:#5b6676;
+    --shadow:0 1px 2px rgba(22,32,46,.05),0 10px 26px rgba(22,32,46,.06);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0b0f16;--panel:#141a24;--panel-2:#0f151d;--ink:#e7ecf3;--muted:#96a2b3;
+    --line:#232c39;--line-2:#1c242f;--accent:#8b98ff;--accent-ink:#aab4ff;--accent-wash:#1c2340;
+    --risk:#f4788a;--issue:#e0a94a;--decision:#b79bf0;--action:#4fc7a3;--comment:#96a2b3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.45);}}
+  :root[data-theme=light]{
+    --bg:#eef1f6;--panel:#ffffff;--panel-2:#f4f6fa;--ink:#16202e;--muted:#5b6676;
+    --line:#e0e5ee;--line-2:#eaeef4;--accent:#3f51d6;--accent-ink:#2c3aa8;--accent-wash:#eaecfb;
+    --risk:#d1344b;--issue:#bd7a06;--decision:#7c4dd6;--action:#0f8a6b;--comment:#5b6676;
+    --shadow:0 1px 2px rgba(22,32,46,.05),0 10px 26px rgba(22,32,46,.06);}
+  :root[data-theme=dark]{
+    --bg:#0b0f16;--panel:#141a24;--panel-2:#0f151d;--ink:#e7ecf3;--muted:#96a2b3;
+    --line:#232c39;--line-2:#1c242f;--accent:#8b98ff;--accent-ink:#aab4ff;--accent-wash:#1c2340;
+    --risk:#f4788a;--issue:#e0a94a;--decision:#b79bf0;--action:#4fc7a3;--comment:#96a2b3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.45);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:920px;margin:0 auto;padding:26px 20px 140px}
+
+  /* Header */
+  .crumb{font-size:12px;color:var(--muted);letter-spacing:.02em}
+  .crumb b{color:var(--ink);font-weight:600}
+  h1{font-size:22px;letter-spacing:-.015em;margin:8px 0 0;font-weight:680}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+  .meta b{color:var(--ink);font-weight:600}
+
+  /* Status-prep banner */
+  .prep{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:16px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .prep .txt{font-size:13.5px;color:var(--muted)}
+  .prep .txt b{color:var(--ink);font-weight:600}
+  .stat{margin-left:auto;display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+    background:var(--accent-wash);color:var(--accent-ink);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    border-radius:12px;padding:9px 14px;font-weight:650;font-size:13.5px;transition:transform .1s ease}
+  .stat:hover{transform:translateY(-1px)}
+  .stat:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .stat .n{font-size:20px;letter-spacing:-.02em}
+  .stat .arr{transition:transform .15s ease}
+  .stat[aria-pressed=true] .arr{transform:rotate(90deg)}
+
+  /* Controls */
+  .controls{position:sticky;top:0;z-index:5;margin-top:20px;padding:12px 0;background:
+    linear-gradient(var(--bg) 78%, transparent);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);
+    background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:7px}
+  .chip .dot{width:8px;height:8px;border-radius:50%}
+  .chip .ct{font-variant-numeric:tabular-nums;opacity:.7}
+  .chip[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:var(--accent-wash)}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .toggle{margin-left:auto;display:inline-flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+  .switch{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;transition:background .15s ease;flex:none}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s ease}
+  .toggle[aria-pressed=true] .switch{background:var(--accent)}
+  .toggle[aria-pressed=true] .switch::after{left:18px}
+  .toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+  .count{font-size:12.5px;color:var(--muted);margin:2px 2px 10px}
+  .count b{color:var(--ink)}
+
+  /* Divider */
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 2px 12px}
+  .divider .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent-ink);white-space:nowrap}
+  .divider .rule{height:1px;background:linear-gradient(90deg,var(--accent),transparent);flex:1}
+  .divider.earlier .lbl{color:var(--muted)}
+  .divider.earlier .rule{background:var(--line)}
+
+  /* Items */
+  .list{display:flex;flex-direction:column;gap:9px}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+    overflow:hidden;position:relative}
+  .item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,var(--comment))}
+  .item.changed::before{width:4px;background:var(--accent)}
+  .row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:14px 16px 14px 18px;cursor:pointer}
+  .badge{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#fff;
+    padding:3px 8px;border-radius:6px;background:var(--tc);white-space:nowrap;margin-top:1px}
+  .body .t{font-weight:620;font-size:14.5px;letter-spacing:-.005em}
+  .body .sub{display:flex;flex-wrap:wrap;align-items:center;gap:5px 12px;margin-top:6px;font-size:12px;color:var(--muted)}
+  .who{display:inline-flex;align-items:center;gap:6px}
+  .av{width:18px;height:18px;border-radius:50%;background:var(--accent-wash);color:var(--accent-ink);
+    font-size:9.5px;font-weight:700;display:grid;place-items:center;letter-spacing:-.02em}
+  .when{font-variant-numeric:tabular-nums}
+  .spill{color:var(--line);}
+  .stpill{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .chgpill{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;
+    background:var(--accent-wash);color:var(--accent-ink)}
+  .right{display:flex;align-items:center;gap:8px}
+  .flag{font:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--muted);border-radius:8px;padding:6px 10px;white-space:nowrap}
+  .flag:hover{border-color:var(--accent);color:var(--accent-ink)}
+  .flag[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .flag:focus-visible,.caret:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .caret{color:var(--muted);font-size:14px;line-height:1;transition:transform .15s ease;background:none;border:none;cursor:pointer;padding:4px}
+  .item.open .caret{transform:rotate(90deg)}
+  .detail{display:none;padding:0 16px 16px 18px}
+  .item.open .detail{display:block}
+  .detail .desc{font-size:13px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px}
+  .log{margin-top:12px}
+  .log .lh{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
+  .log ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .log li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:12.5px;align-items:baseline}
+  .log .lw{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+  .log b{font-weight:620}
+  .log .new{color:var(--accent-ink);font-weight:700}
+
+  /* Tray */
+  .tray{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--panel);border-top:1px solid var(--line);
+    box-shadow:0 -8px 26px rgba(22,32,46,.08);transform:translateY(calc(100% - 52px));transition:transform .22s cubic-bezier(.4,0,.2,1)}
+  .tray.up{transform:translateY(0)}
+  .tray .bar{max-width:920px;margin:0 auto;padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;cursor:pointer}
+  .tray .title{font-weight:660;font-size:14px}
+  .tray .cnt{font-size:12px;font-weight:700;background:var(--accent);color:#fff;border-radius:999px;padding:2px 9px;min-width:22px;text-align:center}
+  .tray .hint{margin-left:auto;font-size:12px;color:var(--muted)}
+  .tray .body{max-width:920px;margin:0 auto;padding:4px 20px 22px;display:flex;flex-direction:column;gap:8px}
+  .tray .empty{color:var(--muted);font-size:13px;padding:6px 0 16px}
+  .trow{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px}
+  .trow .tb{font-size:10px;font-weight:700;text-transform:uppercase;color:#fff;padding:2px 7px;border-radius:5px;background:var(--tc)}
+  .trow .tt{font-size:13px;font-weight:560;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trow .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px}
+  .trow .rm:hover{color:var(--risk)}
+  .done{font:inherit;font-size:13px;font-weight:650;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .done:disabled{opacity:.5;cursor:default}
+
+  .empty-list{text-align:center;color:var(--muted);font-size:13.5px;padding:34px 0}
+  .toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--bg);
+    padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .foot{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media (max-width:600px){.row{grid-template-columns:auto 1fr}.right{grid-column:1/-1;justify-content:flex-end}.stat{margin-left:0}}
+</style>
+
+<div class="wrap">
+  <div class="crumb">Connected Platform · Delivery · <b>Initiatives</b></div>
+  <h1>Indirect — Marketing &amp; Agency Spend (RFP&nbsp;2026)</h1>
+  <div class="meta">
+    <span>Category <b>Marketing Services</b></span>
+    <span>Sourcing wave <b>W2 · Evaluate</b></span>
+    <span>Owner <b>A. Blois</b></span>
+    <span>Baseline <b class="mono">£4.20m</b></span>
+  </div>
+
+  <div class="prep">
+    <div class="txt">Preparing for the <b>weekly status review</b> · you last opened this on <b class="mono">12 Jun</b>.</div>
+    <button class="stat" id="stat" aria-pressed="false">
+      <span class="n mono">5</span><span>changed since your last review<span class="arr"> ›</span></span>
+    </button>
+  </div>
+
+  <div class="controls" role="group" aria-label="Filter updates">
+    <div class="chips" id="chips"></div>
+    <button class="toggle" id="chgToggle" aria-pressed="false">
+      <span class="switch" aria-hidden="true"></span>Changed since last review
+    </button>
+  </div>
+  <div class="count" id="count"></div>
+
+  <div id="list"></div>
+
+  <div class="foot">Concept prototype · explore funnel · not built on Orbit components. Data is illustrative.</div>
+</div>
+
+<div class="tray" id="tray">
+  <div class="bar" id="trayBar">
+    <span class="title">To update before the meeting</span>
+    <span class="cnt" id="trayCnt">0</span>
+    <span class="hint" id="trayHint">flag items as you review</span>
+  </div>
+  <div class="body" id="trayBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var TYPES={
+    risk:{label:"Risk",c:"var(--risk)"},issue:{label:"Issue",c:"var(--issue)"},
+    decision:{label:"Decision",c:"var(--decision)"},action:{label:"Action",c:"var(--action)"},
+    commentary:{label:"Commentary",c:"var(--comment)"}
+  };
+  function av(name){return name.split(/\s+/).map(function(w){return w[0];}).join("").slice(0,2).toUpperCase();}
+  // changed=true means new or edited since the PM's last review (12 Jun)
+  var ITEMS=[
+    {id:1,type:"decision",t:"Shortlist reduced to three agencies",owner:"A. Blois",when:"14 Jun 09:12",status:"Decided",changed:true,
+      desc:"After the W2 scoring session, the shortlist moves from five to three: Halden, Meridian, and Brightside. Nord and Cassia drop on commercial fit.",
+      log:[{w:"14 Jun",n:true,h:"<b>Decision recorded</b> by A. Blois — shortlist set to 3 agencies"},{w:"07 Jun",h:"Scoring session scheduled"}]},
+    {id:2,type:"risk",t:"Incumbent may contest the scope reduction",owner:"R. Okafor",when:"13 Jun 16:40",status:"Mitigating",changed:true,
+      desc:"Halden (incumbent) has signalled it will push back on the reduced retainer scope. Legal reviewing the exit clause; mitigation is a phased transition offer.",
+      log:[{w:"13 Jun",n:true,h:"<b>Status changed</b> Open → Mitigating; mitigation plan added by R. Okafor"},{w:"05 Jun",h:"Risk raised by A. Blois"}]},
+    {id:3,type:"issue",t:"Supplier B pricing sheet missing Category 4 lines",owner:"T. Ng",when:"13 Jun 11:05",status:"Open",changed:true,
+      desc:"Meridian's submitted pricing omits the Category 4 (events) line items. Clarification requested; response blocks the commercial comparison.",
+      log:[{w:"13 Jun",n:true,h:"<b>Issue raised</b> by T. Ng — awaiting supplier response"}]},
+    {id:4,type:"commentary",t:"Sponsor moved the go/no-go to next week",owner:"S. Patel-Jones",when:"12 Jun 17:22",status:"Note",changed:true,
+      desc:"Sponsor (G. Kirkwood) asked to push the go/no-go decision one week to align with the Q3 budget lock. No impact on evaluation timeline.",
+      log:[{w:"12 Jun",n:true,h:"<b>Commentary added</b> by S. Patel-Jones"}]},
+    {id:5,type:"action",t:"Send clarification pack to Brightside",owner:"T. Ng",when:"12 Jun 14:03",status:"Due 18 Jun",changed:true,
+      desc:"Compile and send the Category 4 clarification and the revised SLA appendix to Brightside. Owner T. Ng, due 18 Jun.",
+      log:[{w:"12 Jun",n:true,h:"<b>Action created</b> by A. Blois — assigned to T. Ng"}]},
+    {id:6,type:"action",t:"Confirm evaluation panel availability",owner:"A. Blois",when:"09 Jun 10:30",status:"Done",changed:false,
+      desc:"All four panellists confirmed for the W3 evaluation session.",
+      log:[{w:"09 Jun",h:"Marked done by A. Blois"},{w:"03 Jun",h:"Action created"}]},
+    {id:7,type:"risk",t:"Category 4 volumes may be understated in baseline",owner:"R. Okafor",when:"06 Jun 15:10",status:"Watching",changed:false,
+      desc:"Events spend in the baseline looks low against last year's actuals; watching pending finance confirmation.",
+      log:[{w:"06 Jun",h:"Risk raised by R. Okafor"}]},
+    {id:8,type:"decision",t:"Weighting set to 60% commercial / 40% capability",owner:"S. Patel-Jones",when:"04 Jun 09:00",status:"Decided",changed:false,
+      desc:"Evaluation weighting agreed with the sponsor at kickoff.",
+      log:[{w:"04 Jun",h:"Decision recorded at kickoff"}]},
+    {id:9,type:"commentary",t:"Kickoff notes and scope summary",owner:"A. Blois",when:"02 Jun 13:45",status:"Note",changed:false,
+      desc:"Initiative opened; scope covers retained agency services across brand, digital, and events for FY26.",
+      log:[{w:"02 Jun",h:"Initiative opened by A. Blois"}]}
+  ];
+
+  var state={types:new Set(),changedOnly:false,open:new Set(),flagged:new Set()};
+
+  var chipsEl=document.getElementById("chips");
+  var order=["risk","issue","decision","action","commentary"];
+  function typeCount(tp){return ITEMS.filter(function(i){return i.type===tp;}).length;}
+  var allChip=document.createElement("button");
+  allChip.className="chip";allChip.id="chip-all";allChip.setAttribute("aria-pressed","true");
+  allChip.innerHTML='All <span class="ct">'+ITEMS.length+'</span>';
+  allChip.addEventListener("click",function(){state.types.clear();render();});
+  chipsEl.appendChild(allChip);
+  order.forEach(function(tp){
+    var b=document.createElement("button");b.className="chip";b.dataset.type=tp;b.setAttribute("aria-pressed","false");
+    b.innerHTML='<span class="dot" style="background:'+TYPES[tp].c+'"></span>'+TYPES[tp].label+' <span class="ct">'+typeCount(tp)+'</span>';
+    b.addEventListener("click",function(){ if(state.types.has(tp))state.types.delete(tp); else state.types.add(tp); render(); });
+    chipsEl.appendChild(b);
+  });
+
+  var chgToggle=document.getElementById("chgToggle");
+  chgToggle.addEventListener("click",function(){state.changedOnly=!state.changedOnly;render();});
+  var stat=document.getElementById("stat");
+  stat.addEventListener("click",function(){state.changedOnly=!state.changedOnly;render();});
+
+  function visible(){
+    return ITEMS.filter(function(i){
+      if(state.types.size && !state.types.has(i.type))return false;
+      if(state.changedOnly && !i.changed)return false;
+      return true;
+    });
+  }
+
+  function itemNode(i){
+    var el=document.createElement("div");
+    el.className="item"+(i.changed?" changed":"")+(state.open.has(i.id)?" open":"");
+    el.style.setProperty("--tc",TYPES[i.type].c);
+    var flagged=state.flagged.has(i.id);
+    var logHtml=i.log.map(function(l){
+      return '<li><span class="lw">'+l.w+'</span><span class="'+(l.n?"new":"")+'">'+l.h+'</span></li>';
+    }).join("");
+    el.innerHTML=
+      '<div class="row">'+
+        '<span class="badge">'+TYPES[i.type].label+'</span>'+
+        '<div class="body"><div class="t">'+i.t+'</div>'+
+          '<div class="sub">'+
+            '<span class="who"><span class="av">'+av(i.owner)+'</span>'+i.owner+'</span>'+
+            '<span class="when mono">'+i.when+'</span>'+
+            '<span class="stpill">'+i.status+'</span>'+
+            (i.changed?'<span class="chgpill">Changed</span>':'')+
+          '</div>'+
+        '</div>'+
+        '<div class="right">'+
+          '<button class="flag" aria-pressed="'+flagged+'">'+(flagged?'✓ Flagged':'Flag')+'</button>'+
+          '<button class="caret" aria-label="Expand">›</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="detail"><div class="desc">'+i.desc+'</div>'+
+        '<div class="log"><div class="lh">History</div><ul>'+logHtml+'</ul></div></div>';
+
+    function toggleOpen(){ if(state.open.has(i.id))state.open.delete(i.id); else state.open.add(i.id); render(); }
+    el.querySelector(".row").addEventListener("click",function(e){
+      if(e.target.closest(".flag"))return;
+      toggleOpen();
+    });
+    el.querySelector(".flag").addEventListener("click",function(e){
+      e.stopPropagation();
+      if(state.flagged.has(i.id)){state.flagged.delete(i.id);} else {state.flagged.add(i.id);toast("Flagged — added to your list");}
+      render();
+    });
+    return el;
+  }
+
+  function render(){
+    // chips pressed state
+    allChip.setAttribute("aria-pressed",state.types.size===0);
+    chipsEl.querySelectorAll(".chip[data-type]").forEach(function(b){
+      b.setAttribute("aria-pressed",state.types.has(b.dataset.type));
+    });
+    chgToggle.setAttribute("aria-pressed",state.changedOnly);
+    stat.setAttribute("aria-pressed",state.changedOnly);
+
+    var vis=visible();
+    var changed=vis.filter(function(i){return i.changed;});
+    var earlier=vis.filter(function(i){return !i.changed;});
+
+    var cEl=document.getElementById("count");
+    cEl.innerHTML='Showing <b>'+vis.length+'</b> of '+ITEMS.length+' updates'+
+      (state.changedOnly?' · changed since <b class="mono">12 Jun</b>':'');
+
+    var list=document.getElementById("list");
+    list.innerHTML="";
+    if(!vis.length){ list.innerHTML='<div class="empty-list">No updates match these filters.</div>'; }
+    if(changed.length){
+      var d=document.createElement("div");d.className="divider";
+      d.innerHTML='<span class="lbl">Since your last review · 12 Jun</span><span class="rule"></span>';
+      list.appendChild(d);
+      var g=document.createElement("div");g.className="list";
+      changed.forEach(function(i){g.appendChild(itemNode(i));});
+      list.appendChild(g);
+    }
+    if(earlier.length && !state.changedOnly){
+      var d2=document.createElement("div");d2.className="divider earlier";
+      d2.innerHTML='<span class="lbl">Earlier</span><span class="rule"></span>';
+      list.appendChild(d2);
+      var g2=document.createElement("div");g2.className="list";
+      earlier.forEach(function(i){g2.appendChild(itemNode(i));});
+      list.appendChild(g2);
+    }
+    renderTray();
+  }
+
+  var tray=document.getElementById("tray");
+  document.getElementById("trayBar").addEventListener("click",function(){tray.classList.toggle("up");});
+  function renderTray(){
+    var ids=Array.from(state.flagged);
+    document.getElementById("trayCnt").textContent=ids.length;
+    document.getElementById("trayHint").textContent=ids.length?"tap to review your list":"flag items as you review";
+    var body=document.getElementById("trayBody");
+    if(!ids.length){ body.innerHTML='<div class="empty">Nothing flagged yet. As you spot items that need updating before the meeting, hit <b>Flag</b> and they collect here.</div>'; return; }
+    body.innerHTML="";
+    ids.forEach(function(id){
+      var i=ITEMS.find(function(x){return x.id===id;});
+      var r=document.createElement("div");r.className="trow";r.style.setProperty("--tc",TYPES[i.type].c);
+      r.innerHTML='<span class="tb">'+TYPES[i.type].label+'</span><span class="tt">'+i.t+'</span>'+
+        '<span class="when mono" style="font-size:11.5px;color:var(--muted)">'+i.when+'</span>'+
+        '<button class="rm" aria-label="Remove">×</button>';
+      r.querySelector(".rm").addEventListener("click",function(){state.flagged.delete(id);render();});
+      body.appendChild(r);
+    });
+    var done=document.createElement("button");done.className="done";
+    done.textContent="Mark "+ids.length+" ready to update";
+    done.addEventListener("click",function(){toast(ids.length+" items queued for update");state.flagged.clear();tray.classList.remove("up");render();});
+    body.appendChild(done);
+  }
+
+  var toastT;
+  function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},1700);}
+
+  render();
+  window.__raid={render:render,state:state,items:ITEMS,visibleCount:function(){return visible().length;}};
+})();
+</script>

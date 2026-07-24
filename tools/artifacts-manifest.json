@@ -1,41 +1,41 @@
 {
-  "_comment": "Hand-maintained index of Claude Artifacts (deliverables) built from the vault. Unlike the rest of the health page, this is NOT scanned — Claude has no API to enumerate a user's artifacts, so add new ones here by hand. Rendered ONLY on the private/full health dashboard (tools/vault_health.py, render_artifact); it is deliberately excluded from the public sanitized page because several titles name product surfaces. Keep titles here honest even if internal — this list never reaches the public URL.",
+  "_comment": "Index of deliverables built from the vault. `file` is the in-repo copy under artifacts/ (the source of truth); `url` is the live Claude Artifact. tools/build_artifacts_index.py renders artifacts/index.html (a real web page — links work, unlike inside a sandboxed artifact). tools/vault_health.py renders the same list on the PRIVATE health dashboard only (several titles name product surfaces, so it never reaches the public page). Hand-maintained: Claude has no API to enumerate artifacts. Items with no `file` have no in-repo copy yet (couldn't be re-fetched); the hub falls back to their live url.",
   "groups": [
     {
       "name": "Use these now",
       "blurb": "The working surfaces for the intake pipeline.",
       "items": [
-        {"title": "Concept Brief Intake — the form", "url": "https://claude.ai/code/artifact/6729519b-64d5-4721-b13d-e526864ed075", "tag": "Live"},
-        {"title": "Vault Health — this dashboard", "url": "https://claude.ai/code/artifact/640ab93b-f7ed-4acb-98dc-705fdee7e336", "tag": "Live"},
-        {"title": "Running the concept-intake pilot with your team", "url": "https://claude.ai/code/artifact/8e9e9c8f-58ef-4a5c-950b-cdc6f9be36c9", "tag": "Live"}
+        {"title": "Concept Brief Intake — the form", "file": "concept-brief-intake.html", "url": "https://claude.ai/code/artifact/6729519b-64d5-4721-b13d-e526864ed075", "tag": "Live"},
+        {"title": "Vault Health — the dashboard", "file": "vault-health.html", "url": "https://claude.ai/code/artifact/640ab93b-f7ed-4acb-98dc-705fdee7e336", "tag": "Live"},
+        {"title": "Running the concept-intake pilot with your team", "file": "pilot-playbook.html", "url": "https://claude.ai/code/artifact/8e9e9c8f-58ef-4a5c-950b-cdc6f9be36c9", "tag": "Live"}
       ]
     },
     {
       "name": "Explain the pipeline",
       "blurb": "Share to show how concept-to-prototype works now.",
       "items": [
-        {"title": "Concept-to-Prototype — the flow chart", "url": "https://claude.ai/code/artifact/a6a45d4a-50ed-499d-9271-1e1cad199bed", "tag": "Current"},
-        {"title": "Context-First Prototyping — intake & gate", "url": "https://claude.ai/code/artifact/6248902f-d678-4215-b02f-a3e924593c70", "tag": "Current"}
+        {"title": "Concept-to-Prototype — the flow chart", "file": "concept-to-prototype-flow.html", "url": "https://claude.ai/code/artifact/a6a45d4a-50ed-499d-9271-1e1cad199bed", "tag": "Current"},
+        {"title": "Context-First Prototyping — intake & gate", "file": "context-first-prototyping.html", "url": "https://claude.ai/code/artifact/6248902f-d678-4215-b02f-a3e924593c70", "tag": "Current"}
       ]
     },
     {
       "name": "Concept prototypes",
       "blurb": "Explore-funnel outputs. The newest came from the first Ready brief; the rest are earlier explorations.",
       "items": [
-        {"title": "Status Prep — Initiative RAID & Commentary", "url": "https://claude.ai/code/artifact/2efbf1b5-2257-46a9-b8cb-d27997971410", "tag": "Latest"},
-        {"title": "Delivery Radar — cross-initiative RAID", "url": "https://claude.ai/code/artifact/317d150a-cb3d-498c-9758-b0308892612e", "tag": "Earlier"},
-        {"title": "Initiative Log — Commentary & RAID", "url": "https://claude.ai/code/artifact/b62a467a-1efa-44d5-b29b-425fa6367222", "tag": "Earlier"},
-        {"title": "Commentary / RAID — Clickable", "url": "https://claude.ai/code/artifact/3e826d75-321b-4517-878d-e9b9c81605a6", "tag": "Earlier"},
-        {"title": "Commentary / RAID — Walkthrough", "url": "https://claude.ai/code/artifact/aa6479ae-210a-4166-9b27-dc9f623feb77", "tag": "Earlier"}
+        {"title": "Status Prep — Initiative RAID & Commentary", "file": "status-prep-raid.html", "url": "https://claude.ai/code/artifact/2efbf1b5-2257-46a9-b8cb-d27997971410", "tag": "Latest"},
+        {"title": "Delivery Radar — cross-initiative RAID", "file": "delivery-radar.html", "url": "https://claude.ai/code/artifact/317d150a-cb3d-498c-9758-b0308892612e", "tag": "Earlier"},
+        {"title": "Initiative Log — Commentary & RAID", "file": "initiative-log.html", "url": "https://claude.ai/code/artifact/b62a467a-1efa-44d5-b29b-425fa6367222", "tag": "Earlier"},
+        {"title": "Commentary / RAID — Clickable", "file": "commentary-raid-clickable.html", "url": "https://claude.ai/code/artifact/3e826d75-321b-4517-878d-e9b9c81605a6", "tag": "Earlier"},
+        {"title": "Commentary / RAID — Walkthrough", "file": "commentary-raid-walkthrough.html", "url": "https://claude.ai/code/artifact/aa6479ae-210a-4166-9b27-dc9f623feb77", "tag": "Earlier"}
       ]
     },
     {
       "name": "Explain the vault",
       "blurb": "Decks describing what the vault is and how it's shared.",
       "items": [
-        {"title": "Systems Overview", "url": "https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28", "tag": "Current"},
-        {"title": "One source of truth", "url": "https://claude.ai/code/artifact/ba1cece1-c020-46e7-966f-bd779e7c012c", "tag": "Earlier"},
-        {"title": "How the vault is shared & used", "url": "https://claude.ai/code/artifact/90f868e1-4233-4160-b89b-18f50ea11822", "tag": "Earlier"}
+        {"title": "Systems Overview", "file": "systems-overview.html", "url": "https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28", "tag": "Current"},
+        {"title": "One source of truth", "file": "one-source-of-truth.html", "url": "https://claude.ai/code/artifact/ba1cece1-c020-46e7-966f-bd779e7c012c", "tag": "Earlier"},
+        {"title": "How the vault is shared & used", "file": "how-the-vault-is-shared.html", "url": "https://claude.ai/code/artifact/90f868e1-4233-4160-b89b-18f50ea11822", "tag": "Earlier"}
       ]
     },
     {

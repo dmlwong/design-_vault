@@ -1,0 +1,407 @@
+<style>
+  :root{
+    --bg:#eef1f6;--panel:#fff;--panel-2:#f4f7fb;--ink:#141922;--muted:#5a6472;
+    --line:#e0e6ee;--line-2:#eaeff5;--accent:#0e7c86;--accent-ink:#0a5b62;
+    --ready:#1f9d55;--warn:#c2410c;--block:#b4232a;
+    --tester:#0e7c86;--owner:#6d3bd1;
+    --shadow:0 1px 2px rgba(20,25,34,.05),0 10px 30px rgba(20,25,34,.07);
+    --shadow-sm:0 1px 2px rgba(20,25,34,.05);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0a0d12;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--line-2:#1a212b;--accent:#2dd4bf;--accent-ink:#7ff0dd;
+    --ready:#3ecf7f;--warn:#f0894e;--block:#f2696f;
+    --tester:#2dd4bf;--owner:#a883f2;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);}}
+  :root[data-theme=light]{
+    --bg:#eef1f6;--panel:#fff;--panel-2:#f4f7fb;--ink:#141922;--muted:#5a6472;
+    --line:#e0e6ee;--line-2:#eaeff5;--accent:#0e7c86;--accent-ink:#0a5b62;
+    --ready:#1f9d55;--warn:#c2410c;--block:#b4232a;--tester:#0e7c86;--owner:#6d3bd1;
+    --shadow:0 1px 2px rgba(20,25,34,.05),0 10px 30px rgba(20,25,34,.07);
+    --shadow-sm:0 1px 2px rgba(20,25,34,.05);}
+  :root[data-theme=dark]{
+    --bg:#0a0d12;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--line-2:#1a212b;--accent:#2dd4bf;--accent-ink:#7ff0dd;
+    --ready:#3ecf7f;--warn:#f0894e;--block:#f2696f;--tester:#2dd4bf;--owner:#a883f2;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 14px 34px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);}
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.58;-webkit-font-smoothing:antialiased;letter-spacing:-.003em}
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:800px;margin:0 auto;padding:52px 22px 80px}
+
+  /* ---- header ---- */
+  .eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+  :root[data-theme=dark] .eyebrow,@media (prefers-color-scheme:dark){.eyebrow{color:var(--accent)}}
+  h1{font-size:31px;line-height:1.12;letter-spacing:-.022em;margin:12px 0 0;font-weight:680;
+    text-wrap:balance;max-width:18ch}
+  .lede{margin:16px 0 0;font-size:16px;color:var(--muted);max-width:62ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .meta .m{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:600;
+    letter-spacing:.02em;color:var(--muted);background:var(--panel);border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px;box-shadow:var(--shadow-sm)}
+  .meta .m b{color:var(--ink);font-weight:680}
+
+  /* ---- loop at a glance ---- */
+  .glance{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:22px 22px 20px}
+  .glance .lbl{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 14px}
+  .flow{display:flex;align-items:stretch;flex-wrap:wrap;gap:8px}
+  .node{flex:1 1 118px;min-width:0;background:var(--panel-2);border:1px solid var(--line-2);
+    border-radius:12px;padding:12px 13px;display:flex;flex-direction:column;gap:3px}
+  .node .n{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--accent);font-weight:600}
+  .node .t{font-size:14px;font-weight:640;letter-spacing:-.01em}
+  .node .w{font-size:11.5px;color:var(--muted)}
+  .arrow{align-self:center;color:var(--muted);font-size:15px;flex:none;opacity:.6}
+  .glance .foot{margin:15px 2px 0;font-size:12.5px;color:var(--muted)}
+  .glance .foot b{color:var(--ink);font-weight:620}
+
+  /* ---- firewall callout ---- */
+  .callout{margin-top:22px;display:flex;gap:14px;background:var(--panel);
+    border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:14px;
+    box-shadow:var(--shadow-sm);padding:16px 18px}
+  .callout .k{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--warn);font-weight:700;flex:none;padding-top:2px}
+  .callout p{margin:0;font-size:13.5px;color:var(--ink)}
+  .callout p .q{color:var(--muted)}
+
+  /* ---- phases ---- */
+  section.phase{margin-top:40px}
+  .ph-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+  .ph-num{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;color:var(--accent);
+    border:1.5px solid var(--accent);border-radius:8px;width:30px;height:30px;flex:none;
+    display:flex;align-items:center;justify-content:center;transform:translateY(3px)}
+  .ph-title{font-size:20px;font-weight:670;letter-spacing:-.015em;margin:0}
+  .ph-when{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted);margin-left:auto;
+    align-self:center;white-space:nowrap}
+  .ph-sub{margin:2px 0 18px 44px;color:var(--muted);font-size:14px;max-width:60ch}
+  @media (max-width:560px){.ph-sub{margin-left:0}}
+
+  .steps{display:flex;flex-direction:column;gap:12px;margin-left:44px}
+  @media (max-width:560px){.steps{margin-left:0}}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow-sm);padding:15px 17px;display:grid;
+    grid-template-columns:auto 1fr;gap:14px;align-items:start}
+  .step .mk{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;font-weight:700;
+    color:var(--muted);background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;
+    min-width:26px;height:26px;padding:0 7px;display:flex;align-items:center;justify-content:center;flex:none}
+  .step .body{min-width:0}
+  .step .t{font-size:14.5px;font-weight:640;letter-spacing:-.008em}
+  .step .d{font-size:13.5px;color:var(--muted);margin-top:4px}
+  .step .d code,.inline-code{font-family:ui-monospace,Menlo,monospace;font-size:12px;
+    background:var(--panel-2);border:1px solid var(--line-2);border-radius:5px;padding:1px 6px;
+    color:var(--ink);white-space:nowrap}
+  .lane{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.06em;
+    text-transform:uppercase;font-weight:700;border-radius:999px;padding:3px 9px;flex:none;
+    align-self:start}
+  .lane.tester{color:var(--tester);background:color-mix(in srgb,var(--tester) 13%,transparent)}
+  .lane.owner{color:var(--owner);background:color-mix(in srgb,var(--owner) 15%,transparent)}
+  .step.has-lane{grid-template-columns:auto auto 1fr}
+  @media (max-width:560px){.step.has-lane{grid-template-columns:auto 1fr}
+    .step.has-lane .lane{grid-column:1/-1;justify-self:start}}
+
+  /* fork */
+  .fork{margin-left:44px;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:560px){.fork{grid-template-columns:1fr;margin-left:0}}
+  .branch{border:1px solid var(--line);border-radius:13px;padding:14px 16px;background:var(--panel);
+    box-shadow:var(--shadow-sm);border-top:3px solid var(--bc)}
+  .branch.ready{--bc:var(--ready)} .branch.needs{--bc:var(--warn)}
+  .branch .v{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.05em;
+    text-transform:uppercase;font-weight:700;color:var(--bc)}
+  .branch .d{font-size:13px;color:var(--muted);margin-top:5px}
+  .branch .d code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink)}
+
+  /* watch list */
+  .watch{margin-left:44px;display:flex;flex-direction:column;gap:10px}
+  @media (max-width:560px){.watch{margin-left:0}}
+  .watch .q{display:grid;grid-template-columns:auto 1fr;gap:11px;align-items:start;
+    font-size:13.5px}
+  .watch .q .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    margin-top:8px;flex:none}
+  .watch .q b{font-weight:640}
+
+  /* roles / links tables */
+  .tbl-wrap{margin-left:44px;overflow-x:auto}
+  @media (max-width:560px){.tbl-wrap{margin-left:0}}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:420px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  td b{font-weight:640}
+  td .inline-code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+
+  /* announcement */
+  .ann{margin-left:44px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow-sm);overflow:hidden}
+  @media (max-width:560px){.ann{margin-left:0}}
+  .ann-bar{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid var(--line);
+    background:var(--panel-2)}
+  .ann-bar .lbl{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--muted);font-weight:600}
+  .copy{margin-left:auto;font:inherit;font-size:12.5px;font-weight:640;cursor:pointer;
+    color:var(--accent-ink);background:transparent;border:1px solid var(--line);border-radius:8px;
+    padding:5px 12px;transition:border-color .12s ease,background .12s ease}
+  :root[data-theme=dark] .copy{color:var(--accent)}
+  @media (prefers-color-scheme:dark){.copy{color:var(--accent)}}
+  .copy:hover{border-color:var(--accent)}
+  .copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .ann-body{padding:16px 18px;font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.6}
+
+  a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+  :root[data-theme=dark] a{color:var(--accent)}
+  @media (prefers-color-scheme:dark){a{color:var(--accent)}}
+  a:hover{border-bottom-color:var(--accent)}
+
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;line-height:1.6}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Orbit Design Brain · Pilot playbook</div>
+    <h1>Running the concept-intake pilot with your team</h1>
+    <p class="lede">A short, no-infrastructure test of one question: does the pipeline actually
+      help a teammate turn a rough idea into a testable concept? Everything below runs in a browser
+      and two Claude Projects — no accounts to provision, and nothing anyone types leaves their machine.</p>
+    <div class="meta">
+      <span class="m"><b>~20 min</b> one-time setup</span>
+      <span class="m"><b>2–3</b> testers</span>
+      <span class="m"><b>2 working days</b> gate turnaround</span>
+      <span class="m"><b>1</b> intake owner</span>
+    </div>
+  </header>
+
+  <div class="glance">
+    <p class="lbl">The loop at a glance</p>
+    <div class="flow">
+      <div class="node"><span class="n">01</span><span class="t">Idea</span><span class="w">a rough concept</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><span class="n">02</span><span class="t">Coach</span><span class="w">draws out a brief</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><span class="n">03</span><span class="t">Capture</span><span class="w">the intake form</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><span class="n">04</span><span class="t">Gate</span><span class="w">reviewer verdict</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><span class="n">05</span><span class="t">Explore</span><span class="w">a concept + critique</span></div>
+    </div>
+    <p class="foot">Steps <b>01–03</b> are the tester's, self-serve. Steps <b>04–05</b> are the design
+      team's. A brief only reaches Explore once the gate says it's ready.</p>
+  </div>
+
+  <div class="callout">
+    <span class="k">The one rule</span>
+    <p>Keep the <b>Coach</b> and the <b>Reviewer</b> as two <b>separate</b> Claude Projects. The Coach
+      helps write the brief; the Reviewer judges it blind. <span class="q">If one chat does both, the
+      reviewer rubber-stamps what it just helped author — and the gate becomes theatre.</span></p>
+  </div>
+
+  <!-- PHASE 1 -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">1</span>
+      <h2 class="ph-title">Set up the two Projects</h2>
+      <span class="ph-when">once · owner · ~20 min</span>
+    </div>
+    <p class="ph-sub">You provision this once. It's two Claude Projects and a link — nothing installed.</p>
+    <div class="steps">
+      <div class="step"><span class="mk">1.1</span><div class="body">
+        <div class="t">Create the “Orbit Brief Coach” Project</div>
+        <div class="d">In Claude, <b>New Project</b> → name it <b>Orbit Brief Coach</b> → paste the contents
+          of <span class="inline-code">brief-coach-project.md</span> into its custom instructions → save.</div></div></div>
+      <div class="step"><span class="mk">1.2</span><div class="body">
+        <div class="t">Create the “Orbit Brief Reviewer” Project</div>
+        <div class="d">Same again: <b>New Project</b> → <b>Orbit Brief Reviewer</b> → paste
+          <span class="inline-code">brief-reviewer-project.md</span>. Optionally add your platform profiles to its
+          knowledge so it checks concepts against real context.</div></div></div>
+      <div class="step"><span class="mk">1.3</span><div class="body">
+        <div class="t">Confirm the intake link works</div>
+        <div class="d">Open the site, click <b>Concept Brief Intake</b>, type a line, hit <b>Download .md</b>.
+          If a file lands in your downloads, the tester path works.</div></div></div>
+      <div class="step"><span class="mk">1.4</span><div class="body">
+        <div class="t">Name the intake owner &amp; the clock</div>
+        <div class="d">One person runs the Reviewer and replies within <b>two working days</b>. It can be you.
+          Without a named owner, briefs pile up and the pilot stalls.</div></div></div>
+    </div>
+  </section>
+
+  <!-- PHASE 2 -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">2</span>
+      <h2 class="ph-title">Pick your pilot group</h2>
+      <span class="ph-when">once · owner</span>
+    </div>
+    <p class="ph-sub">Small and real beats big and hypothetical.</p>
+    <div class="steps">
+      <div class="step"><span class="mk">2.1</span><div class="body">
+        <div class="t">Choose 2–3 teammates with a real, current idea</div>
+        <div class="d">Not a made-up test case — an actual thing they wish existed. That's what stresses the
+          pipeline honestly.</div></div></div>
+      <div class="step"><span class="mk">2.2</span><div class="body">
+        <div class="t">Mix coached and cold</div>
+        <div class="d">Have some use the Coach first and some fill the form cold. Comparing coached vs cold
+          briefs is itself the most useful data you'll get this week.</div></div></div>
+    </div>
+  </section>
+
+  <!-- PHASE 3 -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">3</span>
+      <h2 class="ph-title">Run the loop, per brief</h2>
+      <span class="ph-when">repeat · tester + owner</span>
+    </div>
+    <p class="ph-sub">Four steps and a fork. The lane tag shows who's driving each one.</p>
+    <div class="steps">
+      <div class="step has-lane"><span class="lane tester">Tester</span><span class="mk">A</span><div class="body">
+        <div class="t">Talk it through with the Coach <span style="font-weight:500;color:var(--muted)">(optional, recommended)</span></div>
+        <div class="d">Open <b>Orbit Brief Coach</b> and describe the idea. It asks questions and hands back a
+          tight brief in the right shape. Skipping this is fine — it's a valid comparison.</div></div></div>
+      <div class="step has-lane"><span class="lane tester">Tester</span><span class="mk">B</span><div class="body">
+        <div class="t">Capture it in the intake form</div>
+        <div class="d">Fill the form (paste and refine the coached brief if you have one), then hit
+          <b>Download .md</b>. Everything stays in the browser — nothing is sent anywhere.</div></div></div>
+      <div class="step has-lane"><span class="lane tester">Tester</span><span class="mk">C</span><div class="body">
+        <div class="t">Send the brief to the intake owner</div>
+        <div class="d">Drop the <span class="inline-code">.md</span> file in Slack or email to the named owner. Done — the tester waits for a verdict.</div></div></div>
+      <div class="step has-lane"><span class="lane owner">Owner</span><span class="mk">D</span><div class="body">
+        <div class="t">Run the gate</div>
+        <div class="d">Paste the brief into <b>Orbit Brief Reviewer</b> → get a verdict
+          (<b>Ready / Needs work / Blocked</b>). Record it in the brief's <span class="inline-code">## Gate log</span>
+          and reply to the tester. Then, per the verdict:</div></div></div>
+    </div>
+    <div class="fork">
+      <div class="branch needs">
+        <div class="v">Needs work → back to the tester</div>
+        <div class="d">They re-open the form, use <b>Import</b> to reload the brief, fix the gaps the reviewer
+          named, regenerate, and resubmit. This is the normal first outcome, not a failure.</div>
+      </div>
+      <div class="branch ready">
+        <div class="v">Ready → into Explore</div>
+        <div class="d">The design team runs <code>explore</code> in Claude Code to build a throwaway concept
+          and a blind critique. The brief keeps its Gate log as its record.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHASE 4 -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">4</span>
+      <h2 class="ph-title">Capture what you learn</h2>
+      <span class="ph-when">throughout · everyone</span>
+    </div>
+    <p class="ph-sub">This is the actual point of the pilot. The verdicts matter less than where the
+      process helped or fought you.</p>
+    <div class="watch">
+      <div class="q"><span class="dot"></span><div><b>Did the Coach draw the good material out</b> — or paper over gaps and put words in the tester's mouth?</div></div>
+      <div class="q"><span class="dot"></span><div><b>Did the verdict feel right</b>, and were the reviewer's rewrite suggestions specific enough to act on?</div></div>
+      <div class="q"><span class="dot"></span><div><b>Did any real idea have no home in the form</b> — no matching surface, no field for something that mattered?</div></div>
+      <div class="q"><span class="dot"></span><div><b>Where did people get stuck</b> — the hand-off, the resubmit loop, or waiting for the verdict?</div></div>
+    </div>
+    <p class="ph-sub" style="margin-top:16px">Log one observation per issue in
+      <span class="inline-code">design-brain/lessons/INBOX.md</span> (or a shared thread). Those entries
+      become the backlog for tightening the specs.</p>
+  </section>
+
+  <!-- PHASE 5 -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">5</span>
+      <h2 class="ph-title">Decide what's real</h2>
+      <span class="ph-when">after ~1 week or ~5 briefs</span>
+    </div>
+    <p class="ph-sub">Everything is <span class="inline-code">draft</span> on purpose. Promotion is an owner
+      decision made <b>after</b> evidence, never before.</p>
+    <div class="steps">
+      <div class="step"><span class="mk">5.1</span><div class="body">
+        <div class="t">Promote the specs draft → stable — if they earned it</div>
+        <div class="d">If the coach and gate reliably helped, move them to <span class="inline-code">stable</span>.
+          If not, keep iterating; there's no deadline on the label.</div></div></div>
+      <div class="step"><span class="mk">5.2</span><div class="body">
+        <div class="t">Tighten where the specs fought the evidence</div>
+        <div class="d">Edit the coach/reviewer specs, re-run <span class="inline-code">tools/build_project_bundles.py</span>,
+          and re-paste the updated bundles into the Projects.</div></div></div>
+      <div class="step"><span class="mk">5.3</span><div class="body">
+        <div class="t">Note the biggest gap</div>
+        <div class="d">Without an Efficio Context Pack, the reviewer can't truly judge <b>feasibility</b> — it
+          says so honestly instead of guessing. If that limitation bites during the pilot, that's your next
+          initiative.</div></div></div>
+    </div>
+  </section>
+
+  <!-- APPENDIX: roles -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">·</span>
+      <h2 class="ph-title">Who runs what</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Surface</th><th>What it is</th><th>Who runs it</th></tr></thead>
+        <tbody>
+          <tr><td><b>Intake form</b></td><td>a shared link, in-browser</td><td>any tester</td></tr>
+          <tr><td><b>Brief Coach</b></td><td>a Claude Project</td><td>any tester, self-serve</td></tr>
+          <tr><td><b>Brief Reviewer</b></td><td>a Claude Project</td><td>the intake owner</td></tr>
+          <tr><td><b><span class="inline-code">explore</span></b></td><td>a run in Claude Code</td><td>the design team</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- APPENDIX: announcement -->
+  <section class="phase">
+    <div class="ph-head">
+      <span class="ph-num">·</span>
+      <h2 class="ph-title">Send this to your testers</h2>
+    </div>
+    <p class="ph-sub">Fill in the two <span class="inline-code">[…]</span> placeholders and paste into Slack or email.</p>
+    <div class="ann">
+      <div class="ann-bar">
+        <span class="lbl">Tester announcement</span>
+        <button class="copy" id="copyBtn" type="button">Copy</button>
+      </div>
+      <div class="ann-body" id="annText">Testing our new concept-intake flow — want to try it?
+
+Got a rough product idea? Two steps:
+
+1) Open the Orbit Brief Coach (Claude Project) and talk through your idea — it'll ask questions and hand you back a tight brief. (Optional but recommended.)
+
+2) Open the intake form → [LINK] → "Concept Brief Intake". Fill it in, hit Download, and send the file to [INTAKE OWNER].
+
+Everything runs in your browser — nothing you type is sent anywhere. You'll get back a verdict (Ready / Needs work) within two working days, and if it's promising, we build a concept prototype from it.</div>
+    </div>
+  </section>
+
+  <footer>
+    Nothing here needs new infrastructure — it's a link and two Claude Projects. Keep it lightweight; the
+    goal is evidence, not ceremony. The canonical version of this loop lives in the vault at
+    <span class="inline-code">_review/2026-07-21-intake-team-test-runbook.md</span>.
+  </footer>
+
+</div>
+
+<script>
+  (function(){
+    var btn=document.getElementById('copyBtn'), src=document.getElementById('annText');
+    if(!btn||!src)return;
+    btn.addEventListener('click',function(){
+      var t=src.innerText;
+      function done(){var o=btn.textContent;btn.textContent='Copied ✓';setTimeout(function(){btn.textContent=o;},1600);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done);});}
+      else{fallback(t,done);}
+    });
+    function fallback(t,cb){var a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';
+      document.body.appendChild(a);a.select();try{document.execCommand('copy');cb();}catch(e){}document.body.removeChild(a);}
+  })();
+</script>

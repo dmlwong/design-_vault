@@ -1,0 +1,277 @@
+<title>Orbit Design Brain — Vault Health</title>
+<style>
+  :root{
+    --bg:#f5f7fa;--panel:#fff;--panel-2:#f0f3f8;--ink:#141922;--muted:#59626f;
+    --line:#e4e9f0;--accent:#0e7c86;--stable:#1f9d55;--review:#c98a00;
+    --draft:#64748b;--warn:#c2410c;--track:#eaeef4;
+    --shadow:0 1px 2px rgba(20,25,34,.04),0 8px 24px rgba(20,25,34,.05);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0c0f14;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--accent:#2dd4bf;--stable:#3ecf7f;--review:#e5b84b;
+    --draft:#94a3b8;--warn:#f0894e;--track:#1c232e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);}}
+  :root[data-theme=light]{
+    --bg:#f5f7fa;--panel:#fff;--panel-2:#f0f3f8;--ink:#141922;--muted:#59626f;
+    --line:#e4e9f0;--accent:#0e7c86;--stable:#1f9d55;--review:#c98a00;
+    --draft:#64748b;--warn:#c2410c;--track:#eaeef4;
+    --shadow:0 1px 2px rgba(20,25,34,.04),0 8px 24px rgba(20,25,34,.05);}
+  :root[data-theme=dark]{
+    --bg:#0c0f14;--panel:#141922;--panel-2:#0f141b;--ink:#e9edf3;--muted:#98a2b2;
+    --line:#232a35;--accent:#2dd4bf;--stable:#3ecf7f;--review:#e5b84b;
+    --draft:#94a3b8;--warn:#f0894e;--track:#1c232e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums}
+  .wrap{max-width:900px;margin:0 auto;padding:40px 22px 64px}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);font-weight:600}
+  header{margin-bottom:26px}
+  h1{font-size:23px;letter-spacing:-.01em;margin:6px 0 0;font-weight:650}
+  .banner{margin-top:20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--verdict);
+    border-radius:14px;padding:18px 22px;box-shadow:var(--shadow)}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--verdict);
+    box-shadow:0 0 0 4px color-mix(in srgb,var(--verdict) 22%,transparent);flex:none}
+  .banner .verdict{font-size:17px;font-weight:650}
+  .banner .meta{color:var(--muted);font-size:13px;margin-left:auto;text-align:right}
+  .banner .summary-line{color:var(--muted);font-size:13.5px;margin-top:3px;
+    font-variant-numeric:tabular-nums}
+  section{margin-top:34px}
+  .s-head{margin:0 0 4px;font-size:16px;font-weight:650;letter-spacing:-.01em}
+  .s-sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .kpi,.kpi-btn{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;padding:17px 17px 18px}
+  .kpi .n,.kpi-btn .n{font-size:29px;font-weight:650;letter-spacing:-.02em;line-height:1}
+  .kpi .k,.kpi-btn .k{font-size:14px;font-weight:650;margin-top:9px}
+  .gloss{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+  /* Expandable cards are buttons that open the slide-in drawer. */
+  .kpi-btn{cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%;
+    transition:border-color .12s ease,transform .12s ease}
+  .kpi-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .kpi-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .expand-hint{margin-top:12px;font-size:12px;font-weight:650;color:var(--accent);
+    display:flex;align-items:center;gap:6px}
+  .expand-hint .chev{font-size:14px;line-height:1}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
+    letter-spacing:.02em}
+  .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
+  .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
+  .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  /* Side panel: docked right, slides in from the right, pushes content left —
+     no overlay, no scrim. --dw is the panel width (full-width on small screens). */
+  :root{--dw:400px}
+  html{overflow-x:hidden}
+  #shell{transition:margin-right .28s cubic-bezier(.4,0,.2,1)}
+  body.drawer-open #shell{margin-right:var(--dw)}
+  .drawer{position:fixed;top:0;right:0;height:100dvh;width:var(--dw);
+    background:var(--panel);border-left:1px solid var(--line);
+    box-shadow:-14px 0 34px rgba(10,14,20,.12);
+    transform:translateX(100%);visibility:hidden;z-index:30;display:flex;flex-direction:column;
+    transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s}
+  body.drawer-open .drawer{transform:translateX(0);visibility:visible;
+    transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  @media (max-width:820px){:root{--dw:100vw}
+    body.drawer-open #shell{margin-right:0}}
+  .drawer .dhead{display:flex;align-items:center;gap:10px;padding:20px 20px 15px;
+    border-bottom:1px solid var(--line)}
+  .drawer .dhead h3{margin:0;font-size:15px;font-weight:650}
+  .drawer .dcount{font-size:12px;font-weight:650;color:var(--accent);
+    background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:999px;padding:2px 9px}
+  .drawer-close{margin-left:auto;background:none;border:1px solid var(--line);border-radius:8px;
+    width:30px;height:30px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;
+    display:grid;place-items:center}
+  .drawer-close:hover{border-color:var(--accent);color:var(--ink)}
+  .drawer-close:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .drawer .dgloss{padding:14px 20px 0;color:var(--muted);font-size:12.5px}
+  .drawer-body{padding:10px 20px 24px;overflow:auto}
+  .items{list-style:none;margin:0;padding:0}
+  .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .items li:first-child{border-top:none}
+  .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media (prefers-reduced-motion:reduce){
+    .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
+    body.drawer-open .drawer{transition:none}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:22px;box-shadow:var(--shadow)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 16px;padding-bottom:16px;
+    border-bottom:1px solid var(--line)}
+  .legend .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .legend .lg b{color:var(--ink);font-weight:600}
+  .legend .sw{width:9px;height:9px;border-radius:2px;flex:none}
+  .row{display:flex;align-items:center;gap:14px;padding:11px 0}
+  .row+.row{border-top:1px solid var(--line)}
+  .row .name{width:96px;font-size:13.5px;font-weight:550}
+  .track{flex:1;height:9px;background:var(--track);border-radius:999px;overflow:hidden}
+  .fill{display:block;height:100%;border-radius:999px}
+  .row .val{width:104px;text-align:right;font-size:13.5px;color:var(--muted)}
+  .row .val b{color:var(--ink);font-weight:600}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
+  .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+    font-size:12px;font-weight:700;margin-top:1px}
+  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+  .check .ct{font-weight:600}
+  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .fresh{display:flex;gap:16px;flex-wrap:wrap}
+  .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
+  .fresh .item .n{font-size:26px;font-weight:650}
+  .fresh .item .k{font-size:13px;font-weight:600}
+  .fresh .item .d{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .fresh .item.good .n{color:var(--stable)}
+  .spark{width:100%;height:56px}
+  .spark path{fill:none;stroke:var(--accent);stroke-width:2}
+  .cap{color:var(--muted);font-size:12.5px;margin:0}
+  footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
+  @media (max-width:640px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .checks{grid-template-columns:1fr}
+    .banner .meta{margin-left:0;text-align:left}}
+  /* Artifacts index — private dashboard only. */
+  .agroup+.agroup{margin-top:20px}
+  .agroup .gh{display:flex;align-items:baseline;gap:9px;margin:0 0 3px}
+  .agroup .gh .gn{font-size:13.5px;font-weight:650}
+  .agroup .gh .gc{font-size:11.5px;font-weight:600;color:var(--muted);
+    font-variant-numeric:tabular-nums}
+  .agroup .gb{font-size:12px;color:var(--muted);margin:0 0 11px}
+  .alist{display:flex;flex-direction:column;gap:8px}
+  a.arow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+    text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:11px;box-shadow:var(--shadow);padding:12px 15px;
+    transition:border-color .12s ease,transform .12s ease}
+  a.arow:hover{border-color:var(--accent);transform:translateY(-1px)}
+  a.arow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  a.arow .at{font-size:13.5px;font-weight:600;letter-spacing:-.005em;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  a.arow .atag{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);
+    border-radius:999px;padding:3px 9px;white-space:nowrap}
+  a.arow .ao{font-size:12px;font-weight:650;color:var(--accent);white-space:nowrap}
+  a.arow:hover .ao{text-decoration:underline}
+  @media (prefers-reduced-motion:reduce){a.arow,a.arow:hover{transition:none}}
+  @media (max-width:640px){a.arow{grid-template-columns:1fr auto}a.arow .ao{display:none}}
+</style>
+<div id="shell"><div class="wrap">
+  <header>
+    <div class="eyebrow">Orbit Design Brain</div>
+    <h1>Vault Health</h1>
+    <div class="banner" style="--verdict:var(--stable)">
+      <span class="dot"></span>
+      <div>
+        <div class="verdict">Healthy</div>
+        <div class="summary-line">139 documents · all checks passing · nothing overdue</div>
+      </div>
+      <span class="meta">Updated 2026-07-24<br>Refreshes daily</span>
+    </div>
+  </header>
+
+  <section>
+    <h2 class="s-head">What's inside</h2>
+    <p class="s-sub">The building blocks the vault holds. Every card can be opened to list what's in them.</p>
+    <div class="kpis"><button type="button" class="kpi-btn" data-area="Agents" aria-haspopup="dialog" aria-label="See all 10 Agents"><span class="n mono">10</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span>See all 10</span></button><button type="button" class="kpi-btn" data-area="Skills" aria-haspopup="dialog" aria-label="See all 4 Skills"><span class="n mono">4</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span>See all 4</span></button><button type="button" class="kpi-btn" data-area="Component contracts" aria-haspopup="dialog" aria-label="See all 12 Component contracts"><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Specs for reusable UI components</span><span class="expand-hint"><span class="chev">›</span>See all 12</span></button><button type="button" class="kpi-btn" data-area="Pattern contracts" aria-haspopup="dialog" aria-label="See all 11 Pattern contracts"><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Specs for page-level layouts</span><span class="expand-hint"><span class="chev">›</span>See all 11</span></button><button type="button" class="kpi-btn" data-area="Examples" aria-haspopup="dialog" aria-label="See all 18 Examples"><span class="n mono">18</span><span class="k">Examples</span><span class="gloss">Reference screens to build from</span><span class="expand-hint"><span class="chev">›</span>See all 18</span></button><button type="button" class="kpi-btn" data-area="Platform profiles" aria-haspopup="dialog" aria-label="See all 2 Platform profiles"><span class="n mono">2</span><span class="k">Platform profiles</span><span class="gloss">The products the vault serves</span><span class="expand-hint"><span class="chev">›</span>See all 2</span></button></div>
+  </section>
+  <div hidden><div class="panel-src" data-area="Agents" data-count="10" data-gloss="AI agents that build &amp; review designs" hidden><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in-review</span></li><li><span class="nm">brief-coach</span><span class="pill s-draft">draft</span></li><li><span class="nm">brief-reviewer</span><span class="pill s-draft">draft</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">stable</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">stable</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">stable</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">stable</span></li><li><span class="nm">porter</span><span class="pill s-review">in-review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in-review</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Skills" data-count="4" data-gloss="Guided workflows the team runs" hidden><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li></ul></div><div class="panel-src" data-area="Component contracts" data-count="12" data-gloss="Specs for reusable UI components" hidden><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in-review</span></li><li><span class="nm">button</span><span class="pill s-review">in-review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in-review</span></li><li><span class="nm">chip</span><span class="pill s-review">in-review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in-review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in-review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in-review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in-review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in-review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in-review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Pattern contracts" data-count="11" data-gloss="Specs for page-level layouts" hidden><ul class="items"><li><span class="nm">analytics-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">config-wizard</span><span class="pill s-review">in-review</span></li><li><span class="nm">focus-mode-results</span><span class="pill s-review">in-review</span></li><li><span class="nm">guided-conversational-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">home-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">list-detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">lovable-port</span><span class="pill s-review">in-review</span></li><li><span class="nm">review-and-approve-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">settings-form-validation</span><span class="pill s-review">in-review</span></li><li><span class="nm">tool-hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">work-card</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Examples" data-count="18" data-gloss="Reference screens to build from" hidden><ul class="items"><li><span class="nm">Analytics KPI And Chart View</span><span class="pill s-review">in-review</span></li><li><span class="nm">Button In All States</span><span class="pill s-review">in-review</span></li><li><span class="nm">ClauseIQ Guided Results Workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">Connected Platform ClauseIQ Contract Wizard Modal</span><span class="pill s-review">in-review</span></li><li><span class="nm">Connected Platform Home Shell Dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">Connected Platform Initiative List Table</span><span class="pill s-review">in-review</span></li><li><span class="nm">Connected Platform Supplier Tracker Table</span><span class="pill s-review">in-review</span></li><li><span class="nm">Data Table With Dense Rows</span><span class="pill s-review">in-review</span></li><li><span class="nm">Dialog Or Drawer Keyboard Behavior</span><span class="pill s-review">in-review</span></li><li><span class="nm">Form Field With Help And Error</span><span class="pill s-review">in-review</span></li><li><span class="nm">Lovable Initiatives Prototype Port</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit Client Delivery Engine Initiative Detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit Client Home AI Tools Dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit Client MarketIQ Guided Workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit Client MarketIQ Research Output And Next Actions</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit Client Sourcing Execution Tool Hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">Orbit-Client MarketIQ Research Output (tool-run flow)</span><span class="pill s-review">in-review</span></li><li><span class="nm">Work Card — CP Research Primer</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Platform profiles" data-count="2" data-gloss="The products the vault serves" hidden><ul class="items"><li><span class="nm">connected-platform</span><span class="pill s-review">in-review</span></li><li><span class="nm">orbit-client-connected-platform</span><span class="pill s-review">in-review</span></li></ul></div></div>
+
+  <section>
+    <h2 class="s-head">How ready it is</h2>
+    <p class="s-sub">Where the 135 documents sit on the way to approved. A large
+      in-review share is normal while the team is actively building the vault.</p>
+    <div class="panel">
+      <div class="legend"><span class="lg"><span class="sw" style="background:var(--stable)"></span><b>Stable</b> — reviewed & approved</span><span class="lg"><span class="sw" style="background:var(--review)"></span><b>In review</b> — being worked on</span><span class="lg"><span class="sw" style="background:var(--draft)"></span><b>Draft</b> — just started</span></div>
+      <div class="row"><span class="name">Stable</span><span class="track"><span class="fill" style="width:28%;background:var(--stable)"></span></span><span class="val"><b>38</b> · 28%</span></div><div class="row"><span class="name">In review</span><span class="track"><span class="fill" style="width:54%;background:var(--review)"></span></span><span class="val"><b>73</b> · 54%</span></div><div class="row"><span class="name">Draft</span><span class="track"><span class="fill" style="width:18%;background:var(--draft)"></span></span><span class="val"><b>24</b> · 18%</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Is anything wrong?</h2>
+    <p class="s-sub">Run automatically on every change — all passing.</p>
+    <div class="panel">
+      <div class="checks"><div class="check ok"><span class="mk">✓</span><span><span class="ct">All required files present</span><span class="cd">Nothing the system depends on is missing.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Every internal link works</span><span class="cd">No broken references between documents.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Document metadata is valid</span><span class="cd">Every doc is tagged and dated correctly.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Navigation index up to date</span><span class="cd">The cross-links between docs are current.</span></span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Needs attention</h2>
+    <p class="s-sub">Documents that have drifted out of good standing.</p>
+    <div class="panel">
+      <div class="fresh">
+        <div class="item good"><div class="n mono">0</div>
+          <div><div class="k">Overdue for review</div><div class="d">Not looked at in 90+ days</div></div></div>
+        <div class="item good"><div class="n mono">0</div>
+          <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Trend</h2>
+    <p class="s-sub">How the vault is growing over time.</p>
+    <div class="panel"><svg class="spark" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,50.0L33.33,17.0L66.67,6.0L100.0,6.0"/></svg></div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Artifacts</h2>
+    <p class="s-sub">The 14 deliverables built from the vault so far — forms, dashboards, explainers, and concept prototypes. To actually open them, use the in-repo hub (<b>artifacts/index.html</b>) or your gallery — links inside this dashboard can’t navigate (a rendered artifact is sandboxed).</p>
+    <div class="panel"><div class="agroup"><div class="gh"><span class="gn">Use these now</span><span class="gc">3</span></div><p class="gb">The working surfaces for the intake pipeline.</p><div class="alist"><a class="arow" href="https://claude.ai/code/artifact/6729519b-64d5-4721-b13d-e526864ed075" target="_blank" rel="noopener"><span class="at">Concept Brief Intake — the form</span><span class="atag">Live</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/640ab93b-f7ed-4acb-98dc-705fdee7e336" target="_blank" rel="noopener"><span class="at">Vault Health — the dashboard</span><span class="atag">Live</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/8e9e9c8f-58ef-4a5c-950b-cdc6f9be36c9" target="_blank" rel="noopener"><span class="at">Running the concept-intake pilot with your team</span><span class="atag">Live</span><span class="ao">Open&nbsp;&rarr;</span></a></div></div><div class="agroup"><div class="gh"><span class="gn">Explain the pipeline</span><span class="gc">2</span></div><p class="gb">Share to show how concept-to-prototype works now.</p><div class="alist"><a class="arow" href="https://claude.ai/code/artifact/a6a45d4a-50ed-499d-9271-1e1cad199bed" target="_blank" rel="noopener"><span class="at">Concept-to-Prototype — the flow chart</span><span class="atag">Current</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/6248902f-d678-4215-b02f-a3e924593c70" target="_blank" rel="noopener"><span class="at">Context-First Prototyping — intake &amp; gate</span><span class="atag">Current</span><span class="ao">Open&nbsp;&rarr;</span></a></div></div><div class="agroup"><div class="gh"><span class="gn">Concept prototypes</span><span class="gc">5</span></div><p class="gb">Explore-funnel outputs. The newest came from the first Ready brief; the rest are earlier explorations.</p><div class="alist"><a class="arow" href="https://claude.ai/code/artifact/2efbf1b5-2257-46a9-b8cb-d27997971410" target="_blank" rel="noopener"><span class="at">Status Prep — Initiative RAID &amp; Commentary</span><span class="atag">Latest</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/317d150a-cb3d-498c-9758-b0308892612e" target="_blank" rel="noopener"><span class="at">Delivery Radar — cross-initiative RAID</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/b62a467a-1efa-44d5-b29b-425fa6367222" target="_blank" rel="noopener"><span class="at">Initiative Log — Commentary &amp; RAID</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/3e826d75-321b-4517-878d-e9b9c81605a6" target="_blank" rel="noopener"><span class="at">Commentary / RAID — Clickable</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/aa6479ae-210a-4166-9b27-dc9f623feb77" target="_blank" rel="noopener"><span class="at">Commentary / RAID — Walkthrough</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a></div></div><div class="agroup"><div class="gh"><span class="gn">Explain the vault</span><span class="gc">3</span></div><p class="gb">Decks describing what the vault is and how it&#x27;s shared.</p><div class="alist"><a class="arow" href="https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28" target="_blank" rel="noopener"><span class="at">Systems Overview</span><span class="atag">Current</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/ba1cece1-c020-46e7-966f-bd779e7c012c" target="_blank" rel="noopener"><span class="at">One source of truth</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a><a class="arow" href="https://claude.ai/code/artifact/90f868e1-4233-4160-b89b-18f50ea11822" target="_blank" rel="noopener"><span class="at">How the vault is shared &amp; used</span><span class="atag">Earlier</span><span class="ao">Open&nbsp;&rarr;</span></a></div></div><div class="agroup"><div class="gh"><span class="gn">Reference</span><span class="gc">1</span></div><p class="gb">Design-reference artifacts.</p><div class="alist"><a class="arow" href="https://claude.ai/code/artifact/fd59563e-8017-4f10-9c6d-cc5197c6fd4a" target="_blank" rel="noopener"><span class="at">Motion audit</span><span class="atag">Reference</span><span class="ao">Open&nbsp;&rarr;</span></a></div></div></div>
+  </section>
+
+  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
+</div></div>
+
+<aside class="drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
+  <div class="dhead">
+    <h3 id="drawer-title"></h3>
+    <span class="dcount"></span>
+    <button type="button" class="drawer-close" aria-label="Close panel">&times;</button>
+  </div>
+  <p class="dgloss"></p>
+  <div class="drawer-body"></div>
+</aside>
+
+<script>
+(function(){
+  var body=document.body,
+      drawer=document.querySelector('.drawer'),
+      title=drawer.querySelector('#drawer-title'),
+      count=drawer.querySelector('.dcount'),
+      gloss=drawer.querySelector('.dgloss'),
+      dbody=drawer.querySelector('.drawer-body'),
+      closeBtn=drawer.querySelector('.drawer-close'),
+      last=null;
+  function open(area){
+    var src=document.querySelector('.panel-src[data-area="'+area+'"]');
+    if(!src) return;
+    title.textContent=area;
+    count.textContent=src.getAttribute('data-count');
+    gloss.textContent=src.getAttribute('data-gloss')||'';
+    dbody.innerHTML='';
+    dbody.appendChild(src.querySelector('.items').cloneNode(true));
+    body.classList.add('drawer-open');
+    drawer.setAttribute('aria-hidden','false');
+    closeBtn.focus();
+  }
+  function close(){
+    body.classList.remove('drawer-open');
+    drawer.setAttribute('aria-hidden','true');
+    if(last) last.focus();
+  }
+  document.querySelectorAll('.kpi-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      if(body.classList.contains('drawer-open')&&last===btn){ close(); return; }
+      last=btn; open(btn.getAttribute('data-area'));
+    });
+  });
+  closeBtn.addEventListener('click',close);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&body.classList.contains('drawer-open')) close();
+  });
+})();
+</script>

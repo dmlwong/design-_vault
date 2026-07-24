@@ -1,0 +1,511 @@
+<title>Initiative Log — Commentary & RAID (concept)</title>
+<style>
+  :root{
+    --bg:#eef1ef; --surface:#ffffff; --surface-2:#e7eae8; --raise:#ffffff;
+    --ink:#16201e; --ink-2:#495451; --faint:#7c8783;
+    --line:#dce1de; --line-2:#c7ceca;
+    --accent:#0f6e77; --accent-ink:#0b565e; --accent-wash:#e2efef;
+    --risk:#c1392f; --warn:#a9760f; --ok:#2c7d54; --info:#2b6aa6; --decide:#6b4fae; --neutral:#6c7773;
+    --risk-wash:#fbeae8; --warn-wash:#f8f0dd; --ok-wash:#e3f3ea; --info-wash:#e6eef8; --decide-wash:#efeafa; --neutral-wash:#eceeed;
+    --shadow:0 1px 2px rgba(20,32,30,.05),0 8px 26px rgba(20,32,30,.08);
+    --shadow-lg:0 8px 20px rgba(20,32,30,.10),0 30px 60px rgba(20,32,30,.16);
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --r:10px; --r-sm:7px; --r-lg:16px;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0f1413; --surface:#161d1b; --surface-2:#1d2624; --raise:#1a2220;
+    --ink:#e8ece9; --ink-2:#a6afab; --faint:#6b7570;
+    --line:#26302c; --line-2:#333e39;
+    --accent:#48c3bc; --accent-ink:#63d2cb; --accent-wash:#12312f;
+    --risk:#e46a60; --warn:#e0a63e; --ok:#4fb483; --info:#5c9fe0; --decide:#a48be6; --neutral:#8b958f;
+    --risk-wash:#2e1917; --warn-wash:#2c2410; --ok-wash:#132a20; --info-wash:#132335; --decide-wash:#211a35; --neutral-wash:#1e2523;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+    --shadow-lg:0 12px 30px rgba(0,0,0,.4),0 40px 80px rgba(0,0,0,.55);
+  }}
+  :root[data-theme="light"]{--bg:#eef1ef;--surface:#fff;--surface-2:#e7eae8;--raise:#fff;--ink:#16201e;--ink-2:#495451;--faint:#7c8783;--line:#dce1de;--line-2:#c7ceca;--accent:#0f6e77;--accent-ink:#0b565e;--accent-wash:#e2efef;--risk:#c1392f;--warn:#a9760f;--ok:#2c7d54;--info:#2b6aa6;--decide:#6b4fae;--neutral:#6c7773;--risk-wash:#fbeae8;--warn-wash:#f8f0dd;--ok-wash:#e3f3ea;--info-wash:#e6eef8;--decide-wash:#efeafa;--neutral-wash:#eceeed;--shadow:0 1px 2px rgba(20,32,30,.05),0 8px 26px rgba(20,32,30,.08);--shadow-lg:0 8px 20px rgba(20,32,30,.10),0 30px 60px rgba(20,32,30,.16);}
+  :root[data-theme="dark"]{--bg:#0f1413;--surface:#161d1b;--surface-2:#1d2624;--raise:#1a2220;--ink:#e8ece9;--ink-2:#a6afab;--faint:#6b7570;--line:#26302c;--line-2:#333e39;--accent:#48c3bc;--accent-ink:#63d2cb;--accent-wash:#12312f;--risk:#e46a60;--warn:#e0a63e;--ok:#4fb483;--info:#5c9fe0;--decide:#a48be6;--neutral:#8b958f;--risk-wash:#2e1917;--warn-wash:#2c2410;--ok-wash:#132a20;--info-wash:#132335;--decide-wash:#211a35;--neutral-wash:#1e2523;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);--shadow-lg:0 12px 30px rgba(0,0,0,.4),0 40px 80px rgba(0,0,0,.55);}
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .app{max-width:1120px;margin:0 auto;padding:0 20px 80px}
+  h1,h2,h3{margin:0;letter-spacing:-.02em;text-wrap:balance;font-weight:660}
+  button{font-family:inherit;cursor:pointer}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+
+  /* concept ribbon */
+  .ribbon{background:var(--accent);color:#fff;font-family:var(--mono);font-size:.63rem;letter-spacing:.09em;text-transform:uppercase;text-align:center;padding:5px 12px}
+  :root[data-theme="dark"] .ribbon,@media (prefers-color-scheme:dark){.ribbon{color:#04100f}}
+
+  /* header */
+  .top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .row{max-width:1120px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px}
+  .crumb{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .crumb .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;color:var(--faint)}
+  .crumb h1{font-size:1.12rem;display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:100px;border:1px solid var(--line-2);color:var(--ink-2);white-space:nowrap}
+  .pill.risky{background:var(--warn-wash);border-color:transparent;color:var(--warn)}
+  .top .actions{margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .btn{border:1px solid var(--line-2);background:var(--surface);color:var(--ink);border-radius:var(--r-sm);padding:8px 13px;font-size:.85rem;font-weight:560;display:inline-flex;align-items:center;gap:7px;transition:background .12s,border-color .12s,transform .04s}
+  .btn:hover{background:var(--surface-2)} .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-ink)}
+  .btn .ic{width:15px;height:15px;display:inline-block;flex:none}
+  .btn:focus-visible,.chip:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* summary strip */
+  .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:22px 0 18px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
+  .stat .v{font-family:var(--mono);font-size:1.5rem;font-weight:640;letter-spacing:-.02em;display:flex;align-items:baseline;gap:6px}
+  .stat .v small{font-size:.72rem;color:var(--faint);font-weight:500}
+  .stat .l{font-size:.74rem;color:var(--ink-2);margin-top:1px}
+  .stat.alert .v{color:var(--warn)} .stat.crit .v{color:var(--risk)}
+
+  /* toolbar: filters + add */
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:100px;padding:5px 11px;font-size:.78rem;font-weight:540;display:inline-flex;align-items:center;gap:6px;transition:background .12s,border-color .12s,color .12s}
+  .chip:hover{background:var(--surface-2)}
+  .chip .n{font-family:var(--mono);font-size:.7rem;color:var(--faint)}
+  .chip.on{background:var(--accent-wash);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent-ink)}
+  .chip.on .n{color:var(--accent-ink)}
+  .chip .dot{width:7px;height:7px;border-radius:50%}
+  .bar .right{margin-left:auto;display:flex;gap:9px;align-items:center}
+  .toggle{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ink-2);user-select:none}
+  .toggle input{accent-color:var(--accent)}
+
+  /* list */
+  .list{display:flex;flex-direction:column;gap:9px}
+  .item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s,box-shadow .15s}
+  .item:hover{border-color:var(--line-2)}
+  .item.isnew{animation:land .5s ease}
+  @keyframes land{0%{transform:translateY(-6px);box-shadow:0 0 0 3px var(--accent-wash)}100%{transform:none}}
+  @media (prefers-reduced-motion:reduce){.item.isnew{animation:none}}
+  .item .head{display:grid;grid-template-columns:104px 1fr auto;gap:14px;align-items:center;padding:13px 15px;cursor:pointer}
+  .type{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:3px 8px;border-radius:var(--r-sm);border:1px solid;white-space:nowrap;justify-self:start}
+  .item .mid{min-width:0}
+  .item .title{font-weight:580;font-size:.94rem;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .meta{display:flex;gap:12px;align-items:center;margin-top:3px;color:var(--faint);font-size:.75rem;flex-wrap:wrap}
+  .item .meta .mono{color:var(--ink-2)}
+  .item .meta .over{color:var(--risk);font-weight:600}
+  .item .rightcol{display:flex;align-items:center;gap:14px}
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:.79rem;color:var(--ink-2);white-space:nowrap}
+  .status .sd{width:8px;height:8px;border-radius:50%}
+  .impact{font-family:var(--mono);font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:3px 7px;border-radius:100px}
+  .chev{color:var(--faint);transition:transform .18s;flex:none}
+  @media (prefers-reduced-motion:reduce){.chev{transition:none}}
+  .item.open .chev{transform:rotate(90deg)}
+  .body{display:none;padding:0 15px 15px 133px;border-top:1px solid var(--line)}
+  .item.open .body{display:block}
+  .body .sub{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:13px 0 4px}
+  .body p{margin:0;color:var(--ink-2);font-size:.88rem;max-width:74ch}
+  .body .grid{display:flex;gap:26px;flex-wrap:wrap;margin-top:12px}
+  .body .fact .k{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .body .fact .val{font-size:.86rem;color:var(--ink);font-weight:520}
+  .vis{display:inline-flex;align-items:center;gap:5px;font-size:.73rem;color:var(--faint);font-family:var(--mono)}
+  .empty{text-align:center;padding:52px 20px;color:var(--faint);border:1px dashed var(--line-2);border-radius:var(--r);background:var(--surface)}
+  .empty b{color:var(--ink);display:block;font-family:var(--sans);font-size:1rem;margin-bottom:4px}
+
+  /* composer (add) */
+  .scrim{position:fixed;inset:0;background:rgba(15,20,19,.44);backdrop-filter:blur(2px);z-index:60;opacity:0;pointer-events:none;transition:opacity .18s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;z-index:61;top:0;right:0;height:100%;width:min(468px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+  .sheet.show{transform:none}
+  @media (prefers-reduced-motion:reduce){.scrim,.sheet{transition:none}}
+  .sheet .sh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .sheet h2{font-size:1.05rem} .sheet .sh-top p{margin:3px 0 0;color:var(--faint);font-size:.8rem}
+  .x{border:none;background:transparent;color:var(--faint);font-size:1.1rem;line-height:1;padding:4px;border-radius:6px}
+  .x:hover{background:var(--surface-2);color:var(--ink)}
+  .form{padding:18px 20px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:15px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:.78rem;font-weight:560;color:var(--ink)}
+  .field label .req{color:var(--risk)}
+  .field .hint{font-size:.72rem;color:var(--faint)}
+  input,select,textarea{font-family:inherit;font-size:.88rem;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:9px 11px;width:100%}
+  textarea{resize:vertical;min-height:74px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:100px;padding:6px 12px;font-size:.78rem;font-weight:540}
+  .seg button.on{background:var(--accent-wash);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));color:var(--accent-ink)}
+  .radioset{display:flex;flex-direction:column;gap:8px}
+  .radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer}
+  .radio.on{border-color:var(--accent);background:var(--accent-wash)}
+  .radio input{width:auto;margin-top:2px;accent-color:var(--accent)}
+  .radio .rt{font-size:.83rem;font-weight:550} .radio .rs{font-size:.74rem;color:var(--faint)}
+  .sh-foot{border-top:1px solid var(--line);padding:14px 20px;display:flex;gap:10px;justify-content:flex-end;align-items:center}
+  .err{color:var(--risk);font-size:.76rem;margin-right:auto;display:none}
+  .err.show{display:block}
+
+  /* status output panel */
+  .report{padding:0}
+  .report .rep-head{padding:20px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--accent-wash),transparent)}
+  .report .rep-head .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+  .report .rep-head h2{font-size:1.15rem;margin-top:4px}
+  .report .rep-head p{margin:5px 0 0;color:var(--ink-2);font-size:.82rem}
+  .report .body2{padding:6px 22px 20px;overflow:auto;flex:1}
+  .rep-sec{padding:15px 0;border-bottom:1px solid var(--line)}
+  .rep-sec:last-child{border-bottom:none}
+  .rep-sec h3{font-size:.72rem;font-family:var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .rep-sec .lead{margin:8px 0 0;color:var(--ink);font-size:.92rem;line-height:1.6}
+  .rep-line{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:.86rem;color:var(--ink)}
+  .rep-line .b{width:6px;height:6px;border-radius:50%;margin-top:7px;flex:none}
+  .rep-line .who{color:var(--faint);font-family:var(--mono);font-size:.72rem}
+  .movt{display:inline-flex;gap:6px;align-items:center;font-family:var(--mono);font-size:.7rem;color:var(--ink-2);background:var(--surface-2);border-radius:100px;padding:2px 8px;margin:3px 6px 0 0}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);font-size:.84rem;font-weight:520;padding:10px 16px;border-radius:100px;box-shadow:var(--shadow-lg);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:9px}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast .ic{width:16px;height:16px}
+
+  .footnote{margin-top:26px;padding:16px 18px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--r);background:var(--surface);color:var(--ink-2);font-size:.82rem;max-width:82ch}
+  .footnote b{color:var(--ink)}
+
+  @media (max-width:820px){
+    .summary{grid-template-columns:repeat(2,1fr)}
+    .item .head{grid-template-columns:92px 1fr;grid-template-rows:auto auto}
+    .item .rightcol{grid-column:1/-1;justify-content:flex-start;padding-left:0}
+    .body{padding-left:15px}
+    .top .actions .lbl{display:none}
+  }
+</style>
+
+<div class="ribbon">Concept prototype · exploring the “Commentary Enhancements” pack · not production, not the Orbit design system</div>
+
+<header class="top">
+  <div class="row">
+    <div class="crumb">
+      <span class="k">FLT-2291 · Connected Platform</span>
+      <h1>Fleet Cost Optimisation <span class="pill risky" id="hdrStatus">● At risk</span></h1>
+    </div>
+    <div class="actions">
+      <button class="btn" id="openAdd"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v10M3 8h10"/></svg><span class="lbl">Add update</span></button>
+      <button class="btn primary" id="openReport"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h6l2.5 2.5V14H4z"/><path d="M6 7.5h4M6 10h4"/></svg><span class="lbl">Generate status update</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="app">
+  <section class="summary" id="summary"></section>
+
+  <div class="bar">
+    <div class="chips" id="filters"></div>
+    <div class="right">
+      <label class="toggle"><input type="checkbox" id="onlyOpen"> Only needs attention</label>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="footnote">
+    <b>What this concept is testing:</b> that if capturing risks, issues, decisions, actions and commentary is fast and structured <b>inside</b> CP — and that captured record instantly becomes the status update a PM would otherwise re-write in a deck — PMs stop keeping offline trackers and CP becomes the trusted source of truth. Try it: <b>Add an update</b> and watch it land in the log, then <b>Generate status update</b> to see the same records become a shareable narrative.
+  </div>
+</main>
+
+<!-- Add sheet -->
+<div class="scrim" id="scrimAdd"></div>
+<aside class="sheet" id="sheetAdd" aria-hidden="true" role="dialog" aria-label="Add update">
+  <div class="sh-top">
+    <div><h2>Add update</h2><p>Log a record. The fields adapt to what you’re capturing.</p></div>
+    <button class="x" id="closeAdd" aria-label="Close">✕</button>
+  </div>
+  <div class="form" id="addForm">
+    <div class="field">
+      <label>Type</label>
+      <div class="seg" id="typeSeg"></div>
+    </div>
+    <div class="field">
+      <label>Summary <span class="req">*</span></label>
+      <input id="fTitle" maxlength="90" placeholder="One line — what shows in the log">
+    </div>
+    <div class="field">
+      <label>Detail</label>
+      <textarea id="fDetail" maxlength="400" placeholder="What is it, and why does it matter?"></textarea>
+    </div>
+    <div class="two">
+      <div class="field"><label>Owner</label><input id="fOwner" placeholder="Who owns it"></div>
+      <div class="field" id="wrapDue"><label>Due</label><input id="fDue" type="date"></div>
+    </div>
+    <div class="two" id="rowRisk">
+      <div class="field"><label>Impact</label>
+        <select id="fImpact"><option value="">—</option><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="fStatus"></select>
+      </div>
+    </div>
+    <div class="field" id="wrapMit">
+      <label id="lblMit">Mitigation</label>
+      <textarea id="fMit" maxlength="300" placeholder="How will it be reduced or contained?"></textarea>
+    </div>
+    <div class="field">
+      <label>Visibility</label>
+      <div class="radioset">
+        <label class="radio on" id="visInt"><input type="radio" name="vis" value="internal" checked><span><span class="rt">Internal only</span><span class="rs" style="display:block">Stays with the Efficio delivery team.</span></span></label>
+        <label class="radio" id="visCli"><input type="radio" name="vis" value="client"><span><span class="rt">Visible to client</span><span class="rs" style="display:block">Can appear in the client status summary.</span></span></label>
+      </div>
+    </div>
+  </div>
+  <div class="sh-foot">
+    <span class="err" id="addErr">Add a summary first.</span>
+    <button class="btn" id="cancelAdd">Cancel</button>
+    <button class="btn primary" id="saveAdd">Add to log</button>
+  </div>
+</aside>
+
+<!-- Report sheet -->
+<div class="scrim" id="scrimRep"></div>
+<aside class="sheet report" id="sheetRep" aria-hidden="true" role="dialog" aria-label="Status update">
+  <div class="rep-head">
+    <span class="k">Generated from the current log · <span id="repDate"></span></span>
+    <h2>Status update — Fleet Cost Optimisation</h2>
+    <p>Composed from <span class="mono" id="repCount"></span> records captured in CP. Review, then copy.</p>
+  </div>
+  <div class="body2" id="repBody"></div>
+  <div class="sh-foot">
+    <span class="err" style="margin-right:auto;color:var(--faint);display:block;font-family:var(--mono);font-size:.68rem">no re-keying · one source</span>
+    <button class="btn" id="closeRep">Close</button>
+    <button class="btn primary" id="copyRep"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H4.5A1.5 1.5 0 0 0 3 3.5v7"/></svg>Copy update</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  // ---- domain ----
+  var TYPES = {
+    Risk:{c:"--risk",w:"--risk-wash",statuses:["Open","Mitigating","Overdue","Resolved"]},
+    Issue:{c:"--warn",w:"--warn-wash",statuses:["Open","In progress","Overdue","Resolved"]},
+    Decision:{c:"--decide",w:"--decide-wash",statuses:["Proposed","Agreed"]},
+    Action:{c:"--info",w:"--info-wash",statuses:["Open","In progress","Done"]},
+    Dependency:{c:"--neutral",w:"--neutral-wash",statuses:["Waiting","Received"]},
+    Commentary:{c:"--neutral",w:"--neutral-wash",statuses:["Note"]}
+  };
+  var STATUS_TONE = {Open:"--info","In progress":"--info",Mitigating:"--warn",Waiting:"--warn",Proposed:"--warn",Overdue:"--risk",Resolved:"--ok",Done:"--ok",Agreed:"--ok",Received:"--ok",Note:"--neutral"};
+  var IMPACT_TONE = {High:{c:"--risk",w:"--risk-wash"},Medium:{c:"--warn",w:"--warn-wash"},Low:{c:"--info",w:"--info-wash"}};
+
+  // ---- seed data (a procurement initiative mid-delivery) ----
+  var uid=100;
+  var items = [
+    {id:++uid,type:"Risk",title:"Telematics data feed may miss the sourcing deadline",detail:"The incumbent telematics provider has not confirmed API access for historical mileage data. Without it the baseline spend model can't be validated before the RFP goes to market.",owner:"Priya Nair",due:"2026-07-24",status:"Mitigating",impact:"High",mit:"Requested a parallel data extract; fallback is a 3-month sample sized to ±5% tolerance.",vis:"client",updated:"2h ago",new:false},
+    {id:++uid,type:"Issue",title:"Duplicate vehicle records in the asset register",detail:"~1,400 duplicate rows inflate the fleet count and distort the per-unit baseline.",owner:"Tom Bradley",due:"2026-07-10",status:"Overdue",impact:"Medium",mit:"",vis:"client",updated:"1d ago",new:false},
+    {id:++uid,type:"Decision",title:"Proceed with a two-lot RFP structure",detail:"Approved at the 9 Jul steering committee. Two lots (light-commercial and HGV) widen competition without excluding regional providers.",owner:"Steering committee",due:"",status:"Agreed",impact:"",mit:"",vis:"client",updated:"3d ago",new:false},
+    {id:++uid,type:"Action",title:"Circulate the draft supplier longlist for review",detail:"Send the 22-supplier longlist to the category leads for scoring.",owner:"Priya Nair",due:"2026-07-21",status:"Open",impact:"",mit:"",vis:"internal",updated:"5h ago",new:false},
+    {id:++uid,type:"Dependency",title:"Legal sign-off on the updated NDA template",detail:"Client legal must approve the revised mutual NDA before supplier data exchange.",owner:"Client legal (H. Osei)",due:"2026-07-18",status:"Waiting",impact:"",mit:"",vis:"internal",updated:"1d ago",new:false},
+    {id:++uid,type:"Commentary",title:"Weekly note — good momentum on data cleansing",detail:"Cleansing is ahead of plan; main watch item remains the telematics feed. Client engagement strong this week.",owner:"Priya Nair",due:"",status:"Note",impact:"",mit:"",vis:"client",updated:"6h ago",new:false}
+  ];
+
+  var filter="All", onlyOpen=false, addType="Risk";
+  var $=function(s,r){return (r||document).querySelector(s)};
+  var el=function(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+  var cvar=function(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()};
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(m){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]})}
+  function isOverdue(it){return it.status==="Overdue" || (it.due && new Date(it.due) < new Date("2026-07-17") && ["Resolved","Done","Agreed","Received"].indexOf(it.status)<0)}
+  function needsAttention(it){return isOverdue(it) || ["Open","Mitigating","Waiting","In progress","Proposed"].indexOf(it.status)>=0}
+  function fmtDue(d){if(!d)return "—";var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];var dt=new Date(d);return dt.getUTCDate()+" "+m[dt.getUTCMonth()]}
+
+  // ---- render summary ----
+  function renderSummary(){
+    var s=$("#summary"); s.innerHTML="";
+    var open=items.filter(needsAttention).length;
+    var overdue=items.filter(isOverdue).length;
+    var risks=items.filter(function(i){return i.type==="Risk"}).length;
+    var decisions=items.filter(function(i){return i.type==="Decision"}).length;
+    var cards=[
+      {v:items.length,l:"Records in the log",cls:""},
+      {v:open,l:"Need attention",cls:open?"alert":""},
+      {v:overdue,l:"Overdue",cls:overdue?"crit":""},
+      {v:risks,l:"Open risks",cls:""},
+      {v:decisions,l:"Decisions logged",cls:""}
+    ];
+    cards.forEach(function(c){
+      var n=el("div","stat "+c.cls);
+      n.innerHTML='<div class="v">'+c.v+'</div><div class="l">'+c.l+'</div>';
+      s.appendChild(n);
+    });
+  }
+
+  // ---- render filters ----
+  function renderFilters(){
+    var f=$("#filters"); f.innerHTML="";
+    var order=["All","Risk","Issue","Decision","Action","Dependency","Commentary"];
+    order.forEach(function(t){
+      var count = t==="All"?items.length:items.filter(function(i){return i.type===t}).length;
+      var b=el("button","chip"+(filter===t?" on":""));
+      var dot = t==="All"?"":'<span class="dot" style="background:'+cvar(TYPES[t].c)+'"></span>';
+      b.innerHTML=dot+esc(t)+' <span class="n">'+count+'</span>';
+      b.onclick=function(){filter=t;renderList();renderFilters();};
+      f.appendChild(b);
+    });
+  }
+
+  // ---- render list ----
+  function renderList(){
+    var l=$("#list"); l.innerHTML="";
+    var rows=items.filter(function(i){return filter==="All"||i.type===filter}).filter(function(i){return !onlyOpen||needsAttention(i)});
+    if(!rows.length){
+      l.appendChild(el("div","empty","<b>Nothing here yet</b>"+(onlyOpen?"Everything in this view is settled.":"Add the first update to start the log.")));
+      return;
+    }
+    rows.forEach(function(it){
+      var T=TYPES[it.type];
+      var node=el("div","item"+(it.new?" isnew":""));
+      var over=isOverdue(it);
+      var stone=cvar(STATUS_TONE[it.status]||"--neutral");
+      var impactHTML = it.impact ? '<span class="impact" style="color:'+cvar(IMPACT_TONE[it.impact].c)+';background:'+cvar(IMPACT_TONE[it.impact].w)+'">'+it.impact+'</span>' : '';
+      var head=el("div","head");
+      head.innerHTML=
+        '<span class="type" style="color:'+cvar(T.c)+';background:'+cvar(T.w)+';border-color:transparent">'+it.type+'</span>'+
+        '<div class="mid"><div class="title">'+esc(it.title)+'</div>'+
+          '<div class="meta">'+(it.owner?'<span class="mono">'+esc(it.owner)+'</span>':'')+
+          (it.due?'<span class="'+(over?'over':'mono')+'">'+(over?'⚠ ':'')+'Due '+fmtDue(it.due)+'</span>':'')+
+          '<span>updated '+it.updated+'</span></div></div>'+
+        '<div class="rightcol">'+impactHTML+
+          '<span class="status"><span class="sd" style="background:'+stone+'"></span>'+it.status+'</span>'+
+          '<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4l4 4-4 4"/></svg>'+
+        '</div>';
+      var body=el("div","body");
+      body.innerHTML=
+        '<div class="sub">Detail</div><p>'+esc(it.detail||"—")+'</p>'+
+        (it.mit?'<div class="sub">Mitigation / resolution</div><p>'+esc(it.mit)+'</p>':'')+
+        '<div class="grid">'+
+          (it.owner?'<div class="fact"><div class="k">Owner</div><div class="val">'+esc(it.owner)+'</div></div>':'')+
+          (it.due?'<div class="fact"><div class="k">Due</div><div class="val">'+fmtDue(it.due)+' 2026</div></div>':'')+
+          '<div class="fact"><div class="k">Status</div><div class="val">'+it.status+'</div></div>'+
+          '<div class="fact"><div class="k">Visibility</div><div class="val"><span class="vis">'+(it.vis==="client"?'◍ Client-visible':'⬤ Internal only')+'</span></div></div>'+
+        '</div>';
+      head.onclick=function(){node.classList.toggle("open")};
+      node.appendChild(head); node.appendChild(body);
+      l.appendChild(node);
+    });
+  }
+
+  // ---- composer ----
+  function buildTypeSeg(){
+    var seg=$("#typeSeg"); seg.innerHTML="";
+    Object.keys(TYPES).forEach(function(t){
+      var b=el("button",addType===t?"on":"",t);
+      b.onclick=function(){addType=t;buildTypeSeg();applyTypeFields();};
+      seg.appendChild(b);
+    });
+  }
+  function applyTypeFields(){
+    var st=$("#fStatus"); st.innerHTML="";
+    TYPES[addType].statuses.forEach(function(s){var o=el("option",null,s);st.appendChild(o)});
+    var showRisk = addType==="Risk"||addType==="Issue";
+    $("#rowRisk").style.display = (addType==="Commentary") ? "none" : "grid";
+    $("#fImpact").parentElement.style.display = showRisk ? "flex":"none";
+    $("#wrapMit").style.display = showRisk ? "flex":"none";
+    $("#lblMit").textContent = addType==="Issue" ? "Resolution plan" : "Mitigation";
+    $("#wrapDue").style.display = (addType==="Decision"||addType==="Commentary") ? "none":"flex";
+    if(addType==="Commentary"){ $("#rowRisk").style.display="grid"; $("#fImpact").parentElement.style.display="none"; }
+  }
+  function openSheet(which){ $("#scrim"+which).classList.add("show"); $("#sheet"+which).classList.add("show"); $("#sheet"+which).setAttribute("aria-hidden","false"); }
+  function closeSheet(which){ $("#scrim"+which).classList.remove("show"); $("#sheet"+which).classList.remove("show"); $("#sheet"+which).setAttribute("aria-hidden","true"); }
+
+  function openAdd(){ addType="Risk"; buildTypeSeg(); applyTypeFields();
+    $("#fTitle").value="";$("#fDetail").value="";$("#fOwner").value="";$("#fDue").value="";$("#fImpact").value="";$("#fMit").value="";
+    $("#addErr").classList.remove("show"); $("#visInt").querySelector("input").checked=true; syncVis();
+    openSheet("Add"); setTimeout(function(){$("#fTitle").focus()},260);
+  }
+  function syncVis(){ document.querySelectorAll('input[name="vis"]').forEach(function(r){ r.closest(".radio").classList.toggle("on", r.checked); }); }
+  document.querySelectorAll('input[name="vis"]').forEach(function(r){ r.addEventListener("change",syncVis); });
+
+  function saveAdd(){
+    var title=$("#fTitle").value.trim();
+    if(!title){ $("#addErr").classList.add("show"); $("#fTitle").focus(); return; }
+    var st=$("#fStatus").value || TYPES[addType].statuses[0];
+    var it={id:++uid,type:addType,title:title,detail:$("#fDetail").value.trim(),owner:$("#fOwner").value.trim(),
+      due:$("#wrapDue").style.display==="none"?"":$("#fDue").value,status:st,
+      impact:$("#fImpact").parentElement.style.display==="none"?"":$("#fImpact").value,
+      mit:$("#wrapMit").style.display==="none"?"":$("#fMit").value.trim(),
+      vis:(document.querySelector('input[name="vis"]:checked')||{}).value||"internal",updated:"just now",new:true};
+    items.unshift(it);
+    filter="All"; onlyOpen=false; $("#onlyOpen").checked=false;
+    closeSheet("Add"); renderAll();
+    setTimeout(function(){it.new=false},700);
+    toast("Added to the log — "+addType);
+  }
+
+  // ---- status report generation (the payoff) ----
+  function generateReport(){
+    $("#repDate").textContent="17 Jul 2026";
+    $("#repCount").textContent=items.length;
+    var risks=items.filter(function(i){return i.type==="Risk"});
+    var issues=items.filter(function(i){return i.type==="Issue"});
+    var decisions=items.filter(function(i){return i.type==="Decision"});
+    var actions=items.filter(function(i){return i.type==="Action"});
+    var deps=items.filter(function(i){return i.type==="Dependency"});
+    var overdue=items.filter(isOverdue);
+    var topRisk=risks.filter(function(i){return i.impact==="High"})[0]||risks[0];
+
+    var lead="Delivery is progressing"+(overdue.length?", with "+overdue.length+" item"+(overdue.length>1?"s":"")+" now overdue":"")+". "+
+      (topRisk?("The key watch item is "+lc(topRisk.title)+", currently "+topRisk.status.toLowerCase()+"."):"No high risks are open.")+
+      (decisions.length?(" "+decisions.length+" decision"+(decisions.length>1?"s have":" has")+" been logged this period."):"");
+
+    var b=$("#repBody"); b.innerHTML="";
+    b.appendChild(sec("Headline", '<p class="lead">'+esc(lead)+'</p>'+
+      '<div style="margin-top:10px">'+
+        chipMovt(overdue.length+" overdue")+chipMovt(risks.length+" open risk"+(risks.length!==1?"s":""))+
+        chipMovt(decisions.length+" decision"+(decisions.length!==1?"s":""))+chipMovt(actions.length+" action"+(actions.length!==1?"s":""))+
+      '</div>'));
+
+    if(risks.length||issues.length){
+      var rl=risks.concat(issues).slice(0,4).map(function(i){return repLine(i,i.mit)}).join("");
+      b.appendChild(sec("Key risks & issues", rl));
+    }
+    if(decisions.length) b.appendChild(sec("Decisions", decisions.map(function(i){return repLine(i,"")}).join("")));
+    if(actions.length||deps.length) b.appendChild(sec("Actions & dependencies", actions.concat(deps).map(function(i){return repLine(i,"")}).join("")));
+
+    openSheet("Rep");
+  }
+  function lc(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+  function sec(h,inner){var s=el("div","rep-sec");s.innerHTML='<h3>'+h+'</h3>'+inner;return s}
+  function chipMovt(t){return '<span class="movt">'+esc(t)+'</span>'}
+  function repLine(it,extra){
+    var tone=cvar(STATUS_TONE[it.status]||"--neutral");
+    return '<div class="rep-line"><span class="b" style="background:'+tone+'"></span><span>'+esc(it.title)+
+      ' <span class="who">— '+it.status+(it.owner?' · '+esc(it.owner):'')+'</span>'+
+      (extra?'<br><span style="color:var(--ink-2);font-size:.82rem">→ '+esc(extra)+'</span>':'')+'</span></div>';
+  }
+  function reportText(){
+    var lines=["STATUS UPDATE — Fleet Cost Optimisation (FLT-2291)","Generated 17 Jul 2026 from "+items.length+" records in CP",""];
+    var byType={};items.forEach(function(i){(byType[i.type]=byType[i.type]||[]).push(i)});
+    ["Risk","Issue","Decision","Action","Dependency","Commentary"].forEach(function(t){
+      if(!byType[t])return; lines.push(t.toUpperCase()+"S");
+      byType[t].forEach(function(i){lines.push(" - "+i.title+" ["+i.status+(i.owner?", "+i.owner:"")+"]"+(i.mit?"\n   -> "+i.mit:""))});
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  // ---- toast ----
+  var tt;
+  function toast(msg){var t=$("#toast");t.innerHTML='<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8.5l3.5 3.5L13 5"/></svg>'+esc(msg);t.classList.add("show");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("show")},2200)}
+
+  // ---- wire ----
+  $("#openAdd").onclick=openAdd;
+  $("#closeAdd").onclick=function(){closeSheet("Add")};
+  $("#cancelAdd").onclick=function(){closeSheet("Add")};
+  $("#scrimAdd").onclick=function(){closeSheet("Add")};
+  $("#saveAdd").onclick=saveAdd;
+  $("#fTitle").addEventListener("input",function(){$("#addErr").classList.remove("show")});
+  $("#openReport").onclick=generateReport;
+  $("#closeRep").onclick=function(){closeSheet("Rep")};
+  $("#scrimRep").onclick=function(){closeSheet("Rep")};
+  $("#copyRep").onclick=function(){
+    var txt=reportText();
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast("Status update copied")},function(){fallbackCopy(txt)});}
+    else fallbackCopy(txt);
+  };
+  function fallbackCopy(txt){var ta=el("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Status update copied")}catch(e){toast("Copy not available here")}document.body.removeChild(ta)}
+  $("#onlyOpen").addEventListener("change",function(e){onlyOpen=e.target.checked;renderList()});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeSheet("Add");closeSheet("Rep")}});
+
+  function renderAll(){renderSummary();renderFilters();renderList()}
+  renderAll();
+})();
+</script>
