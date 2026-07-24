@@ -63,7 +63,12 @@
   .branch{display:flex;align-items:flex-start;gap:10px;font-size:12.5px}
   .branch .v{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
     padding:3px 9px;border-radius:6px;white-space:nowrap;flex:none;margin-top:1px}
-  .v.ready{color:#fff;background:var(--ready)} .v.work{color:#fff;background:var(--work)} .v.block{color:#fff;background:var(--block)}
+  /* Verdict pills carry saturated semantic fills. Ink is chosen per fill for WCAG AA
+     (white on these greens/ambers only reaches ~3.4:1); the hues themselves are the
+     meaning and are unchanged. */
+  .v.ready{color:#0d1117;background:var(--ready)} .v.work{color:#0d1117;background:var(--work)} .v.block{color:#fff;background:var(--block)}
+  @media (prefers-color-scheme:dark){.v.block{color:#0d1117}}
+  :root[data-theme=dark] .v.block{color:#0d1117} :root[data-theme=light] .v.block{color:#fff}
   .branch .bt{color:var(--muted)} .branch .bt b{color:var(--ink);font-weight:600}
   .loopback{color:var(--work);font-weight:600}
 
@@ -87,7 +92,7 @@
   .step .st{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
   .step .st .d{width:8px;height:8px;border-radius:50%;flex:none}
   .step .sv{color:var(--muted)} .step .sv b{color:var(--ink);font-weight:600}
-  .vtag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;color:#fff}
+  .vtag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;color:#0d1117}
   footer{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6}
   @media (max-width:560px){.step{grid-template-columns:1fr;gap:3px}.branches,.feedback{margin-left:0}}
 </style>

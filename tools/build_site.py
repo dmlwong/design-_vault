@@ -199,19 +199,38 @@ CHROME_CSS = """
 :root,:root[data-theme=light],:root[data-theme=dark]{
   --bg:var(--site-bg); --panel:var(--site-panel); --surface:var(--site-panel);
   --ink:var(--site-ink); --muted:var(--site-muted); --ink-soft:var(--site-muted);
+  --ink-faint:var(--site-muted);
   --line:var(--site-line);
   --accent:var(--site-accent); --accent-ink:var(--site-accent-ink);
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:var(--site-bg); --panel:var(--site-panel); --surface:var(--site-panel);
   --ink:var(--site-ink); --muted:var(--site-muted); --ink-soft:var(--site-muted);
+  --ink-faint:var(--site-muted);
   --line:var(--site-line);
   --accent:var(--site-accent); --accent-ink:var(--site-accent-ink);
 }}
+/* --accent must stay legible as TEXT on the page ground, so in dark it is a light
+   blue. That makes white-on-accent FILLS fail AA, so fills get their own ink. */
+:root{--on-accent:#FFFFFF}
+@media (prefers-color-scheme:dark){:root{--on-accent:#0B0F16}}
+:root[data-theme=light]{--on-accent:#FFFFFF}
+:root[data-theme=dark]{--on-accent:#0B0F16}
+.btn-primary,.chip{color:var(--on-accent)}
+/* Pilot playbook's lane chips: the tester lane was teal, which now fights the blue
+   chrome. Point it at the site accent — the owner lane stays purple, so the two
+   lanes remain distinguishable. */
+:root{--tester:var(--site-accent)}
 /* Guarantee the document itself carries the site ground. Some pages paint their
    background on an inner wrapper instead of body, which would leave the injected
    nav sitting on an unstyled (white/transparent) strip — badly wrong in dark mode. */
-body{margin:0;background:var(--site-bg);color:var(--site-ink)}
+body{margin:0;background:var(--site-bg);color:var(--site-ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+/* Page overlays must sit ABOVE the injected nav. The health dashboard's detail
+   drawer is position:fixed;top:0;z-index:30 — under a z-index:200 nav its header
+   and close button were unreachable (on mobile, tapping the X navigated away). */
+.drawer{z-index:300}
 
 /* The injected nav replaces any per-page brand bar — otherwise the wordmark
    renders twice, stacked. Page-level metadata that lived there (build date) is
@@ -222,8 +241,7 @@ body{margin:0;background:var(--site-bg);color:var(--site-ink)}
 h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
 
 /* ---- the nav itself ---- */
-.sitenav{position:sticky;top:0;z-index:200;background:color-mix(in srgb,var(--site-bg) 92%,transparent);
-  backdrop-filter:blur(10px);border-bottom:1px solid var(--site-line);
+.sitenav{position:sticky;top:0;z-index:200;background:var(--site-bg);border-bottom:1px solid var(--site-line);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 .sitenav .snwrap{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;align-items:center;
   gap:20px;height:52px}
@@ -236,16 +254,26 @@ h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
 .sitenav .links{display:flex;align-items:center;gap:2px;margin-left:auto;overflow-x:auto;
   scrollbar-width:none;-ms-overflow-style:none}
 .sitenav .links::-webkit-scrollbar{display:none}
-.sitenav a.snl{font-size:13px;font-weight:560;color:var(--site-muted);text-decoration:none;
-  padding:7px 11px;border-radius:8px;white-space:nowrap;transition:color .12s,background .12s}
+/* Shield the chrome from each page's global element selectors. pilot-playbook
+   ships a bare `a{border-bottom:...}` which underlined every nav item, and
+   about-the-vault's line-height shrank the tap targets. State these explicitly
+   so the nav is byte-identical everywhere regardless of the host page's CSS. */
+.sitenav a,.sitenav a.snl,.sitenav .brand{border:0;box-shadow:none;text-decoration:none;
+  text-transform:none;line-height:1.2;font-style:normal;background-image:none}
+.sitenav a.snl{font-size:13px;font-weight:560;color:var(--site-muted);
+  padding:8px 11px;border-radius:8px;white-space:nowrap;display:inline-block;
+  transition:color .12s,background .12s}
 .sitenav a.snl:hover{color:var(--site-ink);background:color-mix(in srgb,var(--site-ink) 7%,transparent)}
 .sitenav a.snl:focus-visible{outline:2px solid var(--site-accent);outline-offset:2px}
 .sitenav a.snl[aria-current=page]{color:var(--site-accent-ink);
   background:color-mix(in srgb,var(--site-accent) 13%,transparent);font-weight:660}
 @media (prefers-color-scheme:dark){.sitenav a.snl[aria-current=page]{color:var(--site-accent)}}
+/* Mobile: wrap rather than horizontally scroll. A suppressed-scrollbar overflow
+   strip hid half the site and could hide the current-page pill entirely. */
 @media (max-width:720px){
-  .sitenav .snwrap{gap:12px;padding:0 14px}
-  .sitenav .brand span:last-child{display:none}
+  .sitenav .snwrap{gap:8px 12px;padding:8px 14px;height:auto;flex-wrap:wrap}
+  .sitenav .links{margin-left:0;width:100%;flex-wrap:wrap;overflow:visible;gap:2px}
+  .sitenav a.snl{padding:7px 9px;font-size:12.5px}
 }
 @media (prefers-reduced-motion:reduce){.sitenav a.snl{transition:none}}
 """
@@ -279,6 +307,13 @@ def inject_chrome(text: str, nav: str) -> str:
     both. The skin goes last so it wins the cascade over each page's own tokens
     without needing !important.
     """
+    # The nav already carries the wordmark, so a page-level eyebrow that says only
+    # the site name renders it twice. Drop the exact-match ones; eyebrows that add
+    # context ("About the Vault · Orbit") are left alone.
+    text = re.sub(
+        r'<(div|p)\s+class="eyebrow"[^>]*>\s*' + re.escape(SITE_NAME) + r'\s*</\1>',
+        "", text, flags=re.I)
+
     skin = f"<style>{CHROME_CSS}</style>"
     m = re.search(r"<body[^>]*>", text, flags=re.I)
     if m:
