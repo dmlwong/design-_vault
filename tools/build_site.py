@@ -49,6 +49,17 @@ MANIFEST = ROOT / "tools" / "site-manifest.json"
 # policy and this list together.
 # --------------------------------------------------------------------------- #
 SANITISE: list[tuple[str, str]] = [
+    # Order matters: replacements run top-down, so put whole phrases BEFORE the
+    # single-word rules (otherwise "Efficio" -> "the platform" mangles the phrase
+    # it appears inside). Add new phrase rules at the top of this list.
+    ("About the Vault · Efficio Orbit", "About the Vault · Orbit"),
+    ("Connected Platform (internal Efficio users) and Orbit / Client Connected Platform (external clients)",
+     "The internal platform (for our own teams) and the client-facing platform"),
+    ("efficio-orbit repo", "the component repo"),
+    ("an Efficio Context Pack", "a platform Context Pack"),
+    ("Efficio Context Pack", "platform Context Pack"),
+    ("The Commentary / RAID Enhancements Sponsor Intake pack",
+     "A real sponsor intake pack"),
     ("Orbit / Client Connected Platform (external)", "External (client) platform"),
     ("Connected Platform (internal)", "Internal platform"),
     ("ClauseIQ", "Contract workflows"),
@@ -67,6 +78,11 @@ BLOCKLIST = [
     "RFP Builder",
     "Efficio",
     "Client Connected Platform",
+    # Internal initiative names that appear in the explainers' worked examples.
+    # Kept as multi-word phrases on purpose: a bare "RAID" would false-positive on
+    # ordinary words (e.g. "afraid").
+    "Commentary / RAID",
+    "RAID Enhancements",
 ]
 
 

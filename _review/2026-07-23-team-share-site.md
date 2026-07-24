@@ -23,22 +23,34 @@ The site is only the surfaces that are **safe on an anyone-with-the-link URL**:
 
 | On the site | Not on the site |
 | ----------- | --------------- |
-| The hub (`index.html`) | One-off concept prototypes |
-| Concept Brief Intake (`intake-form.html`) | Pipeline / vault explainer decks |
-| Vault Health (`health.html`, already sanitized) | Anything naming a specific product surface |
+| The hub (`index.html`) | One-off concept prototypes (archived) |
+| Concept Brief Intake (`intake-form.html`) | Real product-surface names (sanitised out) |
+| Vault Health (`health.html`, already sanitized) | The company name (sanitised out) |
+| Run the intake pilot (`pilot-playbook.html`) | Internal initiative names in worked examples |
+| Concept to prototype (`concept-to-prototype.html`) | The private, full vault-health dashboard |
+| About the Orbit Vault (`about-the-vault.html`) | |
 
-One-off prototypes and explainers stay as **private Claude Artifacts**, shared per person
-via the page's **Share** button. They are point-in-time deliverables, not living tools —
-they don't belong on a standing public link. The manifest of what *is* on the site lives
-in `tools/site-manifest.json`.
+The curated explainers **are** published, but only in **sanitised** form — the pipeline and
+vault explanations are useful to the whole team, while the product names inside them are
+not public information (see the exposure gate below). One-off **concept prototypes** stay
+off the site entirely: they're point-in-time deliverables built around named product
+surfaces, and they live in `_archive/`. The manifest of what *is* on the site lives in
+`tools/site-manifest.json`.
 
 ## The one thing to get right: the exposure gate
 
-The intake form's source (`tools/intake-form.html`) names real product surfaces and the
-company — the same names the health page keeps private. **The public build removes them**:
-`build_site.py --public` runs a sanitiser (product surfaces → functional labels, company →
-"the platform") and then **refuses to build if any blocked name survives**. So the site
-CI publishes cannot leak those names — a leak is a failed build, not a quiet mistake.
+The intake form and the explainers name real product surfaces, the company, and (in the
+flow chart's worked example) an internal initiative — the same class of names the health
+page keeps private. **The public build removes them**: `build_site.py --public` runs a
+sanitiser (product surfaces → functional labels, company → "the platform", named
+initiatives → "a real sponsor intake pack") and then **refuses to build if any blocked
+name survives**. So the site CI publishes cannot leak those names — a leak is a failed
+build, not a quiet mistake.
+
+Two rules when editing `SANITISE`: put whole phrases **above** the single-word rules (they
+run top-down, so `Efficio` → "the platform" would otherwise mangle a phrase it sits
+inside), and keep `BLOCKLIST` terms specific enough to avoid false positives — a bare
+`RAID` would match "afraid", which is why the entries are multi-word.
 
 - **Preview what the public sees:** `python3 tools/build_site.py --out site --public`
   then open `site/intake-form.html`. Surfaces read as *Contract workflows, Market
