@@ -12,10 +12,9 @@
     },
     {
       "name": "Explain the pipeline",
-      "blurb": "Share to show how concept-to-prototype works now.",
+      "blurb": "How concept-to-prototype works now — the flow, with a real run.",
       "items": [
-        {"title": "Concept-to-Prototype — the flow chart", "file": "concept-to-prototype-flow.html", "url": "https://claude.ai/code/artifact/a6a45d4a-50ed-499d-9271-1e1cad199bed", "tag": "Current"},
-        {"title": "Context-First Prototyping — intake & gate", "file": "context-first-prototyping.html", "url": "https://claude.ai/code/artifact/6248902f-d678-4215-b02f-a3e924593c70", "tag": "Current"}
+        {"title": "Concept-to-Prototype — the flow chart", "file": "concept-to-prototype-flow.html", "url": "https://claude.ai/code/artifact/a6a45d4a-50ed-499d-9271-1e1cad199bed", "tag": "Current"}
       ]
     },
     {
@@ -23,13 +22,6 @@
       "blurb": "One accurate explainer, generated from the vault (replaces three drifting decks).",
       "items": [
         {"title": "About the Orbit Vault", "file": "about-the-vault.html", "url": "https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28", "tag": "Current"}
-      ]
-    },
-    {
-      "name": "Reference",
-      "blurb": "Design-reference artifacts.",
-      "items": [
-        {"title": "Motion audit", "url": "https://claude.ai/code/artifact/fd59563e-8017-4f10-9c6d-cc5197c6fd4a", "tag": "Reference"}
       ]
     }
   ]
