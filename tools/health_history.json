@@ -77,6 +77,6 @@
     },
     "stale": 0,
     "malformed": 0,
-    "integrity_ok": false
+    "integrity_ok": true
   }
 ]
