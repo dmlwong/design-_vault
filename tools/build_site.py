@@ -264,7 +264,12 @@ h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
   padding:8px 11px;border-radius:8px;white-space:nowrap;display:inline-block;
   transition:color .12s,background .12s}
 .sitenav a.snl:hover{color:var(--site-ink);background:color-mix(in srgb,var(--site-ink) 7%,transparent)}
-.sitenav a.snl:focus-visible{outline:2px solid var(--site-accent);outline-offset:2px}
+.sitenav a.snl:focus-visible,.sitenav .brand:focus-visible,.skip-link:focus-visible{
+  outline:2px solid var(--site-accent);outline-offset:2px}
+.skip-link{position:absolute;left:8px;top:-44px;z-index:300;background:var(--site-panel);
+  color:var(--site-accent-ink);border:1px solid var(--site-line);border-radius:8px;
+  padding:9px 14px;font-size:13px;font-weight:640;text-decoration:none;transition:top .12s}
+.skip-link:focus{top:8px}
 .sitenav a.snl[aria-current=page]{color:var(--site-accent-ink);
   background:color-mix(in srgb,var(--site-accent) 13%,transparent);font-weight:660}
 @media (prefers-color-scheme:dark){.sitenav a.snl[aria-current=page]{color:var(--site-accent)}}
@@ -293,14 +298,16 @@ def render_nav(manifest: dict, current: str) -> str:
         for href, label in items
     )
     return (
+        '<a class="skip-link" href="#main-content">Skip to content</a>'
         '<nav class="sitenav" aria-label="Site">'
         f'<div class="snwrap"><a class="brand" href="index.html">'
         f'<span class="mk"></span><span>{html.escape(SITE_NAME)}</span></a>'
         f'<div class="links">{links}</div></div></nav>'
+        '<span id="main-content" tabindex="-1"></span>'
     )
 
 
-def inject_chrome(text: str, nav: str) -> str:
+def inject_chrome(text: str, nav: str, fallback_title: str = SITE_NAME) -> str:
     """Put the nav at the top of the document and the skin at the very end.
 
     Sources are a mix of full documents and artifact-style fragments, so handle
@@ -318,12 +325,24 @@ def inject_chrome(text: str, nav: str) -> str:
     m = re.search(r"<body[^>]*>", text, flags=re.I)
     if m:
         text = text[: m.end()] + "\n" + nav + text[m.end():]
-    else:
-        text = nav + "\n" + text
-    m = re.search(r"</body>", text, flags=re.I)
-    if m:
-        return text[: m.start()] + skin + "\n" + text[m.start():]
-    return text + "\n" + skin
+        end = re.search(r"</body>", text, flags=re.I)
+        if end:
+            return text[: end.start()] + skin + "\n" + text[end.start():]
+        return text + "\n" + skin
+
+    # Artifact-style fragment: no document shell. Wrapping it is not cosmetic —
+    # without <meta viewport> a phone reports innerWidth ~1000px and renders the
+    # desktop layout scaled to ~40%, and without lang= it fails WCAG 3.1.1 (A).
+    tm = re.search(r"<title>(.*?)</title>", text, flags=re.I | re.S)
+    title = tm.group(1).strip() if tm else fallback_title
+    if tm:
+        text = text[: tm.start()] + text[tm.end():]
+    return (
+        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f"<title>{html.escape(title)}</title>\n</head>\n<body>\n"
+        f"{nav}\n{text}\n{skin}\n</body>\n</html>\n"
+    )
 
 
 def render_hub(manifest: dict) -> str:
@@ -394,7 +413,8 @@ def build(out: Path, public: bool) -> list[str]:
                 "Generate it first (e.g. `python3 tools/vault_health.py` writes vault-health.html)."
             )
         text = inject_chrome(src.read_text(encoding="utf-8"),
-                             render_nav(manifest, tool["href"]))
+                             render_nav(manifest, tool["href"]),
+                             tool["title"])
         if public:
             text = sanitise(text)
             assert_clean(tool["href"], text)

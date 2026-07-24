@@ -427,9 +427,16 @@ STYLE = """
   .expand-hint .chev{font-size:14px;line-height:1}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
-  .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
-  .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
-  .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  /* Ink is darkened for light mode: these hues are tuned as fills and miss AA as
+     text on their own tint (2.5-3.9:1). Fills and hues are unchanged. */
+  .s-stable{color:color-mix(in srgb,var(--stable) 58%,#000);background:color-mix(in srgb,var(--stable) 14%,transparent)}
+  .s-review{color:color-mix(in srgb,var(--review) 62%,#000);background:color-mix(in srgb,var(--review) 16%,transparent)}
+  .s-draft{color:color-mix(in srgb,var(--draft) 70%,#000);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  @media (prefers-color-scheme:dark){
+    .s-stable{color:var(--stable)} .s-review{color:var(--review)} .s-draft{color:var(--draft)}}
+  :root[data-theme=dark] .s-stable{color:var(--stable)}
+  :root[data-theme=dark] .s-review{color:var(--review)}
+  :root[data-theme=dark] .s-draft{color:var(--draft)}
   /* Side panel: docked right, slides in from the right, pushes content left —
      no overlay, no scrim. --dw is the panel width (full-width on small screens). */
   :root{--dw:400px}
@@ -488,7 +495,7 @@ STYLE = """
   :root[data-theme=dark] .check.ok .mk{color:var(--stable)}
   .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
   .check .ct{font-weight:600}
-  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .check .cd{display:block;color:var(--muted);font-size:12px;margin-top:1px}
   .fresh{display:flex;gap:16px;flex-wrap:wrap}
   .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
