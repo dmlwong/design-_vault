@@ -92,17 +92,40 @@
   .step .st{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
   .step .st .d{width:8px;height:8px;border-radius:50%;flex:none}
   .step .sv{color:var(--muted)} .step .sv b{color:var(--ink);font-weight:600}
+  /* .vtag takes its fill inline (--ready/--work/--block), so ink is chosen per fill,
+     mirroring .v.* above: the red needs white in light, dark ink in dark. */
   .vtag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;color:#0d1117}
+  .vtag[style*="--block"]{color:#fff}
+  @media (prefers-color-scheme:dark){.vtag[style*="--block"]{color:#0d1117}}
+  :root[data-theme=light] .vtag[style*="--block"]{color:#fff}
+  :root[data-theme=dark] .vtag[style*="--block"]{color:#0d1117}
   footer{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6}
   @media (max-width:560px){.step{grid-template-columns:1fr;gap:3px}.branches,.feedback{margin-left:0}}
+
+  /* Semantic hues are tuned as FILLS. Used as TEXT on a light ground they miss AA
+     (3.2-4.4:1), so light mode gets darkened ink variants; the fills are untouched
+     and dark mode keeps the bright hues. */
+  .phase-tag.govern{color:color-mix(in srgb,var(--teal) 66%,#000)}
+  .phase-tag.explore{color:color-mix(in srgb,var(--violet) 68%,#000)}
+  .phase-tag.port{color:color-mix(in srgb,var(--port) 62%,#000)}
+  .node .num{color:color-mix(in srgb,var(--nc) 66%,#000)}
+  .loopback{color:color-mix(in srgb,var(--work) 58%,#000)}
+  .lede b.hl-explore{color:color-mix(in srgb,var(--violet) 68%,#000)}
+  .lede b.hl-port{color:color-mix(in srgb,var(--port) 62%,#000)}
+  @media (prefers-color-scheme:dark){
+    .phase-tag.govern{color:var(--teal)} .phase-tag.explore{color:var(--violet)}
+    .phase-tag.port{color:var(--port)} .node .num{color:var(--nc)}
+    .loopback{color:var(--work)}
+    .lede b.hl-explore{color:var(--violet)} .lede b.hl-port{color:var(--port)}
+  }
 </style>
 
 <div class="wrap">
   <div class="eyebrow">Orbit Design Brain</div>
   <h1>From a concept to a tested prototype</h1>
   <p class="lede">How a stakeholder's idea now travels through the vault — captured, gated, explored,
-    and only then built. Two funnels: <b style="color:var(--violet)">Explore</b> diverges (fast, throwaway,
-    not Orbit-bound); <b style="color:var(--port)">Port</b> converges (on-system). A human owns the bet throughout.</p>
+    and only then built. Two funnels: <b class="hl-explore">Explore</b> diverges (fast, throwaway,
+    not Orbit-bound); <b class="hl-port">Port</b> converges (on-system). A human owns the bet throughout.</p>
 
   <div class="legend">
     <span class="lg"><span class="sw" style="background:var(--teal)"></span>Govern the intake</span>

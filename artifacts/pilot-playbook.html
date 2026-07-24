@@ -164,6 +164,10 @@
     color:var(--muted);font-size:12.5px;line-height:1.6}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* Branch label is the semantic hue as text on a light card — darken for AA. */
+  .branch .v{color:color-mix(in srgb,var(--bc) 62%,#000)}
+  @media (prefers-color-scheme:dark){.branch .v{color:var(--bc)}}
 </style>
 
 <div class="wrap">

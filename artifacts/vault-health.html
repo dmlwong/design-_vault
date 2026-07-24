@@ -116,7 +116,9 @@
   .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
   .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
     font-size:12px;font-weight:700;margin-top:1px}
-  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.ok .mk{color:color-mix(in srgb,var(--stable) 60%,#000);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  @media (prefers-color-scheme:dark){.check.ok .mk{color:var(--stable)}}
+  :root[data-theme=dark] .check.ok .mk{color:var(--stable)}
   .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
   .check .ct{font-weight:600}
   .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
