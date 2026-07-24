@@ -3,7 +3,9 @@
 
 _Snapshot 2026-07-24. Regenerate with `tools/vault_health.py`._
 
-**Status: HEALTHY ✅**
+**Status: NEEDS ATTENTION ⚠️**
+
+- integrity check failed: graph links
 
 ## Contents
 
@@ -105,7 +107,7 @@ _135 docs carry a status field (skill files use a different frontmatter shape an
 | export self-check | pass ✅ |
 | link check | pass ✅ |
 | frontmatter lint | pass ✅ |
-| graph links | pass ✅ |
+| graph links | FAIL ❌ |
 
 ## Freshness
 

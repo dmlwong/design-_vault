@@ -20,11 +20,9 @@
     },
     {
       "name": "Explain the vault",
-      "blurb": "Decks describing what the vault is and how it's shared.",
+      "blurb": "One accurate explainer, generated from the vault (replaces three drifting decks).",
       "items": [
-        {"title": "Systems Overview", "file": "systems-overview.html", "url": "https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28", "tag": "Current"},
-        {"title": "One source of truth", "file": "one-source-of-truth.html", "url": "https://claude.ai/code/artifact/ba1cece1-c020-46e7-966f-bd779e7c012c", "tag": "Earlier"},
-        {"title": "How the vault is shared & used", "file": "how-the-vault-is-shared.html", "url": "https://claude.ai/code/artifact/90f868e1-4233-4160-b89b-18f50ea11822", "tag": "Earlier"}
+        {"title": "About the Orbit Vault", "file": "about-the-vault.html", "url": "https://claude.ai/code/artifact/1862c158-9b5e-453a-b092-792ca04c5b28", "tag": "Current"}
       ]
     },
     {
