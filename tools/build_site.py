@@ -155,6 +155,142 @@ HUB_STYLE = """
 """
 
 
+# --------------------------------------------------------------------------- #
+# Shared site chrome
+#
+# Nav + a token "skin" are injected at BUILD time, not into the source files.
+# The sources double as standalone Claude Artifacts, where cross-page links are
+# sandboxed and would be dead — so the chrome belongs to the site only. One nav,
+# generated from the manifest: add a page there and it appears in every page's
+# nav automatically.
+#
+# The skin unifies the NEUTRAL + ACCENT layer only. Semantic hues are left alone
+# on purpose — the flow chart's teal/violet/indigo encode Govern/Explore/Port and
+# the health page's green/amber/grey encode stable/in-review/draft. Consistency
+# must not flatten meaning.
+# --------------------------------------------------------------------------- #
+SITE_NAME = "Orbit Design Brain"
+
+CHROME_CSS = """
+/* ---- injected site chrome (tools/build_site.py) ---- */
+:root{
+  --site-accent:#2450B8; --site-accent-ink:#1C3F96; --site-accent-2:#6D3BD1;
+  --site-bg:#EFF1F5; --site-panel:#FFFFFF; --site-ink:#151B26; --site-muted:#586274;
+  --site-line:#DFE4EC;
+  --site-serif:Charter,"Bitstream Charter","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --site-accent:#7EA6FF; --site-accent-ink:#9DBCFF; --site-accent-2:#A883F2;
+  --site-bg:#0B0F16; --site-panel:#141A24; --site-ink:#E8ECF3; --site-muted:#96A2B4;
+  --site-line:#242E3B;
+}}
+:root[data-theme=light]{
+  --site-accent:#2450B8; --site-accent-ink:#1C3F96; --site-accent-2:#6D3BD1;
+  --site-bg:#EFF1F5; --site-panel:#FFFFFF; --site-ink:#151B26; --site-muted:#586274;
+  --site-line:#DFE4EC;
+}
+:root[data-theme=dark]{
+  --site-accent:#7EA6FF; --site-accent-ink:#9DBCFF; --site-accent-2:#A883F2;
+  --site-bg:#0B0F16; --site-panel:#141A24; --site-ink:#E8ECF3; --site-muted:#96A2B4;
+  --site-line:#242E3B;
+}
+/* Map each page's own neutral/accent tokens onto the site palette. Pages use
+   different names for the same role, so every alias is restated. */
+:root,:root[data-theme=light],:root[data-theme=dark]{
+  --bg:var(--site-bg); --panel:var(--site-panel); --surface:var(--site-panel);
+  --ink:var(--site-ink); --muted:var(--site-muted); --ink-soft:var(--site-muted);
+  --line:var(--site-line);
+  --accent:var(--site-accent); --accent-ink:var(--site-accent-ink);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:var(--site-bg); --panel:var(--site-panel); --surface:var(--site-panel);
+  --ink:var(--site-ink); --muted:var(--site-muted); --ink-soft:var(--site-muted);
+  --line:var(--site-line);
+  --accent:var(--site-accent); --accent-ink:var(--site-accent-ink);
+}}
+/* Guarantee the document itself carries the site ground. Some pages paint their
+   background on an inner wrapper instead of body, which would leave the injected
+   nav sitting on an unstyled (white/transparent) strip — badly wrong in dark mode. */
+body{margin:0;background:var(--site-bg);color:var(--site-ink)}
+
+/* The injected nav replaces any per-page brand bar — otherwise the wordmark
+   renders twice, stacked. Page-level metadata that lived there (build date) is
+   repeated in each page's footer, so nothing is lost. */
+.topbar{display:none}
+
+/* One display voice across every page. */
+h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
+
+/* ---- the nav itself ---- */
+.sitenav{position:sticky;top:0;z-index:200;background:color-mix(in srgb,var(--site-bg) 92%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--site-line);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.sitenav .snwrap{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;align-items:center;
+  gap:20px;height:52px}
+.sitenav .brand{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:660;
+  color:var(--site-ink);text-decoration:none;white-space:nowrap;letter-spacing:-.01em}
+.sitenav .brand .mk{width:16px;height:16px;border-radius:50%;flex:none;position:relative}
+.sitenav .brand .mk::before,.sitenav .brand .mk::after{content:"";position:absolute;inset:0;
+  border-radius:50%;border:1.5px solid var(--site-accent)}
+.sitenav .brand .mk::after{inset:5px;border-color:var(--site-accent-2)}
+.sitenav .links{display:flex;align-items:center;gap:2px;margin-left:auto;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none}
+.sitenav .links::-webkit-scrollbar{display:none}
+.sitenav a.snl{font-size:13px;font-weight:560;color:var(--site-muted);text-decoration:none;
+  padding:7px 11px;border-radius:8px;white-space:nowrap;transition:color .12s,background .12s}
+.sitenav a.snl:hover{color:var(--site-ink);background:color-mix(in srgb,var(--site-ink) 7%,transparent)}
+.sitenav a.snl:focus-visible{outline:2px solid var(--site-accent);outline-offset:2px}
+.sitenav a.snl[aria-current=page]{color:var(--site-accent-ink);
+  background:color-mix(in srgb,var(--site-accent) 13%,transparent);font-weight:660}
+@media (prefers-color-scheme:dark){.sitenav a.snl[aria-current=page]{color:var(--site-accent)}}
+@media (max-width:720px){
+  .sitenav .snwrap{gap:12px;padding:0 14px}
+  .sitenav .brand span:last-child{display:none}
+}
+@media (prefers-reduced-motion:reduce){.sitenav a.snl{transition:none}}
+"""
+
+
+def render_nav(manifest: dict, current: str) -> str:
+    """Sticky nav listing every page in the manifest, marking the current one."""
+    items = [("index.html", "Home")] + [
+        (t["href"], t.get("nav") or t["title"]) for t in manifest["tools"]
+    ]
+    links = "".join(
+        '<a class="snl" href="{h}"{cur}>{label}</a>'.format(
+            h=html.escape(href),
+            cur=' aria-current="page"' if href == current else "",
+            label=html.escape(label),
+        )
+        for href, label in items
+    )
+    return (
+        '<nav class="sitenav" aria-label="Site">'
+        f'<div class="snwrap"><a class="brand" href="index.html">'
+        f'<span class="mk"></span><span>{html.escape(SITE_NAME)}</span></a>'
+        f'<div class="links">{links}</div></div></nav>'
+    )
+
+
+def inject_chrome(text: str, nav: str) -> str:
+    """Put the nav at the top of the document and the skin at the very end.
+
+    Sources are a mix of full documents and artifact-style fragments, so handle
+    both. The skin goes last so it wins the cascade over each page's own tokens
+    without needing !important.
+    """
+    skin = f"<style>{CHROME_CSS}</style>"
+    m = re.search(r"<body[^>]*>", text, flags=re.I)
+    if m:
+        text = text[: m.end()] + "\n" + nav + text[m.end():]
+    else:
+        text = nav + "\n" + text
+    m = re.search(r"</body>", text, flags=re.I)
+    if m:
+        return text[: m.start()] + skin + "\n" + text[m.start():]
+    return text + "\n" + skin
+
+
 def render_hub(manifest: dict) -> str:
     site = manifest["site"]
     rows = []
@@ -183,7 +319,6 @@ def render_hub(manifest: dict) -> str:
 </head>
 <body>
   <div class="wrap">
-    <div class="eyebrow">{html.escape(site['eyebrow'])}</div>
     <h1>{html.escape(site['title'])}</h1>
     <p class="lede">{html.escape(site['tagline'])}</p>
     <div class="group">
@@ -208,7 +343,7 @@ def build(out: Path, public: bool) -> list[str]:
     written: list[str] = []
 
     # Hub
-    hub = render_hub(manifest)
+    hub = inject_chrome(render_hub(manifest), render_nav(manifest, "index.html"))
     if public:
         hub = sanitise(hub)
         assert_clean("index.html", hub)
@@ -223,7 +358,8 @@ def build(out: Path, public: bool) -> list[str]:
                 f"Missing tool source for '{tool['id']}': {tool['source']} not found. "
                 "Generate it first (e.g. `python3 tools/vault_health.py` writes vault-health.html)."
             )
-        text = src.read_text(encoding="utf-8")
+        text = inject_chrome(src.read_text(encoding="utf-8"),
+                             render_nav(manifest, tool["href"]))
         if public:
             text = sanitise(text)
             assert_clean(tool["href"], text)
