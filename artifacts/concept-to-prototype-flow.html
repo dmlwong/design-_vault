@@ -1,0 +1,227 @@
+<title>Concept-to-Prototype — how the process works now</title>
+<style>
+  :root{
+    --bg:#f4f6fa;--panel:#fff;--panel-2:#eef1f7;--ink:#151b26;--muted:#59636f;
+    --line:#e2e7ef;--teal:#0e7c86;--indigo:#4457c7;--violet:#7c4dd6;--port:#0f8a6b;
+    --ready:#1f9d55;--work:#c07d0a;--block:#c2344b;
+    --shadow:0 1px 2px rgba(21,27,38,.05),0 10px 26px rgba(21,27,38,.06);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0a0e15;--panel:#131a24;--panel-2:#0e141d;--ink:#e7ecf3;--muted:#93a0b1;
+    --line:#222c39;--teal:#2dd4bf;--indigo:#8b98ff;--violet:#b79bf0;--port:#4fc7a3;
+    --ready:#3ecf7f;--work:#e0a94a;--block:#f4788a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.5);}}
+  :root[data-theme=light]{
+    --bg:#f4f6fa;--panel:#fff;--panel-2:#eef1f7;--ink:#151b26;--muted:#59636f;
+    --line:#e2e7ef;--teal:#0e7c86;--indigo:#4457c7;--violet:#7c4dd6;--port:#0f8a6b;
+    --ready:#1f9d55;--work:#c07d0a;--block:#c2344b;
+    --shadow:0 1px 2px rgba(21,27,38,.05),0 10px 26px rgba(21,27,38,.06);}
+  :root[data-theme=dark]{
+    --bg:#0a0e15;--panel:#131a24;--panel-2:#0e141d;--ink:#e7ecf3;--muted:#93a0b1;
+    --line:#222c39;--teal:#2dd4bf;--indigo:#8b98ff;--violet:#b79bf0;--port:#4fc7a3;
+    --ready:#3ecf7f;--work:#e0a94a;--block:#f4788a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px rgba(0,0,0,.5);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:760px;margin:0 auto;padding:42px 20px 64px}
+  .eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:650}
+  h1{font-size:25px;letter-spacing:-.02em;margin:8px 0 0;font-weight:700;text-wrap:balance}
+  .lede{margin:12px 0 0;font-size:14.5px;color:var(--muted);max-width:60ch}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:20px 0 4px;font-size:12px;color:var(--muted)}
+  .legend .lg{display:inline-flex;align-items:center;gap:7px}
+  .legend .sw{width:20px;height:6px;border-radius:3px}
+
+  .flow{margin-top:8px}
+  .phase{margin-top:8px}
+  .phase-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.06em;padding:5px 12px;border-radius:999px;margin:18px 0 4px}
+  .phase-tag.govern{color:var(--teal);background:color-mix(in srgb,var(--teal) 13%,transparent)}
+  .phase-tag.explore{color:var(--violet);background:color-mix(in srgb,var(--violet) 14%,transparent)}
+  .phase-tag.port{color:var(--port);background:color-mix(in srgb,var(--port) 14%,transparent)}
+
+  .node{display:grid;grid-template-columns:30px 1fr;gap:14px;background:var(--panel);
+    border:1px solid var(--line);border-left:3px solid var(--nc,var(--teal));border-radius:12px;
+    box-shadow:var(--shadow);padding:14px 16px}
+  .node .num{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none;
+    font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;
+    background:color-mix(in srgb,var(--nc) 14%,transparent);color:var(--nc)}
+  .node h3{margin:2px 0 0;font-size:14.5px;font-weight:660}
+  .node p{margin:5px 0 0;font-size:12.5px;color:var(--muted)}
+  .node .tool{font-size:11px;color:var(--muted);margin-top:7px;font-family:ui-monospace,Menlo,monospace}
+  .node.who::after{content:attr(data-who);grid-column:2;font-size:10.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;color:var(--nc);margin-top:8px}
+
+  .conn{display:flex;justify-content:center;color:var(--line);font-size:16px;line-height:1;padding:5px 0}
+  .conn::before{content:"▼"}
+
+  /* Decision node */
+  .decision{border-left-color:var(--indigo);--nc:var(--indigo)}
+  .branches{display:flex;flex-direction:column;gap:8px;margin:12px 0 0 44px}
+  .branch{display:flex;align-items:flex-start;gap:10px;font-size:12.5px}
+  .branch .v{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    padding:3px 9px;border-radius:6px;white-space:nowrap;flex:none;margin-top:1px}
+  .v.ready{color:#fff;background:var(--ready)} .v.work{color:#fff;background:var(--work)} .v.block{color:#fff;background:var(--block)}
+  .branch .bt{color:var(--muted)} .branch .bt b{color:var(--ink);font-weight:600}
+  .loopback{color:var(--work);font-weight:600}
+
+  /* Feedback callouts */
+  .feedback{display:flex;gap:10px;align-items:flex-start;margin:10px 0 0 44px;padding:10px 13px;
+    border-radius:10px;background:var(--panel-2);border:1px dashed var(--line);font-size:12px;color:var(--muted)}
+  .feedback b{color:var(--ink);font-weight:600}
+  .feedback .ic{flex:none}
+
+  .seam{display:flex;align-items:center;gap:12px;margin:16px 0 4px}
+  .seam .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+  .seam .rule{height:1px;background:var(--line);flex:1}
+
+  /* Real-run proof strip */
+  .proof{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px 22px}
+  .proof h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 4px;font-weight:700}
+  .proof .sub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+  .steps{display:flex;flex-direction:column;gap:0}
+  .step{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:10px 0;border-top:1px solid var(--line);font-size:12.5px}
+  .step:first-child{border-top:none}
+  .step .st{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .step .st .d{width:8px;height:8px;border-radius:50%;flex:none}
+  .step .sv{color:var(--muted)} .step .sv b{color:var(--ink);font-weight:600}
+  .vtag{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;color:#fff}
+  footer{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6}
+  @media (max-width:560px){.step{grid-template-columns:1fr;gap:3px}.branches,.feedback{margin-left:0}}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Orbit Design Brain</div>
+  <h1>From a concept to a tested prototype</h1>
+  <p class="lede">How a stakeholder's idea now travels through the vault — captured, gated, explored,
+    and only then built. Two funnels: <b style="color:var(--violet)">Explore</b> diverges (fast, throwaway,
+    not Orbit-bound); <b style="color:var(--port)">Port</b> converges (on-system). A human owns the bet throughout.</p>
+
+  <div class="legend">
+    <span class="lg"><span class="sw" style="background:var(--teal)"></span>Govern the intake</span>
+    <span class="lg"><span class="sw" style="background:var(--violet)"></span>Explore (diverge)</span>
+    <span class="lg"><span class="sw" style="background:var(--port)"></span>Port (converge)</span>
+    <span class="lg"><span class="sw" style="background:var(--indigo)"></span>Decision / gate</span>
+  </div>
+
+  <div class="flow">
+    <div class="phase-tag govern">Govern the intake</div>
+
+    <div class="node who" style="--nc:var(--teal)" data-who="Stakeholder">
+      <span class="num">1</span>
+      <div><h3>A concept or problem to explore</h3>
+        <p>A sponsor pack, a problem statement, or a context-free Lovable prototype that today lands with no record of intent.</p></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node who" style="--nc:var(--teal)" data-who="Stakeholder">
+      <span class="num">2</span>
+      <div><h3>Fill the intake form</h3>
+        <p>Capture the intent structurally: problem, one user &amp; moment, the journey, outcomes, constraints.</p>
+        <div class="tool">tools/intake-form.html</div></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node" style="--nc:var(--teal)">
+      <span class="num">3</span>
+      <div><h3>Completeness check &nbsp;·&nbsp; Layer 1 (a rule)</h3>
+        <p>In-browser, free: required fields, real journey steps, no placeholder text. <span class="loopback">Thin brief → back to the form.</span></p></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node who" style="--nc:var(--teal)" data-who="Design team">
+      <span class="num">4</span>
+      <div><h3>Commit the brief</h3>
+        <p>The generated brief lands in the vault for review.</p>
+        <div class="tool">discovery/briefs/&lt;date&gt;-&lt;slug&gt;.md</div></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node decision who" data-who="brief-reviewer · opus · fresh context">
+      <span class="num">5</span>
+      <div><h3>The gate &nbsp;·&nbsp; Layer 2 (judgement)</h3>
+        <p>Scored against the 8-criterion brief contract. A verdict, an owner, an audit trail — reviewed as written, blind to the requester.</p>
+        <div class="tool">design-brain/brief-contract.md</div>
+        <div class="branches">
+          <div class="branch"><span class="v ready">Ready</span><span class="bt">all eight pass → <b>continue to Explore ↓</b></span></div>
+          <div class="branch"><span class="v work">Needs work</span><span class="bt">fixable gaps → <b class="loopback">back to the form</b> (import → edit → resubmit)</span></div>
+          <div class="branch"><span class="v block">Blocked</span><span class="bt">fundamental → <b>escalate to the owner</b> (override logged, or stop)</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="feedback"><span class="ic">↳</span><div>Context the vault lacks → <b>Efficio Context Pack backlog</b>. Tool/process findings → <b>lessons inbox</b>.</div></div>
+    <div class="conn"></div>
+
+    <div class="phase-tag explore">Explore · diverge</div>
+
+    <div class="node who" style="--nc:var(--violet)" data-who="explore skill">
+      <span class="num">6</span>
+      <div><h3>Build an interactive concept</h3>
+        <p>A clickable, self-contained prototype — whatever best serves the idea, <b>not</b> Orbit-bound. Verified headless.</p>
+        <div class="tool">design-brain/skills/explore/SKILL.md</div></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node" style="--nc:var(--violet)">
+      <span class="num">7</span>
+      <div><h3>Blind adversarial critique</h3>
+        <p>A fresh context attacks the <b>concept</b>, not the code: value hypothesis, assumptions, the bet, adoption, edge cases — ordered by what could kill it.</p></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node decision who" data-who="Human owns the bet">
+      <span class="num">8</span>
+      <div><h3>Steer the bet</h3>
+        <p>A person decides on the running concept + critique.</p>
+        <div class="branches">
+          <div class="branch"><span class="v ready">Keep</span><span class="bt">validated enough → <b>hand to Port ↓</b></span></div>
+          <div class="branch"><span class="v work">Re-frame</span><span class="bt">a better bet emerged → <b class="loopback">new brief, back to the form</b></span></div>
+          <div class="branch"><span class="v block">Kill / hold</span><span class="bt">critique found blockers → <b>validate with users first</b></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="feedback"><span class="ic">↳</span><div>Assumptions the prototype had to make → <b>questions for a real user session</b> + Context Pack backlog.</div></div>
+
+    <div class="seam"><span class="lbl">The seam — never one pass doing both</span><span class="rule"></span></div>
+
+    <div class="phase-tag port">Port · converge</div>
+
+    <div class="node who" style="--nc:var(--port)" data-who="port-to-orbit">
+      <span class="num">9</span>
+      <div><h3>Make the winner real</h3>
+        <p>A kept concept enters the Port funnel — Orbit-correct, tokens-only, production-leaning — then design review. This is where the vault already shines.</p>
+        <div class="tool">design-brain/skills/port-to-orbit/SKILL.md</div></div>
+    </div>
+    <div class="conn"></div>
+
+    <div class="node" style="--nc:var(--port)">
+      <span class="num">10</span>
+      <div><h3>Graduate to a discovery pack</h3>
+        <p>The brief seeds the full pack — one intake format flowing forward, not a second disconnected one.</p>
+        <div class="tool">discovery/_TEMPLATE.md</div></div>
+    </div>
+  </div>
+
+  <div class="proof">
+    <h2>Proven today on a real brief</h2>
+    <p class="sub">The Commentary / RAID Enhancements Sponsor Intake pack, run through every stage above.</p>
+    <div class="steps">
+      <div class="step"><div class="st"><span class="d" style="background:var(--teal)"></span>Form</div>
+        <div class="sv">The sponsor pack, filled in as first submitted (broad).</div></div>
+      <div class="step"><div class="st"><span class="d" style="background:var(--indigo)"></span>Gate → 1</div>
+        <div class="sv"><span class="vtag" style="background:var(--work)">Needs work</span> &nbsp;four bets bundled; the reviewer named the one to keep.</div></div>
+      <div class="step"><div class="st"><span class="d" style="background:var(--teal)"></span>Resubmit</div>
+        <div class="sv">Narrowed to one bet per the guidance, via the form's import loop.</div></div>
+      <div class="step"><div class="st"><span class="d" style="background:var(--indigo)"></span>Gate → 2</div>
+        <div class="sv"><span class="vtag" style="background:var(--ready)">Ready</span> &nbsp;all eight pass; data unknown routed to the Context Pack.</div></div>
+      <div class="step"><div class="st"><span class="d" style="background:var(--violet)"></span>Explore</div>
+        <div class="sv">Built a clickable 60-second PM status-prep view; verified.</div></div>
+      <div class="step"><div class="st"><span class="d" style="background:var(--violet)"></span>Critique</div>
+        <div class="sv"><span class="vtag" style="background:var(--block)">Hold</span> &nbsp;three kill-risks — <b>validate data &amp; the "changed" definition with a real PM before Port.</b></div></div>
+    </div>
+  </div>
+
+  <footer>The pipeline made a cheap, honest "should we build this?" — not a convincing prototype on an unvalidated premise.</footer>
+</div>

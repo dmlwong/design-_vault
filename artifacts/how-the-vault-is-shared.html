@@ -1,0 +1,447 @@
+<title>Orbit Design Brain — How the vault is shared &amp; used</title>
+<style>
+  :root {
+    --paper: #fafbfd;
+    --surface: #ffffff;
+    --surface-2: #f1f4fa;
+    --ink: #182036;
+    --ink-soft: #4c5670;
+    --ink-faint: #7d87a0;
+    --line: #dce2ee;
+    --line-strong: #c3cce0;
+    --efficio: #2450b8;
+    --efficio-soft: #e6ecfa;
+    --orbit: #6b4fc8;
+    --orbit-soft: #efeafa;
+    --good: #1e7f4f;
+    --good-soft: #e3f3ea;
+    --warn: #9a6a12;
+    --warn-soft: #faf0da;
+    --shadow: 0 1px 2px rgba(24, 32, 54, 0.05), 0 4px 16px rgba(24, 32, 54, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0f1526;
+      --surface: #161e33;
+      --surface-2: #1c2540;
+      --ink: #e7ebf6;
+      --ink-soft: #aab3cc;
+      --ink-faint: #7d87a4;
+      --line: #2a3352;
+      --line-strong: #3a4468;
+      --efficio: #86a4ee;
+      --efficio-soft: #1d2a4e;
+      --orbit: #ab94ea;
+      --orbit-soft: #2a2348;
+      --good: #5cc492;
+      --good-soft: #17301f;
+      --warn: #dcae54;
+      --warn-soft: #33270e;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #fafbfd;
+    --surface: #ffffff;
+    --surface-2: #f1f4fa;
+    --ink: #182036;
+    --ink-soft: #4c5670;
+    --ink-faint: #7d87a0;
+    --line: #dce2ee;
+    --line-strong: #c3cce0;
+    --efficio: #2450b8;
+    --efficio-soft: #e6ecfa;
+    --orbit: #6b4fc8;
+    --orbit-soft: #efeafa;
+    --good: #1e7f4f;
+    --good-soft: #e3f3ea;
+    --warn: #9a6a12;
+    --warn-soft: #faf0da;
+    --shadow: 0 1px 2px rgba(24, 32, 54, 0.05), 0 4px 16px rgba(24, 32, 54, 0.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f1526;
+    --surface: #161e33;
+    --surface-2: #1c2540;
+    --ink: #e7ebf6;
+    --ink-soft: #aab3cc;
+    --ink-faint: #7d87a4;
+    --line: #2a3352;
+    --line-strong: #3a4468;
+    --efficio: #86a4ee;
+    --efficio-soft: #1d2a4e;
+    --orbit: #ab94ea;
+    --orbit-soft: #2a2348;
+    --good: #5cc492;
+    --good-soft: #17301f;
+    --warn: #dcae54;
+    --warn-soft: #33270e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+
+  .serif { font-family: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, "Times New Roman", serif; }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; font-size: 0.86em; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    font-size: 0.72rem; font-weight: 600; color: var(--ink-faint);
+  }
+  .eyebrow .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--efficio); position: relative; }
+  .eyebrow .dot::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    border: 1.5px solid var(--orbit); opacity: 0.75;
+  }
+
+  h1 {
+    font-family: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+    font-size: clamp(1.9rem, 4.5vw, 2.7rem);
+    line-height: 1.15; font-weight: 700; margin: 0.7rem 0 0.9rem;
+    text-wrap: balance; max-width: 26ch;
+  }
+  .lede { font-size: 1.08rem; color: var(--ink-soft); max-width: 62ch; margin: 0; }
+  .meta { margin-top: 1.1rem; font-size: 0.8rem; color: var(--ink-faint); }
+  .meta span + span::before { content: "·"; margin: 0 0.5rem; }
+
+  h2 {
+    font-family: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, serif;
+    font-size: 1.45rem; font-weight: 700; line-height: 1.25;
+    margin: 0 0 0.35rem; text-wrap: balance;
+  }
+  .kicker {
+    text-transform: uppercase; letter-spacing: 0.13em; font-size: 0.68rem;
+    font-weight: 700; color: var(--efficio); margin: 0 0 0.55rem;
+  }
+  section { margin-top: 3.4rem; }
+  .section-intro { color: var(--ink-soft); max-width: 66ch; margin: 0 0 1.5rem; }
+  p { max-width: 68ch; }
+
+  /* stat strip */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 2.2rem; }
+  .stat { background: var(--surface); padding: 0.9rem 1rem 0.8rem; }
+  .stat b { display: block; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .stat span { font-size: 0.74rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* role cards */
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 700px) { .roles { grid-template-columns: 1fr; } }
+  .role {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.4rem 1.5rem 1.5rem; box-shadow: var(--shadow);
+    border-top: 3px solid var(--efficio);
+  }
+  .role.consumers { border-top-color: var(--orbit); }
+  .role h3 { margin: 0 0 0.2rem; font-size: 1.05rem; }
+  .role .who { font-size: 0.82rem; color: var(--ink-faint); margin: 0 0 0.9rem; }
+  .role ul { margin: 0; padding-left: 1.1rem; color: var(--ink-soft); font-size: 0.92rem; }
+  .role li { margin: 0.35rem 0; }
+  .role li::marker { color: var(--line-strong); }
+  .pill {
+    display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 0.15rem 0.55rem; border-radius: 99px; margin-left: 0.4rem;
+    vertical-align: 2px;
+  }
+  .pill.blue { background: var(--efficio-soft); color: var(--efficio); }
+  .pill.purple { background: var(--orbit-soft); color: var(--orbit); }
+  .pill.green { background: var(--good-soft); color: var(--good); }
+  .pill.amber { background: var(--warn-soft); color: var(--warn); }
+
+  /* pipeline */
+  .pipeline-shell {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 2rem 1.6rem 1.6rem; box-shadow: var(--shadow); overflow-x: auto;
+  }
+  .pipeline { display: grid; grid-template-columns: 1fr 28px 1fr 28px 1fr 28px 1fr 28px 1fr; gap: 0; align-items: stretch; min-width: 860px; }
+  .node { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 0.9rem 0.95rem 1rem; display: flex; flex-direction: column; }
+  .node .step { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.4rem; }
+  .node h4 { margin: 0 0 0.3rem; font-size: 0.94rem; line-height: 1.3; }
+  .node p { margin: 0; font-size: 0.8rem; line-height: 1.45; color: var(--ink-soft); }
+  .node.first { border-color: var(--efficio); border-width: 1.5px; background: var(--efficio-soft); }
+  .node.first .step { color: var(--efficio); }
+  .node.last { border-color: var(--orbit); border-width: 1.5px; background: var(--orbit-soft); }
+  .node.last .step { color: var(--orbit); }
+  .arrow { display: flex; align-items: center; justify-content: center; color: var(--line-strong); }
+  .arrow svg { display: block; }
+
+  .loopback { min-width: 860px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.8rem; margin-top: 1.1rem; color: var(--ink-faint); }
+  .loopback .rule { height: 0; border-top: 1.5px dashed var(--line-strong); position: relative; }
+  .loopback .rule.tail::before {
+    content: ""; position: absolute; left: -1px; top: -5px;
+    border: 5px solid transparent; border-right: 8px solid var(--line-strong);
+  }
+  .loopback em { font-style: normal; font-size: 0.78rem; letter-spacing: 0.04em; }
+
+  .one-rule {
+    margin-top: 1.4rem; display: flex; gap: 1rem; align-items: baseline;
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--efficio);
+    border-radius: 10px; padding: 1rem 1.3rem;
+  }
+  .one-rule b { font-family: Charter, Georgia, serif; font-size: 1.06rem; white-space: nowrap; }
+  .one-rule span { color: var(--ink-soft); font-size: 0.92rem; }
+
+  /* travels / stays */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 700px) { .split { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.3rem 1.5rem 1.4rem; }
+  .panel h3 { margin: 0 0 0.75rem; font-size: 0.98rem; display: flex; align-items: center; gap: 0.5rem; }
+  .panel h3 .mark { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .panel ul { margin: 0; padding-left: 1.1rem; font-size: 0.9rem; color: var(--ink-soft); }
+  .panel li { margin: 0.35rem 0; }
+  .panel li::marker { color: var(--line-strong); }
+  .footnote { font-size: 0.8rem; color: var(--ink-faint); margin-top: 0.9rem; max-width: 66ch; }
+
+  /* cost paths */
+  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 700px) { .paths { grid-template-columns: 1fr; } }
+  .path { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.4rem 1.5rem; box-shadow: var(--shadow); }
+  .path .price { font-family: Charter, Georgia, serif; font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .path .per { font-size: 0.8rem; color: var(--ink-faint); }
+  .path h3 { margin: 0.15rem 0 0.6rem; font-size: 1rem; }
+  .path p { margin: 0 0 0.6rem; font-size: 0.89rem; color: var(--ink-soft); }
+  .path ul { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.86rem; color: var(--ink-soft); }
+  .path li { margin: 0.3rem 0; }
+  .path li::marker { color: var(--line-strong); }
+  .gauge { margin-top: 1rem; }
+  .gauge .bar { height: 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .gauge .fill { width: 1.8%; min-width: 6px; height: 100%; background: var(--efficio); border-radius: 99px; }
+  .gauge .lbl { font-size: 0.75rem; color: var(--ink-faint); margin-top: 0.35rem; font-variant-numeric: tabular-nums; }
+
+  /* onboarding */
+  .onboard { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 700px) { .onboard { grid-template-columns: 1fr; } }
+  .steps { counter-reset: s; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.3rem 1.5rem 1.4rem; }
+  .steps h3 { margin: 0 0 0.2rem; font-size: 1rem; }
+  .steps .sub { font-size: 0.8rem; color: var(--ink-faint); margin: 0 0 1rem; }
+  .steps ol { list-style: none; margin: 0; padding: 0; }
+  .steps li { counter-increment: s; display: flex; gap: 0.8rem; padding: 0.5rem 0; border-top: 1px solid var(--line); font-size: 0.89rem; color: var(--ink-soft); }
+  .steps li::before {
+    content: counter(s); flex: none; width: 1.45rem; height: 1.45rem; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft);
+    font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    font-variant-numeric: tabular-nums; margin-top: 0.1rem;
+  }
+  .steps li b { color: var(--ink); font-weight: 600; }
+
+  .docs { border-top: 1px solid var(--line); margin-top: 3.4rem; padding-top: 1.5rem; font-size: 0.84rem; color: var(--ink-faint); }
+  .docs .mono { color: var(--ink-soft); }
+  .docs p { margin: 0.3rem 0; }
+
+  a { color: var(--efficio); }
+  :focus-visible { outline: 2px solid var(--efficio); outline-offset: 2px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow"><span class="dot"></span>Orbit Design Brain · Efficio</span>
+    <h1>One brain, authored once, consumed everywhere</h1>
+    <p class="lede">How the shared design vault works: who edits it, how changes are governed and
+    verified, and how the same source of truth reaches engineers and AI tools in every product
+    repository — without ever drifting.</p>
+    <p class="meta"><span>Prepared for stakeholders</span><span>July 2026</span><span>Source: the vault itself (<span class="mono">_review/Team Sharing Setup.md</span>, <span class="mono">Maintenance Workflow.md</span>)</span></p>
+
+    <div class="stats" role="list" aria-label="Vault at a glance">
+      <div class="stat" role="listitem"><b>97</b><span>linked documents</span></div>
+      <div class="stat" role="listitem"><b>12</b><span>component contracts</span></div>
+      <div class="stat" role="listitem"><b>11</b><span>page patterns</span></div>
+      <div class="stat" role="listitem"><b>2</b><span>platform profiles</span></div>
+      <div class="stat" role="listitem"><b>18&hairsp;MB</b><span>total size</span></div>
+      <div class="stat" role="listitem"><b>0</b><span>broken references</span></div>
+    </div>
+  </header>
+
+  <section aria-labelledby="roles-h">
+    <p class="kicker">Two audiences, two tools</p>
+    <h2 id="roles-h">Authors write the vault. Consumers never touch it.</h2>
+    <p class="section-intro">The entire sharing model rests on one separation: people who shape the
+    design guidance work in the vault; everyone (and everything) that builds UI reads a generated,
+    read-only copy inside their own repository.</p>
+
+    <div class="roles">
+      <div class="role">
+        <h3>Authors <span class="pill blue">edit the vault</span></h3>
+        <p class="who">Design · Product · Product owners</p>
+        <ul>
+          <li>Work in <b>Obsidian</b> on a checkout of the vault repository — the single canonical copy.</li>
+          <li>Low-risk notes are edited directly; <b>governed files</b> (tokens, component and pattern contracts, the always-on rules) go through a change request approved by a design-system owner.</li>
+          <li>Every push is verified by CI: link integrity across all 97 documents and a required-files check.</li>
+        </ul>
+      </div>
+      <div class="role consumers">
+        <h3>Consumers <span class="pill purple">read the export</span></h3>
+        <p class="who">Engineers · Claude Code · Codex · Lovable</p>
+        <ul>
+          <li>Get the brain as a <b>generated export inside their product repo</b> — pulled with the code, no extra tools or licences.</li>
+          <li>AI tools load it automatically and follow the tokens-only, platform-first rules when generating Orbit UI.</li>
+          <li>The copy is disposable and never hand-edited; it carries a generated-export notice.</li>
+          <li>Lovable is the one exception: it receives a purpose-built projection pasted into its knowledge base.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="flow-h">
+    <p class="kicker">The flow</p>
+    <h2 id="flow-h">From an edit in Obsidian to correct UI in production repos</h2>
+    <p class="section-intro">Five stages, one direction of travel — with a feedback loop that makes
+    the brain sharper every sprint instead of letting it rot.</p>
+
+    <div class="pipeline-shell">
+      <div class="pipeline">
+        <div class="node first">
+          <span class="step">1 · Author</span>
+          <h4>Edit the vault</h4>
+          <p>A designer or PM updates a token note, contract, pattern, or discovery pack in Obsidian.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg width="20" height="12" viewBox="0 0 20 12"><path d="M0 6h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <div class="node">
+          <span class="step">2 · Govern</span>
+          <h4>Owner approval</h4>
+          <p>Governed files ride a change request; a design-system owner approves before merge.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg width="20" height="12" viewBox="0 0 20 12"><path d="M0 6h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <div class="node">
+          <span class="step">3 · Verify</span>
+          <h4>CI checks</h4>
+          <p>Automated link check, required-files check, and a drift check that fails loudly if any copy differs from the vault.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg width="20" height="12" viewBox="0 0 20 12"><path d="M0 6h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <div class="node">
+          <span class="step">4 · Export</span>
+          <h4>Generate the packs</h4>
+          <p>The exporter writes agent-ready copies into each product repo. Restricted material is excluded by default.</p>
+        </div>
+        <div class="arrow" aria-hidden="true"><svg width="20" height="12" viewBox="0 0 20 12"><path d="M0 6h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <div class="node last">
+          <span class="step">5 · Build</span>
+          <h4>UI gets made</h4>
+          <p>Engineers and AI tools build Orbit UI against the brain — same rules, every repo, both platforms.</p>
+        </div>
+      </div>
+      <div class="loopback" aria-label="Feedback loop">
+        <div class="rule tail"></div>
+        <em>When the AI gets Orbit wrong, the correction is made in the vault — so the fix becomes true for every team, permanently</em>
+        <div class="rule"></div>
+      </div>
+    </div>
+
+    <div class="one-rule">
+      <b>The one rule:</b>
+      <span>edit the vault, never the exported copy. If that holds, drift is structurally impossible —
+      the repo copies are always reproducible from the source, and CI catches anyone who forgets.</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="travel-h">
+    <p class="kicker">Confidentiality by default</p>
+    <h2 id="travel-h">What travels with the export — and what stays home</h2>
+
+    <div class="split">
+      <div class="panel">
+        <h3><span class="mark" style="background: var(--good);"></span>Travels to every product repo</h3>
+        <ul>
+          <li>The always-on rules and routing (what AI tools must obey)</li>
+          <li>Design tokens, defaults, and interaction heuristics</li>
+          <li>All component contracts and page patterns</li>
+          <li>Golden examples with reference code</li>
+          <li>Platform profiles for both products</li>
+          <li>Skills and the design-reviewer agent for Claude Code</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="mark" style="background: var(--warn);"></span>Stays in the vault</h3>
+        <ul>
+          <li>Platform screenshots (18 captures, pending sanitization review)</li>
+          <li>Private work-in-progress notes and internal state docs</li>
+          <li>Governance records, audits, and review history</li>
+          <li>Archived and superseded material</li>
+        </ul>
+        <p class="footnote">Exclusion is enforced by the exporter itself, not by convention — restricted
+        content can only be included with an explicit flag after owner approval.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="cost-h">
+    <p class="kicker">Access &amp; cost</p>
+    <h2 id="cost-h">What it costs to share: almost nothing</h2>
+    <p class="section-intro">Obsidian is free for commercial use, and consumers need no software at all —
+    the brain reaches them through the repositories they already work in. The only question is how
+    authors connect.</p>
+
+    <div class="paths">
+      <div class="path">
+        <span class="price">$0</span> <span class="per">— no subscriptions</span>
+        <h3>Path A — Git-connected authors <span class="pill green">Recommended</span></h3>
+        <p>Authors clone the vault and open it in Obsidian. Changes travel through pull requests,
+        so governance and CI gate every edit automatically.</p>
+        <ul>
+          <li>Strongest integrity: nothing lands unreviewed</li>
+          <li>Full version history, forever</li>
+          <li>Works today — this is the current setup</li>
+        </ul>
+      </div>
+      <div class="path">
+        <span class="price">$4</span> <span class="per">/ author / month — Obsidian Sync Standard</span>
+        <h3>Path B — Add Sync for non-git authors <span class="pill amber">Open decision</span></h3>
+        <p>For contributors who won't touch git: each needs their own Sync seat; one owner hosts the
+        shared vault and invites the rest. Git remains canonical via a sync-to-git bridge.</p>
+        <ul>
+          <li>No git skills needed to contribute</li>
+          <li>Caveat: Sync bypasses review — the bridge keeps CI in the loop</li>
+          <li>Consumers still pay nothing, on either path</li>
+        </ul>
+        <div class="gauge" aria-label="Vault size against Sync plan allowance">
+          <div class="bar"><div class="fill"></div></div>
+          <div class="lbl">Vault today: 18 MB of the 1 GB plan allowance (≈2%) — decades of headroom</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="onboard-h">
+    <p class="kicker">Getting started</p>
+    <h2 id="onboard-h">Onboarding is measured in minutes, not weeks</h2>
+
+    <div class="onboard">
+      <div class="steps">
+        <h3>A new author</h3>
+        <p class="sub">≈ 30 minutes to productive</p>
+        <ol>
+          <li><span><b>Get access</b> from a design-system owner and clone the vault.</span></li>
+          <li><span><b>Open it in Obsidian</b> — "Open folder as vault." Personal workspace state stays local.</span></li>
+          <li><span><b>Read three files</b>: the README, the always-on rules, and the current-state note.</span></li>
+          <li><span><b>Edit by the rules</b>: direct edits for low-risk notes; change requests for governed files.</span></li>
+        </ol>
+      </div>
+      <div class="steps">
+        <h3>A new consuming team</h3>
+        <p class="sub">One export, then it's just git</p>
+        <ol>
+          <li><span><b>Run the exporter</b> against the product repo (preview first, then apply).</span></li>
+          <li><span><b>Commit the export</b> — every teammate now gets the brain via <span class="mono">git pull</span>.</span></li>
+          <li><span><b>Wire the drift check</b> into the repo's CI so the copy can never silently diverge.</span></li>
+          <li><span><b>Verify the brain loaded</b>: ask the AI tool to summarise the Orbit constraints before its first build.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <div class="docs">
+    <p><strong>Deeper reading, inside the vault:</strong></p>
+    <p><span class="mono">_review/Team Sharing Setup.md</span> — the live sharing &amp; onboarding guide (this page in full)</p>
+    <p><span class="mono">_review/Maintenance Workflow.md</span> — the sync loop and governance rhythm · <span class="mono">_review/Governance.md</span> — who approves what</p>
+    <p><span class="mono">_review/STATE.md</span> — the single "where we are" narrative, kept current</p>
+  </div>
+
+</div>

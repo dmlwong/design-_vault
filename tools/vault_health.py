@@ -614,7 +614,9 @@ def _artifacts_section() -> str:
         '<section>\n'
         '    <h2 class="s-head">Artifacts</h2>\n'
         f'    <p class="s-sub">The {total} deliverables built from the vault so far — forms, dashboards, '
-        'explainers, and concept prototypes. Hand-curated; opens in a new tab.</p>\n'
+        'explainers, and concept prototypes. To actually open them, use the in-repo hub '
+        '(<b>artifacts/index.html</b>) or your gallery — links inside this dashboard can’t '
+        'navigate (a rendered artifact is sandboxed).</p>\n'
         f'    <div class="panel">{"".join(blocks)}</div>\n'
         '  </section>'
     )
