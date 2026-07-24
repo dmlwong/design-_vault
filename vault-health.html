@@ -65,9 +65,16 @@
   .expand-hint .chev{font-size:14px;line-height:1}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
-  .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
-  .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
-  .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  /* Ink is darkened for light mode: these hues are tuned as fills and miss AA as
+     text on their own tint (2.5-3.9:1). Fills and hues are unchanged. */
+  .s-stable{color:color-mix(in srgb,var(--stable) 58%,#000);background:color-mix(in srgb,var(--stable) 14%,transparent)}
+  .s-review{color:color-mix(in srgb,var(--review) 62%,#000);background:color-mix(in srgb,var(--review) 16%,transparent)}
+  .s-draft{color:color-mix(in srgb,var(--draft) 70%,#000);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  @media (prefers-color-scheme:dark){
+    .s-stable{color:var(--stable)} .s-review{color:var(--review)} .s-draft{color:var(--draft)}}
+  :root[data-theme=dark] .s-stable{color:var(--stable)}
+  :root[data-theme=dark] .s-review{color:var(--review)}
+  :root[data-theme=dark] .s-draft{color:var(--draft)}
   /* Side panel: docked right, slides in from the right, pushes content left —
      no overlay, no scrim. --dw is the panel width (full-width on small screens). */
   :root{--dw:400px}
@@ -121,10 +128,12 @@
   .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
   .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
     font-size:12px;font-weight:700;margin-top:1px}
-  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.ok .mk{color:color-mix(in srgb,var(--stable) 60%,#000);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  @media (prefers-color-scheme:dark){.check.ok .mk{color:var(--stable)}}
+  :root[data-theme=dark] .check.ok .mk{color:var(--stable)}
   .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
   .check .ct{font-weight:600}
-  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .check .cd{display:block;color:var(--muted);font-size:12px;margin-top:1px}
   .fresh{display:flex;gap:16px;flex-wrap:wrap}
   .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
@@ -183,13 +192,14 @@
   <section>
     <h2 class="s-head">What's inside</h2>
     <p class="s-sub">The building blocks the vault holds. Agents, Skills, Components and Patterns can be opened to list what's in them.</p>
-    <div class="kpis"><button type="button" class="kpi-btn" data-area="Agents" aria-haspopup="dialog" aria-label="See all 10 Agents"><span class="n mono">10</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span>See all 10</span></button><button type="button" class="kpi-btn" data-area="Skills" aria-haspopup="dialog" aria-label="See all 4 Skills"><span class="n mono">4</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span>See all 4</span></button><button type="button" class="kpi-btn" data-area="Component contracts" aria-haspopup="dialog" aria-label="See all 12 Component contracts"><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Specs for reusable UI components</span><span class="expand-hint"><span class="chev">›</span>See all 12</span></button><button type="button" class="kpi-btn" data-area="Pattern contracts" aria-haspopup="dialog" aria-label="See all 11 Pattern contracts"><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Specs for page-level layouts</span><span class="expand-hint"><span class="chev">›</span>See all 11</span></button><div class="kpi"><div class="n mono">18</div><div class="k">Examples</div><div class="gloss">Reference screens to build from</div></div><div class="kpi"><div class="n mono">2</div><div class="k">Platform profiles</div><div class="gloss">The products the vault serves</div></div></div>
+    <div class="kpis"><button type="button" class="kpi-btn" data-area="Agents" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 10 Agents"><span class="n mono">10</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span>See all 10</span></button><button type="button" class="kpi-btn" data-area="Skills" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 4 Skills"><span class="n mono">4</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span>See all 4</span></button><button type="button" class="kpi-btn" data-area="Component contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 12 Component contracts"><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Specs for reusable UI components</span><span class="expand-hint"><span class="chev">›</span>See all 12</span></button><button type="button" class="kpi-btn" data-area="Pattern contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 11 Pattern contracts"><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Specs for page-level layouts</span><span class="expand-hint"><span class="chev">›</span>See all 11</span></button><div class="kpi"><div class="n mono">18</div><div class="k">Examples</div><div class="gloss">Reference screens to build from</div></div><div class="kpi"><div class="n mono">2</div><div class="k">Platform profiles</div><div class="gloss">The products the vault serves</div></div></div>
   </section>
   <div hidden><div class="panel-src" data-area="Agents" data-count="10" data-gloss="AI agents that build &amp; review designs" hidden><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in-review</span></li><li><span class="nm">brief-coach</span><span class="pill s-draft">draft</span></li><li><span class="nm">brief-reviewer</span><span class="pill s-draft">draft</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">stable</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">stable</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">stable</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">stable</span></li><li><span class="nm">porter</span><span class="pill s-review">in-review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in-review</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Skills" data-count="4" data-gloss="Guided workflows the team runs" hidden><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li></ul></div><div class="panel-src" data-area="Component contracts" data-count="12" data-gloss="Specs for reusable UI components" hidden><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in-review</span></li><li><span class="nm">button</span><span class="pill s-review">in-review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in-review</span></li><li><span class="nm">chip</span><span class="pill s-review">in-review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in-review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in-review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in-review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in-review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in-review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in-review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Pattern contracts" data-count="11" data-gloss="Specs for page-level layouts" hidden><ul class="items"><li><span class="nm">analytics-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">config-wizard</span><span class="pill s-review">in-review</span></li><li><span class="nm">focus-mode-results</span><span class="pill s-review">in-review</span></li><li><span class="nm">guided-conversational-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">home-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">list-detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">lovable-port</span><span class="pill s-review">in-review</span></li><li><span class="nm">review-and-approve-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">settings-form-validation</span><span class="pill s-review">in-review</span></li><li><span class="nm">tool-hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">work-card</span><span class="pill s-review">in-review</span></li></ul></div></div>
 
   <section>
     <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the 135 documents sit on the way to approved. A large
+    <p class="s-sub">Where the 135 of 139 documents that carry a
+      lifecycle status sit on the way to approved (the rest are generated indexes and READMEs). A large
       in-review share is normal while the team is actively building the vault.</p>
     <div class="panel">
       <div class="legend"><span class="lg"><span class="sw" style="background:var(--stable)"></span><b>Stable</b> — reviewed & approved</span><span class="lg"><span class="sw" style="background:var(--review)"></span><b>In review</b> — being worked on</span><span class="lg"><span class="sw" style="background:var(--draft)"></span><b>Draft</b> — just started</span></div>
@@ -221,7 +231,7 @@
   <section>
     <h2 class="s-head">Trend</h2>
     <p class="s-sub">How the vault is growing over time.</p>
-    <div class="panel"><svg class="spark" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,50.0L33.33,17.0L66.67,6.0L100.0,6.0"/></svg></div>
+    <div class="panel"><svg class="spark" role="img" aria-label="Document count over time" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,50.0L33.33,17.0L66.67,6.0L100.0,6.0"/></svg></div>
   </section>
 
   
@@ -229,7 +239,7 @@
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div></div>
 
-<aside class="drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
+<aside class="drawer" id="detail-drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
   <div class="dhead">
     <h3 id="drawer-title"></h3>
     <span class="dcount"></span>
@@ -259,11 +269,13 @@
     dbody.appendChild(src.querySelector('.items').cloneNode(true));
     body.classList.add('drawer-open');
     drawer.setAttribute('aria-hidden','false');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){x.setAttribute('aria-expanded', x===last?'true':'false');});
     closeBtn.focus();
   }
   function close(){
     body.classList.remove('drawer-open');
     drawer.setAttribute('aria-hidden','true');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){x.setAttribute('aria-expanded','false');});
     if(last) last.focus();
   }
   document.querySelectorAll('.kpi-btn').forEach(function(btn){

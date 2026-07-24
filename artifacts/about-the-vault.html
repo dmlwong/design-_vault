@@ -266,6 +266,13 @@
     .orbiter { animation: none !important; }
     .reveal { transition: none; opacity: 1; transform: none; }
   }
+
+  /* --good as text on its own tint misses AA in light; darken the ink only. */
+  .verdict{color:color-mix(in srgb,var(--good) 62%,#000)}
+  .check .mk.ok{color:color-mix(in srgb,var(--good) 62%,#000)}
+  @media (prefers-color-scheme:dark){
+    .verdict{color:var(--good)} .check .mk.ok{color:var(--good)}
+  }
 </style>
 
 <div class="page">

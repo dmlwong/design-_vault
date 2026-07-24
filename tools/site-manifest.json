@@ -13,7 +13,8 @@
       "blurb": "Capture a concept — the problem, the one user and moment, the testable bet, the outcome. Outputs a brief to hand to the design team. Everything stays in your browser; nothing is sent anywhere.",
       "href": "intake-form.html",
       "source": "tools/intake-form.html",
-      "tag": "Capture"
+      "tag": "Capture",
+      "nav": "Intake form"
     },
     {
       "id": "health",
@@ -21,7 +22,8 @@
       "blurb": "The sanitized, auto-updating health of the design brain: how many docs, how mature, which checks pass, how fresh. Refreshes daily.",
       "href": "health.html",
       "source": "vault-health.html",
-      "tag": "Monitor"
+      "tag": "Monitor",
+      "nav": "Vault health"
     },
     {
       "id": "playbook",
@@ -29,7 +31,8 @@
       "blurb": "The step-by-step playbook for testing the concept-intake loop: set up the two Claude Projects, pick testers, run the loop, and capture what you learn.",
       "href": "pilot-playbook.html",
       "source": "artifacts/pilot-playbook.html",
-      "tag": "Playbook"
+      "tag": "Playbook",
+      "nav": "Pilot playbook"
     },
     {
       "id": "flow",
@@ -37,7 +40,8 @@
       "blurb": "How an idea travels through the vault: coached into a brief, gated against the contract, explored as a throwaway concept, then ported on-system.",
       "href": "concept-to-prototype.html",
       "source": "artifacts/concept-to-prototype-flow.html",
-      "tag": "Explainer"
+      "tag": "Explainer",
+      "nav": "The flow"
     },
     {
       "id": "about",
@@ -45,7 +49,8 @@
       "blurb": "What the design brain is, what's inside it, how it's governed and shared, and the benchmark evidence that it works. Generated from the vault itself.",
       "href": "about-the-vault.html",
       "source": "artifacts/about-the-vault.html",
-      "tag": "Explainer"
+      "tag": "Explainer",
+      "nav": "About"
     }
   ]
 }

@@ -427,9 +427,16 @@ STYLE = """
   .expand-hint .chev{font-size:14px;line-height:1}
   .pill{font-size:11px;padding:2px 8px;border-radius:999px;flex:none;font-weight:600;
     letter-spacing:.02em}
-  .s-stable{color:var(--stable);background:color-mix(in srgb,var(--stable) 14%,transparent)}
-  .s-review{color:var(--review);background:color-mix(in srgb,var(--review) 16%,transparent)}
-  .s-draft{color:var(--draft);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  /* Ink is darkened for light mode: these hues are tuned as fills and miss AA as
+     text on their own tint (2.5-3.9:1). Fills and hues are unchanged. */
+  .s-stable{color:color-mix(in srgb,var(--stable) 58%,#000);background:color-mix(in srgb,var(--stable) 14%,transparent)}
+  .s-review{color:color-mix(in srgb,var(--review) 62%,#000);background:color-mix(in srgb,var(--review) 16%,transparent)}
+  .s-draft{color:color-mix(in srgb,var(--draft) 70%,#000);background:color-mix(in srgb,var(--draft) 16%,transparent)}
+  @media (prefers-color-scheme:dark){
+    .s-stable{color:var(--stable)} .s-review{color:var(--review)} .s-draft{color:var(--draft)}}
+  :root[data-theme=dark] .s-stable{color:var(--stable)}
+  :root[data-theme=dark] .s-review{color:var(--review)}
+  :root[data-theme=dark] .s-draft{color:var(--draft)}
   /* Side panel: docked right, slides in from the right, pushes content left —
      no overlay, no scrim. --dw is the panel width (full-width on small screens). */
   :root{--dw:400px}
@@ -483,10 +490,12 @@ STYLE = """
   .check{display:flex;align-items:flex-start;gap:10px;font-size:13.5px}
   .check .mk{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
     font-size:12px;font-weight:700;margin-top:1px}
-  .check.ok .mk{color:var(--stable);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  .check.ok .mk{color:color-mix(in srgb,var(--stable) 60%,#000);background:color-mix(in srgb,var(--stable) 15%,transparent)}
+  @media (prefers-color-scheme:dark){.check.ok .mk{color:var(--stable)}}
+  :root[data-theme=dark] .check.ok .mk{color:var(--stable)}
   .check.bad .mk{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
   .check .ct{font-weight:600}
-  .check .cd{color:var(--muted);font-size:12px;margin-top:1px}
+  .check .cd{display:block;color:var(--muted);font-size:12px;margin-top:1px}
   .fresh{display:flex;gap:16px;flex-wrap:wrap}
   .fresh .item{flex:1;min-width:150px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:12px;padding:15px 16px;display:flex;align-items:center;gap:13px}
@@ -542,7 +551,7 @@ def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
         hint = (f'<span class="expand-hint"><span class="chev">›</span>See all {count}</span>')
         return (
             f'<button type="button" class="kpi-btn" data-area="{esc}" '
-            f'aria-haspopup="dialog" aria-label="See all {count} {esc}">'
+            f'aria-expanded="false" aria-controls="detail-drawer" aria-label="See all {count} {esc}">'
             f'<span class="n mono">{count}</span>'
             f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</button>'
         )
@@ -572,7 +581,7 @@ def _sparkline(points: list[int]) -> str:
     span = (hi - lo) or 1
     n = len(points)
     coords = [f"{round(100*i/(n-1),2)},{round(50-44*(v-lo)/span,2)}" for i, v in enumerate(points)]
-    return (f'<svg class="spark" viewBox="0 0 100 56" preserveAspectRatio="none">'
+    return (f'<svg class="spark" role="img" aria-label="Document count over time" viewBox="0 0 100 56" preserveAspectRatio="none">'
             f'<path d="M{"L".join(coords)}"/></svg>')
 
 
@@ -703,7 +712,8 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
 
   <section>
     <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the {scanned['status_total']} documents sit on the way to approved. A large
+    <p class="s-sub">Where the {scanned['status_total']} of {a['Total docs']} documents that carry a
+      lifecycle status sit on the way to approved (the rest are generated indexes and READMEs). A large
       in-review share is normal while the team is actively building the vault.</p>
     <div class="panel">
       <div class="legend">{legend}</div>
@@ -743,7 +753,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div></div>
 
-<aside class="drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
+<aside class="drawer" id="detail-drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
   <div class="dhead">
     <h3 id="drawer-title"></h3>
     <span class="dcount"></span>
@@ -773,11 +783,13 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     dbody.appendChild(src.querySelector('.items').cloneNode(true));
     body.classList.add('drawer-open');
     drawer.setAttribute('aria-hidden','false');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){{x.setAttribute('aria-expanded', x===last?'true':'false');}});
     closeBtn.focus();
   }}
   function close(){{
     body.classList.remove('drawer-open');
     drawer.setAttribute('aria-hidden','true');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){{x.setAttribute('aria-expanded','false');}});
     if(last) last.focus();
   }}
   document.querySelectorAll('.kpi-btn').forEach(function(btn){{
