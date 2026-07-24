@@ -36,7 +36,7 @@
 
   .flow{margin-top:8px}
   .phase{margin-top:8px}
-  .phase-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
+  .phase-tag{all:unset;display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
     text-transform:uppercase;letter-spacing:.06em;padding:5px 12px;border-radius:999px;margin:18px 0 4px}
   .phase-tag.govern{color:var(--teal);background:color-mix(in srgb,var(--teal) 13%,transparent)}
   .phase-tag.explore{color:var(--violet);background:color-mix(in srgb,var(--violet) 14%,transparent)}
@@ -135,7 +135,7 @@
   </div>
 
   <div class="flow">
-    <div class="phase-tag govern">Govern the intake</div>
+    <h2 class="phase-tag govern">Govern the intake</h2>
 
     <div class="node who" style="--nc:var(--teal)" data-who="Stakeholder">
       <span class="num">1</span>
@@ -190,7 +190,7 @@
     <div class="feedback"><span class="ic">↳</span><div>Context the vault lacks → <b>Efficio Context Pack backlog</b>. Tool/process findings → <b>lessons inbox</b>.</div></div>
     <div class="conn"></div>
 
-    <div class="phase-tag explore">Explore · diverge</div>
+    <h2 class="phase-tag explore">Explore · diverge</h2>
 
     <div class="node who" style="--nc:var(--violet)" data-who="explore skill">
       <span class="num">6</span>
@@ -222,7 +222,7 @@
 
     <div class="seam"><span class="lbl">The seam — never one pass doing both</span><span class="rule"></span></div>
 
-    <div class="phase-tag port">Port · converge</div>
+    <h2 class="phase-tag port">Port · converge</h2>
 
     <div class="node who" style="--nc:var(--port)" data-who="port-to-orbit">
       <span class="num">9</span>

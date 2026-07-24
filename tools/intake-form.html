@@ -104,7 +104,7 @@
     <button type="button" class="btn-primary" id="genbtn">Generate brief</button>
     <button type="button" class="btn-ghost" id="clearbtn">Clear</button>
   </div>
-  <div class="summary" id="summary"></div>
+  <div class="summary" id="summary" role="alert" aria-live="assertive"></div>
 
   <div class="tool" id="output">
     <h2 class="ok">✓ Brief ready</h2>
@@ -208,7 +208,7 @@
   function isJunk(s){return JUNK.indexOf(s.toLowerCase())>-1;}
   function journeySteps(s){return s.split(/\n+/).map(function(x){return x.replace(/^\s*\d+[.)]\s*/,"").trim();}).filter(Boolean);}
 
-  function clearErrors(){allFields().forEach(function(f){F[f.id].parentNode.classList.remove("err");document.getElementById("err-"+f.id).textContent="";});document.getElementById("summary").classList.remove("show");}
+  function clearErrors(){allFields().forEach(function(f){F[f.id].parentNode.classList.remove("err");F[f.id].removeAttribute("aria-invalid");F[f.id].removeAttribute("aria-describedby");document.getElementById("err-"+f.id).textContent="";});document.getElementById("summary").classList.remove("show");}
 
   function validate(){
     clearErrors(); var errs=[];
@@ -224,6 +224,8 @@
     });
     errs.forEach(function(e){
       F[e.id].parentNode.classList.add("err");
+      F[e.id].setAttribute("aria-invalid","true");
+      F[e.id].setAttribute("aria-describedby","err-"+e.id);
       document.getElementById("err-"+e.id).textContent=e.m;
     });
     if(errs.length){

@@ -551,7 +551,7 @@ def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
         hint = (f'<span class="expand-hint"><span class="chev">›</span>See all {count}</span>')
         return (
             f'<button type="button" class="kpi-btn" data-area="{esc}" '
-            f'aria-haspopup="dialog" aria-label="See all {count} {esc}">'
+            f'aria-expanded="false" aria-controls="detail-drawer" aria-label="See all {count} {esc}">'
             f'<span class="n mono">{count}</span>'
             f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</button>'
         )
@@ -581,7 +581,7 @@ def _sparkline(points: list[int]) -> str:
     span = (hi - lo) or 1
     n = len(points)
     coords = [f"{round(100*i/(n-1),2)},{round(50-44*(v-lo)/span,2)}" for i, v in enumerate(points)]
-    return (f'<svg class="spark" viewBox="0 0 100 56" preserveAspectRatio="none">'
+    return (f'<svg class="spark" role="img" aria-label="Document count over time" viewBox="0 0 100 56" preserveAspectRatio="none">'
             f'<path d="M{"L".join(coords)}"/></svg>')
 
 
@@ -712,7 +712,8 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
 
   <section>
     <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the {scanned['status_total']} documents sit on the way to approved. A large
+    <p class="s-sub">Where the {scanned['status_total']} of {a['Total docs']} documents that carry a
+      lifecycle status sit on the way to approved (the rest are generated indexes and READMEs). A large
       in-review share is normal while the team is actively building the vault.</p>
     <div class="panel">
       <div class="legend">{legend}</div>
@@ -752,7 +753,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
 </div></div>
 
-<aside class="drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
+<aside class="drawer" id="detail-drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
   <div class="dhead">
     <h3 id="drawer-title"></h3>
     <span class="dcount"></span>
@@ -782,11 +783,13 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
     dbody.appendChild(src.querySelector('.items').cloneNode(true));
     body.classList.add('drawer-open');
     drawer.setAttribute('aria-hidden','false');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){{x.setAttribute('aria-expanded', x===last?'true':'false');}});
     closeBtn.focus();
   }}
   function close(){{
     body.classList.remove('drawer-open');
     drawer.setAttribute('aria-hidden','true');
+    document.querySelectorAll('.kpi-btn').forEach(function(x){{x.setAttribute('aria-expanded','false');}});
     if(last) last.focus();
   }}
   document.querySelectorAll('.kpi-btn').forEach(function(btn){{

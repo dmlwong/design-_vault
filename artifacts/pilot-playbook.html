@@ -168,6 +168,16 @@
   /* Branch label is the semantic hue as text on a light card — darken for AA. */
   .branch .v{color:color-mix(in srgb,var(--bc) 62%,#000)}
   @media (prefers-color-scheme:dark){.branch .v{color:var(--bc)}}
+
+  /* A long nowrap path pushed the layout viewport to 370px on 320px devices.
+     Short tokens still sit on one line; only over-long ones break. */
+  .inline-code{white-space:normal;overflow-wrap:anywhere}
+  /* The phase meta ("after ~1 week or ~5 briefs") is nowrap and right-aligned; on a
+     320px device it pushed the layout viewport to 323px. Let it drop to its own line. */
+  @media (max-width:560px){
+    .ph-head{flex-wrap:wrap}
+    .ph-when{white-space:normal;margin-left:0;flex-basis:100%}
+  }
 </style>
 
 <div class="wrap">

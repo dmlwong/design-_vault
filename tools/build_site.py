@@ -280,7 +280,7 @@ h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
   .sitenav .links{margin-left:0;width:100%;flex-wrap:wrap;overflow:visible;gap:2px}
   .sitenav a.snl{padding:7px 9px;font-size:12.5px}
 }
-@media (prefers-reduced-motion:reduce){.sitenav a.snl{transition:none}}
+@media (prefers-reduced-motion:reduce){.sitenav a.snl,.skip-link{transition:none}}
 """
 
 
