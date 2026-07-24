@@ -22,6 +22,30 @@
       "href": "health.html",
       "source": "vault-health.html",
       "tag": "Monitor"
+    },
+    {
+      "id": "playbook",
+      "title": "Run the intake pilot with your team",
+      "blurb": "The step-by-step playbook for testing the concept-intake loop: set up the two Claude Projects, pick testers, run the loop, and capture what you learn.",
+      "href": "pilot-playbook.html",
+      "source": "artifacts/pilot-playbook.html",
+      "tag": "Playbook"
+    },
+    {
+      "id": "flow",
+      "title": "Concept to prototype — the flow",
+      "blurb": "How an idea travels through the vault: coached into a brief, gated against the contract, explored as a throwaway concept, then ported on-system.",
+      "href": "concept-to-prototype.html",
+      "source": "artifacts/concept-to-prototype-flow.html",
+      "tag": "Explainer"
+    },
+    {
+      "id": "about",
+      "title": "About the Orbit Vault",
+      "blurb": "What the design brain is, what's inside it, how it's governed and shared, and the benchmark evidence that it works. Generated from the vault itself.",
+      "href": "about-the-vault.html",
+      "source": "artifacts/about-the-vault.html",
+      "tag": "Explainer"
     }
   ]
 }
