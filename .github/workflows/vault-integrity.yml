@@ -120,7 +120,9 @@ jobs:
             "https://x-access-token:${HEALTH_PAGE_TOKEN}@github.com/dmlwong/vault-health.git" /tmp/vh
           # Replace the published surface with the freshly built site.
           find /tmp/vh -maxdepth 1 -type f \( -name '*.html' -o -name '.nojekyll' \) -delete
-          cp site/index.html site/intake-form.html site/health.html site/.nojekyll /tmp/vh/
+          # Copy whatever the build produced — never a hardcoded file list, or pages
+          # added to tools/site-manifest.json silently never reach the live site.
+          cp site/*.html site/.nojekyll /tmp/vh/
           cd /tmp/vh
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
