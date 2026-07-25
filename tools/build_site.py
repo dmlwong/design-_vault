@@ -152,6 +152,47 @@ HUB_STYLE = """
     color:var(--muted);font-size:12.5px;line-height:1.6}
   @media (prefers-reduced-motion:reduce){a.row{transition:none}}
   @media (max-width:560px){.open{display:none}}
+
+  /* ---- hero stage ----------------------------------------------------------
+     A deliberate single-world dark band: the orb reads as a light source, so it
+     needs a dark ground in both themes. Everything below returns to the site's
+     normal surface. Pure CSS — the rotating inset box-shadows are the whole
+     effect; the letters are staggered by animation-delay. */
+  .hero{position:relative;overflow:hidden;background:
+      radial-gradient(120% 90% at 50% 0%, #1c3a86 0%, #14224d 42%, #0b1020 72%, #05070d 100%);
+    padding:clamp(48px,9vw,86px) 20px clamp(44px,8vw,72px);
+    display:flex;flex-direction:column;align-items:center;text-align:center}
+  .orb{position:relative;display:flex;align-items:center;justify-content:center;
+    width:clamp(158px,42vw,208px);aspect-ratio:1/1;user-select:none;flex:none}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;animation:orbSpin 5s linear infinite}
+  .orb .ltr{position:relative;z-index:1;display:inline-block;color:#fff;opacity:.4;
+    font-size:clamp(13px,3.4vw,16px);font-weight:650;letter-spacing:.14em;
+    animation:orbLetter 3s infinite}
+  @keyframes orbSpin{
+    0%{transform:rotate(90deg);
+      box-shadow:0 6px 12px 0 #38bdf8 inset,0 12px 18px 0 #2450B8 inset,
+        0 36px 36px 0 #1e2f7a inset,0 0 3px 1.2px rgba(56,189,248,.3),0 0 8px 2px rgba(36,80,184,.25)}
+    50%{transform:rotate(270deg);
+      box-shadow:0 6px 12px 0 #7EA6FF inset,0 12px 6px 0 #2450B8 inset,
+        0 24px 36px 0 #6D3BD1 inset,0 0 3px 1.2px rgba(126,166,255,.3),0 0 8px 2px rgba(109,59,209,.25)}
+    100%{transform:rotate(450deg);
+      box-shadow:0 6px 12px 0 #38bdf8 inset,0 12px 18px 0 #2450B8 inset,
+        0 36px 36px 0 #1e2f7a inset,0 0 3px 1.2px rgba(56,189,248,.3),0 0 8px 2px rgba(36,80,184,.25)}}
+  @keyframes orbLetter{
+    0%,100%{opacity:.4;transform:translateY(0)}
+    20%{opacity:1;transform:scale(1.15)}
+    40%{opacity:.7;transform:translateY(0)}}
+  .hero h1{color:#fff;margin:clamp(26px,4vw,38px) 0 0;max-width:24ch;text-wrap:balance}
+  .hero .lede{color:#c3cede;margin:14px auto 0;max-width:52ch}
+  .hero .scroll-cue{margin-top:26px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:#93a3bd;font-weight:650}
+  /* Reduced motion: hold the orb at its most luminous frame rather than spinning. */
+  @media (prefers-reduced-motion:reduce){
+    .orb .ring{animation:none;transform:rotate(270deg);
+      box-shadow:0 6px 12px 0 #7EA6FF inset,0 12px 6px 0 #2450B8 inset,
+        0 24px 36px 0 #6D3BD1 inset,0 0 3px 1.2px rgba(126,166,255,.3),0 0 8px 2px rgba(109,59,209,.25)}
+    .orb .ltr{animation:none;opacity:1}}
+  .tools-wrap{max-width:720px;margin:0 auto;padding:clamp(30px,5vw,44px) 20px 64px}
 """
 
 
@@ -363,6 +404,12 @@ def render_hub(manifest: dict) -> str:
             )
         )
     body = "\n".join(rows)
+    wordmark = site.get("wordmark", "ORBIT")
+    letters = "".join(
+        f'<span class="ltr" aria-hidden="true" style="animation-delay:{i * 0.1:.1f}s">'
+        f'{html.escape(ch)}</span>'
+        for i, ch in enumerate(wordmark)
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -372,9 +419,16 @@ def render_hub(manifest: dict) -> str:
 <style>{HUB_STYLE}</style>
 </head>
 <body>
-  <div class="wrap">
+  <section class="hero">
+    <div class="orb" role="img" aria-label="{html.escape(wordmark)}">
+      <span class="ring" aria-hidden="true"></span>
+      {letters}
+    </div>
     <h1>{html.escape(site['title'])}</h1>
     <p class="lede">{html.escape(site['tagline'])}</p>
+    <p class="scroll-cue">The tools &darr;</p>
+  </section>
+  <div class="tools-wrap">
     <div class="group">
 {body}
     </div>
