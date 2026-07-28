@@ -14,7 +14,8 @@
         "design-brain/examples/<nearest>.md",
         "design-brain/accessibility.md",
         "design-brain/motion.md",
-        "design-brain/ux-copy.md"
+        "design-brain/ux-copy.md",
+        "design-brain/storybook.md"
       ],
       "then": ["design-review"]
     },
@@ -43,6 +44,7 @@
       "load": [
         "design-brain/components/_TEMPLATE.md",
         "design-brain/tokens.md",
+        "design-brain/storybook.md",
         "design-brain/components/data-table.md"
       ],
       "then": []
