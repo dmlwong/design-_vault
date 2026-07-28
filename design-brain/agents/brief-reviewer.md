@@ -3,11 +3,11 @@ type: reviewer-agent
 name: brief-reviewer
 description: Review a concept brief against the brief contract before any prototype is built, and return a verdict with per-criterion evidence. Use at intake, after a stakeholder submits a brief, and before the explore skill runs. Review only — it never writes the prototype or edits the brief, and it runs in a fresh context separate from the requester.
 model: opus
-status: draft
+status: in-review
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-28
 maturity_score: 0
 tags: [orbit, design-brain, intake, brief, review]
 ---
@@ -45,6 +45,13 @@ opus-class; never silently downgrade (`design-brain/orchestration.md`).
    **Needs work**; a fundamental or unresolvable-by-rewording problem → **Blocked**.
 
 ## Common brief traps
+- A **discovery pack is not a brief.** Packs are multi-journey and solution-decided, so
+  scored as briefs they fail criterion 3 by design (2026-07-21 pilot's key finding).
+  Say so, and name the single highest-evidence bet a brief could be distilled from —
+  don't grind a pack through the rubric as if it were malformed.
+- An **unresolvable surface** — the brief's surface doesn't map to any platform profile
+  (e.g. an internal initiative that fell to "Other / shared" on the intake form). This
+  is a criterion-8 failure of the *form or vault*, not the author; flag which.
 - A **solution stated as a problem** ("add a filter") — fails criterion 1 even when
   fluent. Name the pre-chosen mechanism you spotted.
 - **Many bets bundled as one** — a journey with five distinct outcomes fails criterion 3;

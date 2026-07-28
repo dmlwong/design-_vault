@@ -142,18 +142,18 @@
   {
     "date": "2026-07-28",
     "areas": {
-      "Agents": 10,
-      "Skills": 4,
+      "Agents": 11,
+      "Skills": 5,
       "Component contracts": 12,
       "Pattern contracts": 11,
       "Examples": 18,
       "Platform profiles": 2,
-      "Total docs": 140
+      "Total docs": 142
     },
     "status": {
       "stable": 38,
-      "in-review": 73,
-      "draft": 25
+      "in-review": 75,
+      "draft": 24
     },
     "stale": 0,
     "malformed": 0,

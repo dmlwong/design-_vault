@@ -21,20 +21,22 @@ One Markdown file per system component: `components/<component-name>.md`, writte
 - Changing a component's public API → update the contract first.
 
 ## Index
-| Component | Surface(s) | Status |
-| --------- | ---------- | ------ |
-| `data-table` | shared | in-review — source-backed `Table` |
-| `button` | shared | in-review — source-backed `Button` / `IconButton` |
-| `input` | shared | in-review — source-backed `Input` |
-| `select-combobox` | shared | in-review — source-backed `Dropdown` / `MultiSelectDropdown` |
-| `dialog` | shared | in-review — source-backed `Overlay` |
-| `drawer` | shared | draft — reusable source missing |
-| `toast-notification` | shared | in-review — source-backed `Toast` |
-| `tabs` | shared | in-review — source-backed `TabButton` / `PageHeader` |
-| `badge-status` | shared | in-review — source-backed `Badge` |
-| `card-panel` | shared | in-review — source-backed `Card` |
-| `status-indicator` | shared | in-review — source-backed `StatusIndicator` |
-| `chip` | shared | in-review — source-backed `Chip` |
+Stories = the component has a Storybook story set (`write-stories` skill); “—” means
+its contract rests on source reading alone. Live coverage: `tools/storybook-status.json`.
+| Component | Surface(s) | Status | Stories |
+| --------- | ---------- | ------ | ------- |
+| `data-table` | shared | in-review — source-backed `Table` | — |
+| `button` | shared | in-review — source-backed `Button` / `IconButton` | ✓ `packages/orbit/src/actions/Button.stories.tsx` |
+| `input` | shared | in-review — source-backed `Input` | — |
+| `select-combobox` | shared | in-review — source-backed `Dropdown` / `MultiSelectDropdown` | — |
+| `dialog` | shared | in-review — source-backed `Overlay` | — |
+| `drawer` | shared | draft — reusable source missing | — |
+| `toast-notification` | shared | in-review — source-backed `Toast` | — |
+| `tabs` | shared | in-review — source-backed `TabButton` / `PageHeader` | — |
+| `badge-status` | shared | in-review — source-backed `Badge` | — |
+| `card-panel` | shared | in-review — source-backed `Card` | — |
+| `status-indicator` | shared | in-review — source-backed `StatusIndicator` | — |
+| `chip` | shared | in-review — source-backed `Chip` | — |
 
 The first top-10 pass is now connected to `the efficio-orbit repo`. The main
 remaining component gap is a reusable drawer; prototype drawer-like panels exist, but no

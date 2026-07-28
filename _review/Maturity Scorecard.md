@@ -49,7 +49,7 @@ build-out. The benchmark screenshot pack provides stable screenshots for all fou
 benchmark routes across both themes and density modes, but it has been reclassified as
 benchmark evidence only because it does not match the current live platform closely
 enough to be a visual source of truth. The remaining active lift is validation depth:
-production Storybook or equivalent examples, drawer decision, dedicated data-viz tokens,
+Storybook story coverage (1 of 52 components as of 2026-07-28; the workbench itself now exists, is CI-gated, and is published), drawer decision, dedicated data-viz tokens,
 production product precedents, source-backed page patterns, and recurring review.
 
 ## 85-90 Exit Criteria

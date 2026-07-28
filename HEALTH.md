@@ -3,49 +3,53 @@
 
 _Snapshot 2026-07-28. Regenerate with `tools/vault_health.py`._
 
-**Status: HEALTHY ✅**
+**Status: NEEDS ATTENTION ⚠️**
+
+- in-review backlog grew by 2 since 2026-07-27
 
 ## Contents
 
 | Area | Count |
 | --- | ---: |
-| Agents | 10 |
-| Skills | 4 |
+| Agents | 11 (+1) |
+| Skills | 5 (+1) |
 | Component contracts | 12 |
 | Pattern contracts | 11 |
 | Examples | 18 |
 | Platform profiles | 2 |
-| Total docs | 140 (+1) |
+| Total docs | 142 (+3) |
 
 ## Status mix
 
-_136 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
+_137 docs carry a status field (skill files use a different frontmatter shape and are exempt)._
 
 | Status | Count | Share |
 | --- | ---: | ---: |
 | stable | 38 | 28% |
-| in-review | 73 | 54% |
-| draft | 25 (+1) | 18% |
+| in-review | 75 (+2) | 55% |
+| draft | 24 | 18% |
 
 ## Inventory
 
-### Agents (10)
+### Agents (11)
 - benchmark-judge — in-review
 - brief-coach — draft
-- brief-reviewer — draft
+- brief-reviewer — in-review
 - component-builder — stable
 - context-scout — stable
 - contract-extractor — stable
 - design-reviewer — stable
 - porter — in-review
 - screen-builder — in-review
+- story-author — draft
 - vault-librarian — in-review
 
-### Skills (4)
+### Skills (5)
 - component-contract
 - explore
 - extract-contract
 - port-to-orbit
+- write-stories
 
 ### Component contracts (12)
 - badge-status — in-review

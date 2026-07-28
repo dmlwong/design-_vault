@@ -99,6 +99,11 @@ Use verb-led labels: "Save changes", "Run analysis", "Add clause". Avoid vague l
 - Do use `IconButton` for icon-only actions.
 - Don't use `Positive` or `Destructive` without clear product intent.
 
+## Storybook
+`packages/orbit/src/actions/Button.stories.tsx` — full set (variants, sizes, states,
+icon slots, `AllVariants`, `Themes`); the reference implementation for the
+`write-stories` skill. Published instance: URL in `tools/storybook-status.json`.
+
 ## Golden Example
 `design-brain/examples/button-states.md`
 

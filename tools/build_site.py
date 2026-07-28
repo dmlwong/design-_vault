@@ -58,6 +58,7 @@ SANITISE: list[tuple[str, str]] = [
     # single-word rules (otherwise "Efficio" -> "the platform" mangles the phrase
     # it appears inside). Add new phrase rules at the top of this list.
     ("About the Vault · Efficio Orbit", "About the Vault · Orbit"),
+    ("Connected Platform initiative / governance", "Internal platform initiative / governance"),
     ("Connected Platform (internal Efficio users) and Orbit / Client Connected Platform (external clients)",
      "The internal platform (for our own teams) and the client-facing platform"),
     ("efficio-orbit repo", "the component repo"),
