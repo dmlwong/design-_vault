@@ -4,12 +4,12 @@
   "repo": "dmlwong/efficio-design-system",
   "branch": "main",
   "site_url": "https://dmlwong.github.io/efficio-design-system/",
-  "conclusion": null,
-  "run_url": null,
-  "run_started": null,
-  "head_sha": null,
-  "story_files": 0,
+  "conclusion": "success",
+  "run_url": "https://github.com/dmlwong/efficio-design-system/actions/runs/30378198045",
+  "run_started": "2026-07-28",
+  "head_sha": "89490b2",
+  "story_files": 1,
   "components": 52,
-  "components_with_stories": 0,
+  "components_with_stories": 1,
   "tree_truncated": false
 }
