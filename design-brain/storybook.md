@@ -166,10 +166,41 @@ The general lesson, which is not specific to npm: a flag that makes an error mes
 is not the same as a flag that fixes the problem, and a green build of the thing you were
 working on does not tell you about the thing you weren't.
 
-**Coverage is partial.** `Button` has a full story set. Most Orbit components do not yet have
-stories — see `_review/Source Inventory.md` for what is source-backed today. Until a
-component has stories, its contract's variant and state sections rest on source reading
-alone, and the gap report should say so.
+**Coverage is partial, and the gap is large.** `Button` has a full story set. As of
+2026-07-28 it is the **only** one: 1 of 52 components under `packages/orbit/src` has
+stories. Until a component has stories, its contract's variant and state sections rest on
+source reading alone, and the gap report should say so. See `_review/Source Inventory.md`.
+
+This is the number worth tracking. The vault health dashboard reports it directly, because
+coverage — not the build's green tick — is what determines whether the next contract is
+extracted or invented.
+
+## Build status and where to browse it
+
+CI lives in the component repo at `.github/workflows/ci.yml` and runs on every push and
+pull request.
+
+| Job | Blocking? | What it does |
+| --- | --- | --- |
+| `verify` | yes | Rejects repo-wide `legacy-peer-deps`, then `npm ci`, typecheck, lint, the component test suite, and a full Storybook build |
+| `known-issues` | no | Runs `audit:design-system` and `build:orbit`, which fail on `main` today for reasons unrelated to Storybook; reports both to the run summary without blocking |
+| `deploy-storybook` | — | `main` only, `needs: verify` |
+
+Two properties are worth knowing:
+
+- **Tests run before the Storybook build.** The failure mode this workflow exists to catch
+  was a healthy Storybook sitting on a dead test suite, so the tests get to fail first.
+- **`needs: verify` gates publication.** Only a commit that passed typecheck, lint, the
+  tests and a clean Storybook build is ever published — the URL reflects a verified build,
+  not merely the latest one.
+
+The published Storybook is served from GitHub Pages at the component repo's Pages URL.
+It is linked from the internal vault health dashboard; the public stakeholder page reports
+build status and coverage without the link, because the URL itself contains a term the
+public site's publish guard blocks.
+
+The `known-issues` job is temporary scaffolding. When both of its checks pass, delete its
+`continue-on-error` lines and fold the two steps into `verify`.
 
 ## Related
 

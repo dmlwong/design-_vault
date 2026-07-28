@@ -56,7 +56,10 @@ product/design validation.
 | Storybook config | `packages/orbit/.storybook/` | design-system | found |
 | Storybook usage guide | `design-brain/storybook.md` | design-system | found |
 | Button stories | `packages/orbit/src/actions/Button.stories.tsx` | design-system | found |
-| Stories for all other Orbit components | source-required | design-system | missing; only `Button` has stories |
+| Stories for all other Orbit components | source-required | design-system | missing; 1 of 52 components has stories |
+| Component-repo CI workflow | `.github/workflows/ci.yml` (component repo) | design-system | found; `verify` blocking, `known-issues` non-blocking |
+| Published Storybook | GitHub Pages, component repo | design-system | pending — needs PR #1 merged and Pages set to "GitHub Actions" |
+| Storybook status feed | `tools/fetch_storybook_status.py` | design-system | generated into `tools/storybook-status.json` |
 | Connected Platform current screenshots | source-required | product/design | missing |
 | Orbit / Client Connected Platform current screenshots | source-required | product/design | missing |
 

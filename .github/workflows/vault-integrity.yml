@@ -32,6 +32,9 @@ jobs:
       - name: Staleness report (informational — never fails the build)
         run: python3 tools/lint_frontmatter.py --stale-report
 
+      - name: Storybook status parsers behave as specified
+        run: python3 tools/fetch_storybook_status.py --self-test
+
       # Drift-check against the product repo requires access to efficio-orbit.
       # Wire it here (or in the product repo's CI) once a checkout/token is available:
       #   python3 tools/export_brain.py --target <efficio-orbit checkout> --profile all --check
@@ -53,6 +56,15 @@ jobs:
       HEALTH_PAGE_TOKEN: ${{ secrets.HEALTH_PAGE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+
+      # Component-library CI status for the dashboard's "Component library"
+      # section. Reads the public component repo; never fails the build (any
+      # network/auth problem leaves the committed JSON untouched), and never
+      # feeds the health verdict — see INTEGRITY_CHECKS in tools/vault_health.py.
+      - name: Refresh Storybook status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/fetch_storybook_status.py
 
       - name: Generate health report
         id: health
@@ -79,6 +91,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add HEALTH.md vault-health.html tools/health_history.json \
+                  tools/storybook-status.json \
                   artifacts/about-the-vault.html artifacts/vault-health.html artifacts/index.html
           if git diff --cached --quiet; then
             echo "No health changes to commit."
