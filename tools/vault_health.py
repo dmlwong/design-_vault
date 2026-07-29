@@ -391,6 +391,53 @@ def rest_of_vault(docs: list[Path], inventory: dict[str, list[dict]]) -> dict:
             "total": counted + sum(buckets.values()) + other}
 
 
+AGENTS_DIR = ROOT / "design-brain" / "agents"
+BENCHMARK_RESULTS = ROOT / "_benchmarks" / "results"
+TRAPS_HEADING = re.compile(r"^## .*\btraps\b.*$", re.I | re.M)
+TRAP_BULLET = re.compile(r"^- ", re.M)
+CITED_FILE = re.compile(r"`([^`]+\.md)`")
+
+
+def trap_coverage() -> dict:
+    """How much recorded evidence the agents' traps actually rest on.
+
+    Traps are inline failure modes on an agent, each citing the benchmark result
+    or correction that produced it (`design-brain/orchestration.md`). They are
+    only as good as that evidence, so this reports the base rather than implying
+    the traps are finished: how many agents carry any, how many recorded results
+    exist, and how many of those have never been cited by a trap. The last number
+    is the actionable one — it is unmined evidence, not a defect.
+    """
+    agents = sorted(AGENTS_DIR.glob("*.md"))
+    traps = 0
+    with_traps = 0
+    cited: set[str] = set()
+    for path in agents:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        head = TRAPS_HEADING.search(text)
+        if not head:
+            continue
+        rest = text[head.end():]
+        nxt = re.search(r"^## ", rest, re.M)
+        section = rest[: nxt.start()] if nxt else rest
+        n = len(TRAP_BULLET.findall(section))
+        if not n:
+            continue
+        with_traps += 1
+        traps += n
+        cited.update(Path(c).name for c in CITED_FILE.findall(section))
+    results = sorted(p.name for p in BENCHMARK_RESULTS.glob("*.md")) \
+        if BENCHMARK_RESULTS.is_dir() else []
+    return {
+        "agents": len(agents),
+        "with_traps": with_traps,
+        "traps": traps,
+        "sources": len(cited),
+        "results": len(results),
+        "unmined": len([r for r in results if r not in cited]),
+    }
+
+
 def open_lessons(today: date) -> list[str]:
     """Inbox entries whose fix has not landed yet, oldest first.
 
@@ -475,6 +522,7 @@ def scan(today: date) -> dict:
         "integrity": integrity,
         "rest": rest,
         "lessons": open_lessons(today),
+        "traps": trap_coverage(),
     }
 
 
@@ -1283,6 +1331,25 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     # so this tile never renders on the sanitised page (same rule as the artifact
     # index). An untriaged queue is a warning, not a failure — the vault is still
     # correct, it just hasn't absorbed a correction yet.
+    # Traps are the agents' accumulated failure knowledge. Reporting the count
+    # alone would read as "done"; what matters is the evidence under it, so this
+    # says how much recorded material has not yet been mined. Private only — it
+    # names internal process, and a stakeholder has no action to take on it.
+    tr = scanned.get("traps") or {}
+    traps_note = ""
+    if tr.get("traps") and not public:
+        unmined = tr.get("unmined", 0)
+        gap = (f" They are only as good as the evidence beneath them, and "
+               f"<b>{unmined}</b> of <b>{tr['results']}</b> recorded benchmark results have "
+               f"not yet produced one — unmined evidence, not a defect. Each agent's "
+               f"<b>Source-Required Follow-Up</b> section says where the next trap goes."
+               if unmined else
+               " Every recorded benchmark result has been mined for traps.")
+        traps_note = (
+            f'<p class="cap" style="margin-top:14px"><b>{tr["traps"]}</b> agent traps — '
+            f'recorded failure modes stated inline on the agent that makes them — across '
+            f'<b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b> agents.{gap}</p>')
+
     lessons = scanned.get("lessons") or []
     lessons_tile = ""
     if not public:
@@ -1399,6 +1466,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     <h2 class="s-head">What's inside</h2>
     <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
     <div class="kpis">{cards}</div>
+    {traps_note}
   </section>
   <div hidden>{panel_srcs}</div>
 
