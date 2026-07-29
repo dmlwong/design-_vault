@@ -805,6 +805,13 @@ STYLE = """
   .spark path{fill:none;stroke:var(--accent);stroke-width:2;
     vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
   .cap{color:var(--muted);font-size:12.5px;margin:0}
+  /* These were browser-default blue (#0000EE) — unstyled, and 1.87:1 on the dark
+     panel. Scoped to .cap so the artifact rows, which carry their own treatment,
+     are untouched. */
+  .cap a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;
+    text-decoration-thickness:1px;font-weight:600}
+  .cap a:hover{text-decoration-thickness:2px}
+  .cap a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -1047,11 +1054,11 @@ def _component_library_section(today: date, cov: dict | None, *, public: bool) -
     Returns "" when the generated status file is missing, so the section simply
     disappears rather than erroring (same contract as _artifacts_section).
 
-    Public/private difference: the private dashboard links to the live Storybook
-    and the CI run; the public page shows status and counts only. The published
-    Storybook URL contains a term on build_site.py's BLOCKLIST, so emitting it
-    on the public page would either fail the publish guard or require weakening
-    it. Withholding the URL keeps the guard untouched.
+    Public/private difference: both pages link to the live Storybook; only the
+    private dashboard links to the CI run, which is repo plumbing rather than
+    something a stakeholder acts on. The Storybook URL contains a BLOCKLIST term,
+    so it is carried by build_site.py's PUBLIC_URL_ALLOWLIST — an exact-URL
+    exemption, not a relaxed blocklist (owner decision, 2026-07-29).
     """
     if not STORYBOOK_STATUS.is_file():
         return ""
@@ -1109,23 +1116,20 @@ def _component_library_section(today: date, cov: dict | None, *, public: bool) -
              'alone, which is weaker. The build status only stops coverage slipping '
              'backwards.</p>')
 
-    links = ""
+    parts = []
+    if d.get("site_url"):
+        parts.append(f'<a href="{html.escape(d["site_url"])}" target="_blank" '
+                     f'rel="noopener">Browse the component library &rarr;</a>')
     if not public:
-        parts = []
-        if d.get("site_url"):
-            parts.append(f'<a href="{html.escape(d["site_url"])}" target="_blank" '
-                         f'rel="noopener">Browse the component library &rarr;</a>')
+        # CI run link and the contributor call to action are repo plumbing — useful
+        # to the team, noise to a stakeholder.
         if d.get("run_url"):
             parts.append(f'<a href="{html.escape(d["run_url"])}" target="_blank" '
                          f'rel="noopener">See the latest build &rarr;</a>')
         parts.append("Every new story set moves this number — run the "
                      "<b>write-stories</b> skill.")
-        links = '<p class="cap" style="margin-top:14px">' + " · ".join(parts) + "</p>"
-    else:
-        # The Storybook and run URLs both contain a BLOCKLIST term, so the public
-        # page cannot link out. Say where the links live instead of dead-ending.
-        links = ('<p class="cap" style="margin-top:14px">Links to the live library '
-                 'and the latest build are on the internal dashboard.</p>')
+    links = ('<p class="cap" style="margin-top:14px">' + " · ".join(parts) + "</p>"
+             if parts else "")
 
     return (
         '<section>\n'

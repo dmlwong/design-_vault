@@ -194,6 +194,13 @@
   .spark path{fill:none;stroke:var(--accent);stroke-width:2;
     vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
   .cap{color:var(--muted);font-size:12.5px;margin:0}
+  /* These were browser-default blue (#0000EE) — unstyled, and 1.87:1 on the dark
+     panel. Scoped to .cap so the artifact rows, which carry their own treatment,
+     are untouched. */
+  .cap a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;
+    text-decoration-thickness:1px;font-weight:600}
+  .cap a:hover{text-decoration-thickness:2px}
+  .cap a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -259,7 +266,7 @@
         <div class="item"><div class="n mono">1<span class="of">/52</span></div><div><div class="k">Whole library rendered in Storybook</div><div class="d">2% &middot; every component in the codebase, spec'd or not</div></div></div>
       </div>
       <div class="checks" style="margin-top:16px"><div class="check ok"><span class="mk">✓</span><span><span class="ct">Build: Passing</span><span class="cd">Types, lint, the component tests and a full Storybook build.</span></span></div></div>
-<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, browsable library where each component is rendered in every state. A component that is not rendered there gets its spec written from source code alone, which is weaker. The build status only stops coverage slipping backwards.</p><p class="cap" style="margin-top:14px">Links to the live library and the latest build are on the internal dashboard.</p>    </div>
+<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, browsable library where each component is rendered in every state. A component that is not rendered there gets its spec written from source code alone, which is weaker. The build status only stops coverage slipping backwards.</p><p class="cap" style="margin-top:14px"><a href="https://dmlwong.github.io/efficio-design-system/" target="_blank" rel="noopener">Browse the component library &rarr;</a></p>    </div>
   </section>
 
   <section>

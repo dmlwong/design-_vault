@@ -97,6 +97,22 @@ BLOCKLIST = [
 ]
 
 
+# Exact URLs the public site is allowed to link to even though the URL string
+# itself contains a BLOCKLIST term. These point at resources that are already
+# public on the internet, so the URL discloses nothing the blocklist is there to
+# protect. Owner decision, 2026-07-29: the stakeholder page links to the live
+# component library rather than telling a reader it exists somewhere they cannot
+# reach.
+#
+# Scoped deliberately to whole URLs, not substrings: `assert_clean` blanks these
+# exact strings out and then scans everything that remains, so an "Efficio"
+# anywhere else on the page still fails the build. Do NOT relax this into a
+# substring or domain rule — that would silently gut the guard.
+PUBLIC_URL_ALLOWLIST = [
+    "https://dmlwong.github.io/efficio-design-system/",
+]
+
+
 def sanitise(text: str) -> str:
     for needle, repl in SANITISE:
         text = text.replace(needle, repl)
@@ -104,6 +120,12 @@ def sanitise(text: str) -> str:
 
 
 def assert_clean(name: str, text: str) -> None:
+    # Blank each allowed URL only where it appears as a COMPLETE value — followed
+    # by a quote, bracket, whitespace or end of string. A plain str.replace would
+    # match the URL as a prefix, so a deeper path
+    # (".../efficio-design-system/anything/") would inherit the exemption.
+    for url in PUBLIC_URL_ALLOWLIST:
+        text = re.sub(re.escape(url) + r"""(?=["'\s<)]|$)""", "", text)
     low = text.lower()
     hits = [term for term in BLOCKLIST if term.lower() in low]
     if hits:
