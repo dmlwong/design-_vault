@@ -63,6 +63,16 @@ STORYBOOK_STALE_DAYS = 3
 
 STALE_AFTER_DAYS = lf.STALE_AFTER_DAYS
 HISTORY_CAP = 180
+
+# The feedback loop's queue (AGENTS.md §6). Agents append corrections here mid-task;
+# a human triages them into a brain file or an agent trap, then deletes the entry.
+# Nothing reads this file at build time and triage is deliberately not wired to CI
+# (design-brain/orchestration.md), so a stalled queue is invisible unless reported.
+# That is what this counter is for — it does not automate triage, it just stops the
+# backlog being silently indistinguishable from an empty one.
+LESSONS_INBOX = ROOT / "design-brain" / "lessons" / "INBOX.md"
+LESSON_ENTRY = re.compile(r"^### (\d{4}-\d{2}-\d{2})\s+·", re.M)
+LESSON_STATUS = re.compile(r"^- Status:\s*(\S+)", re.M)
 SKIP_PARTS = {"_archive", ".obsidian", ".git"}
 
 # Areas keyed by frontmatter `type` (robust to file moves/renames).
@@ -381,6 +391,36 @@ def rest_of_vault(docs: list[Path], inventory: dict[str, list[dict]]) -> dict:
             "total": counted + sum(buckets.values()) + other}
 
 
+def open_lessons(today: date) -> list[str]:
+    """Inbox entries whose fix has not landed yet, oldest first.
+
+    An entry is open unless its Status line starts with `applied`. The template
+    block inside the file is skipped: it documents the shape, not a real entry.
+    Returns [] when the file is missing — the counter reports zero rather than
+    breaking the whole report over a missing optional input.
+    """
+    if not LESSONS_INBOX.is_file():
+        return []
+    text = LESSONS_INBOX.read_text(encoding="utf-8", errors="ignore")
+    body = text.split("## Entries", 1)[-1]
+    out: list[str] = []
+    for match in LESSON_ENTRY.finditer(body):
+        entry = body[match.start():]
+        nxt = LESSON_ENTRY.search(entry[1:])
+        if nxt:
+            entry = entry[: nxt.start() + 1]
+        status = LESSON_STATUS.search(entry)
+        if status and status.group(1).lower().startswith("applied"):
+            continue
+        raised = match.group(1)
+        try:
+            age = (today - date.fromisoformat(raised)).days
+        except ValueError:
+            age = 0
+        out.append(f"{raised}  ({age}d open)")
+    return sorted(out)
+
+
 def scan(today: date) -> dict:
     docs = all_docs()
     inventory = build_inventory(docs)
@@ -434,6 +474,7 @@ def scan(today: date) -> dict:
         "malformed": sorted(malformed),
         "integrity": integrity,
         "rest": rest,
+        "lessons": open_lessons(today),
     }
 
 
@@ -1237,6 +1278,22 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
     stale_good = "good" if not scanned["stale"] else "bad"
     mal_good = "good" if not scanned["malformed"] else "bad"
+
+    # Private only: entries quote corrections and product-surface names verbatim,
+    # so this tile never renders on the sanitised page (same rule as the artifact
+    # index). An untriaged queue is a warning, not a failure — the vault is still
+    # correct, it just hasn't absorbed a correction yet.
+    lessons = scanned.get("lessons") or []
+    lessons_tile = ""
+    if not public:
+        oldest = lessons[0].split("(")[-1].rstrip(")") if lessons else ""
+        detail = (f"Captured corrections not yet applied — oldest {oldest}"
+                  if lessons else "Every captured correction has landed")
+        lessons_tile = (
+            f'<div class="item {"warn" if lessons else "good"}">'
+            f'<div class="n mono">{len(lessons)}</div>'
+            f'<div><div class="k">Open lessons</div>'
+            f'<div class="d">{html.escape(detail)}</div></div></div>')
     trend = _trend(history)
     reveal = ("Agents, Skills, Components and Patterns"
               if public else "Every card")
@@ -1312,8 +1369,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
   <section>
     <h2 class="s-head">Checks &amp; attention</h2>
-    <p class="s-sub">Run automatically on every change. The first four are pass/fail; the
-      last two count documents that have drifted out of good standing.</p>
+    <p class="s-sub">The ticks run automatically on every change and are pass/fail. The
+      counters beneath them track things that have drifted out of good standing — nothing
+      here is broken, but a non-zero count is work someone owes the vault.</p>
     <div class="panel">
       <div class="checks">{checks}</div>
       <div class="fresh" style="margin-top:16px">
@@ -1321,6 +1379,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
           <div><div class="k">Overdue for review</div><div class="d">Not looked at in {STALE_AFTER_DAYS}+ days</div></div></div>
         <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
           <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
+        {lessons_tile}
       </div>
     </div>
   </section>
