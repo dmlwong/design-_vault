@@ -249,8 +249,13 @@
   .footer { border-top: 1px solid var(--line); padding: 26px 0 44px; }
   .footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.03em; }
 
-  .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.in { opacity: 1; transform: none; }
+  /* Visible by DEFAULT. The scroll animation is progressive enhancement: the
+     script stamps html.js, and only then do we hide-and-reveal. Without this the
+     whole page renders blank in print, PDF, and with JS disabled — and this is the
+     only page that explains what the vault is for. */
+  .reveal { opacity: 1; transform: none; }
+  html.js .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  html.js .reveal.in { opacity: 1; transform: none; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 
   @media (max-width: 860px) {
@@ -264,7 +269,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .orbiter { animation: none !important; }
-    .reveal { transition: none; opacity: 1; transform: none; }
+    .reveal, html.js .reveal { transition: none; opacity: 1; transform: none; }
   }
 
   /* --good as text on its own tint misses AA in light; darken the ink only. */
@@ -489,7 +494,7 @@
         <div class="check"><span class="mk ok">&#10003;</span><span class="t"><b>Reference layer built</b><span>12 component contracts, 11 patterns, golden examples with real code.</span></span></div>
         <div class="check"><span class="mk ok">&#10003;</span><span class="t"><b>Orchestration validated</b><span>Dry runs passed — the reviewer caught real defects a prior benchmark missed.</span></span></div>
         <div class="check"><span class="mk ok">&#10003;</span><span class="t"><b>Upstream stream live</b><span>Storybook wired into the component repo; a blind extract-contract run matched the Button contract.</span></span></div>
-        <div class="check"><span class="mk ok">&#10003;</span><span class="t"><b>Automated integrity</b><span>CI runs four checks every change — required files, links &amp; routing, frontmatter, graph links — plus a daily staleness report. A product-repo drift check is planned.</span></span></div>
+        <div class="check"><span class="mk ok">&#10003;</span><span class="t"><b>Automated integrity</b><span>CI runs these on every change — all required files present, every internal link works, document metadata is valid, and navigation index up to date — plus a daily staleness report. A product-repo drift check is planned.</span></span></div>
       </div>
     </div>
   </div></section>
@@ -510,6 +515,7 @@
 <script>
   (function () {
     var els = document.querySelectorAll('.reveal');
+    document.documentElement.classList.add('js');
     if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       els.forEach(function (e) { e.classList.add('in'); }); return;
     }

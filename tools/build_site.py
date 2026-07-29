@@ -89,6 +89,11 @@ BLOCKLIST = [
     # ordinary words (e.g. "afraid").
     "Commentary / RAID",
     "RAID Enhancements",
+    # The vault owner's name. The private dashboard attributes ownership by name;
+    # the public page says "the design-system owner". This entry is the tripwire —
+    # it has no SANITISE rule on purpose, because the name should never be emitted
+    # publicly in the first place. A hit means a renderer leaked it.
+    "Derek Wong",
 ]
 
 

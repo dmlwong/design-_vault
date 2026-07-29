@@ -84,10 +84,15 @@ def parse_tree(payload: dict) -> dict:
         and Path(p).stem != "index"
     ]
     storied = {Path(p).name[: -len(STORY_SUFFIX)] for p in stories}
+    with_stories = sorted({Path(c).stem for c in components} & storied)
     return {
         "story_files": len(stories),
         "components": len(components),
-        "components_with_stories": len({Path(c).stem for c in components} & storied),
+        "components_with_stories": len(with_stories),
+        # The component NAMES that have stories — vault_health.py maps these onto
+        # contract slugs to compute contracted-first coverage. A count alone can't
+        # answer "do the components we've written contracts for have stories?".
+        "storied_components": with_stories,
         # A truncated tree would silently understate the counts, so record it
         # rather than quietly reporting a wrong denominator.
         "tree_truncated": bool(payload.get("truncated")),
@@ -194,6 +199,7 @@ def self_test() -> None:
     eq("tree/components", got["components"], 3)            # Button, IconButton, ToggleCard
     eq("tree/story_files", got["story_files"], 1)
     eq("tree/with_stories", got["components_with_stories"], 1)
+    eq("tree/storied_names", got["storied_components"], ["Button"])
     eq("tree/truncated", got["tree_truncated"], False)
     eq("tree/truncated-flag", parse_tree({"tree": [], "truncated": True})["tree_truncated"], True)
     eq("tree/empty", parse_tree({})["components"], 0)
@@ -206,6 +212,11 @@ def self_test() -> None:
     ]}
     eq("tree/orphan-story", parse_tree(orphan)["components_with_stories"], 0)
     eq("tree/orphan-story-count", parse_tree(orphan)["story_files"], 1)
+    # The name list must agree with the count, or the dashboard's contracted-first
+    # coverage and its headline number would disagree.
+    eq("tree/orphan-story-names", parse_tree(orphan)["storied_components"], [])
+    eq("tree/names-match-count",
+       len(got["storied_components"]), got["components_with_stories"])
 
     if failures:
         print("SELF-TEST FAILED:", file=sys.stderr)

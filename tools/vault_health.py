@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import re
 import subprocess
 import sys
 from collections import Counter
@@ -79,13 +80,42 @@ CARD_ORDER = ("Agents", "Skills", "Component contracts", "Pattern contracts",
 
 # Plain-language gloss per area, so a stakeholder who doesn't know the vault can
 # still read the dashboard. Generic (safe for the public page).
+#
+# "Contract" is glossed deliberately: to a procurement audience the word means a
+# commercial agreement, and it was the single biggest comprehension blocker in the
+# 2026-07-29 fresh-eyes review. Renaming it across the vault is a governed
+# vocabulary change; glossing it on first use is not.
 AREA_GLOSS = {
     "Agents": "AI agents that build & review designs",
     "Skills": "Guided workflows the team runs",
-    "Component contracts": "Specs for reusable UI components",
-    "Pattern contracts": "Specs for page-level layouts",
-    "Examples": "Reference screens to build from",
+    "Component contracts": "Written specs for reusable UI pieces (not commercial contracts)",
+    "Pattern contracts": "Written specs for whole-page layouts",
+    "Examples": "Golden reference screens to build from",
     "Platform profiles": "The products the vault serves",
+}
+
+# Owner attribution. The name is internal-only: the public page names the role, and
+# tools/build_site.py carries the name in its BLOCKLIST so a leak fails the build.
+OWNER_NAME = "Derek Wong"
+OWNER_ROLE = "design-system"
+
+# Contract slug -> the component name in packages/orbit/src that implements it.
+# Needed because the two vocabularies differ (`dialog` is implemented by `Overlay`).
+# A contract missing from this map counts as "no stories" and warns on stderr, so a
+# new contract can never silently inflate coverage.
+CONTRACT_COMPONENTS = {
+    "data-table": "Table",
+    "button": "Button",
+    "input": "Input",
+    "select-combobox": "Dropdown",
+    "dialog": "Overlay",
+    "drawer": None,               # no reusable source exists yet
+    "toast-notification": "Toast",
+    "tabs": "TabButton",
+    "badge-status": "Badge",
+    "card-panel": "Card",
+    "status-indicator": "StatusIndicator",
+    "chip": "Chip",
 }
 
 # Which areas may reveal their item names on the *public* page. Agents, skills,
@@ -96,6 +126,12 @@ PUBLIC_EXPANDABLE = {"Agents", "Skills", "Component contracts", "Pattern contrac
 PRIVATE_EXPANDABLE = PUBLIC_EXPANDABLE | {"Examples", "Platform profiles"}
 
 # Plain-language names + one-liners for the technical integrity checks.
+#
+# SHARED SOURCE: this dict is written into tools/health_history.json (see
+# snapshot()) and read by tools/build_about_page.py to render the About page's
+# check list. Both pages previously hand-maintained their own names, which had
+# already drifted ("Document metadata is valid" vs "frontmatter") — a reader
+# comparing the two pages concluded there were eight checks. Rename here only.
 CHECK_LABELS = {
     "export self-check": ("All required files present", "Nothing the system depends on is missing."),
     "link check": ("Every internal link works", "No broken references between documents."),
@@ -153,6 +189,115 @@ def _first_heading(path: Path) -> str | None:
     return None
 
 
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s")
+
+# Section headings that introduce a document's own summary, best first. Contracts
+# use `## Purpose`; golden examples use `## Demonstrates` (a bullet list).
+_SUMMARY_SECTIONS = ("purpose", "demonstrates", "purpose & precedent", "what it is")
+
+
+def _blocks(lines: list[str]) -> list[tuple[str, str]]:
+    """(section, text) for each paragraph/bullet, with hard-wrapped lines joined.
+
+    Markdown in this vault is hard-wrapped at ~90 columns, so a single source
+    line is usually half a sentence. Reading one line at a time is what produced
+    drawer descriptions like "rows." and "…access to underlying".
+    """
+    out: list[tuple[str, str]] = []
+    section, buf, in_fm, fences = "", [], False, 0
+
+    def flush() -> None:
+        if buf:
+            out.append((section, " ".join(buf).strip()))
+            buf.clear()
+
+    for i, raw in enumerate(lines):
+        line = raw.rstrip()
+        stripped = line.strip()
+        if i == 0 and stripped == "---":
+            in_fm = True
+            continue
+        if in_fm:
+            in_fm = stripped != "---"
+            continue
+        if stripped.startswith("```"):
+            fences += 1
+            flush()
+            continue
+        if fences % 2:
+            continue
+        if stripped.startswith("#"):
+            flush()
+            if stripped.startswith("## "):
+                section = stripped[3:].strip().lower()
+            continue
+        if not stripped or stripped.startswith(("|", ">", "<!--", "---")):
+            flush()
+            continue
+        if stripped.startswith(("- ", "* ", "+ ")) or re.match(r"^\d+\.\s", stripped):
+            flush()
+            buf.append(re.sub(r"^([-*+]\s|\d+\.\s)", "", stripped))
+            continue
+        buf.append(stripped)
+    flush()
+    return out
+
+
+def _looks_like_prose(s: str) -> bool:
+    """True only for something a reader would accept as a written sentence.
+
+    Golden examples embed screenshot links and repo paths; letting those through
+    put strings like `foo.png(screenshots/connected-platform/foo.png)` in front of
+    readers on a page whose whole subject is documentation quality. When nothing
+    qualifies, `_doc_summary` returns "" and the drawer shows the name alone —
+    no description is strictly better than a broken one.
+    """
+    if len(s) < 30 or "](" in s or "|" in s:
+        return False
+    if re.search(r"\.(png|jpe?g|svg|md|tsx?|css|json|py|html|canvas|base)\b", s):
+        return False
+    if s.count("/") >= 2:  # a repo path; single slashes ("semantic/status") are fine
+        return False
+    return s[:1].isupper() and s.rstrip().endswith((".", "!", "?"))
+
+
+def _doc_summary(path: Path, fm: dict | None) -> str:
+    """One plain sentence describing a document, for the private drawer lists.
+
+    A drawer that lists 12 slugs and nothing else tells a reader what exists but
+    not what any of it is. Preference order, most-authored first: frontmatter
+    `description` (agents and skills carry one) -> the first qualifying block
+    under a summary heading -> the first qualifying block anywhere.
+
+    Private pages only — a description can name a product surface, and the
+    public build must not carry those. `_panel_src` gates on `public`.
+    """
+    def sentence(s: str) -> str:
+        """Markup stripped, first sentence only — full length, so the prose test
+        sees a real sentence. Shortening happens after it passes, never before:
+        an ellipsis ending would fail `_looks_like_prose` on its own output."""
+        s = re.sub(r"[`*_]", "", str(s)).strip()
+        s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s)  # [text](url) -> text
+        return _SENTENCE_END.split(s, 1)[0].strip()
+
+    def shorten(s: str) -> str:
+        # Generous: these wrap freely in the drawer, and a sentence cut mid-clause
+        # with no way to expand is worse than a long one.
+        return s if len(s) <= 220 else s[:217].rsplit(" ", 1)[0] + "…"
+
+    described = (fm or {}).get("description")
+    if described:
+        return shorten(sentence(described))
+
+    blocks = _blocks(path.read_text(encoding="utf-8", errors="ignore").splitlines())
+    ordered = [(s, t) for w in _SUMMARY_SECTIONS for s, t in blocks if s == w] + blocks
+    for _, text in ordered:
+        candidate = sentence(text)
+        if _looks_like_prose(candidate):
+            return shorten(candidate)
+    return ""
+
+
 def _example_name(path: Path) -> str:
     heading = _first_heading(path) or path.stem
     for prefix in ("Golden Example: ", "Golden Example — "):
@@ -162,7 +307,10 @@ def _example_name(path: Path) -> str:
 
 
 def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
-    """area -> [{name, status}] sorted, for the drill-down."""
+    """area -> [{name, status, desc}] sorted, for the drill-down.
+
+    `desc` is rendered on the private dashboard only (see `_doc_summary`).
+    """
     by_type: dict[str, list[Path]] = {}
     for path in docs:
         fm = lf.parse_frontmatter(path)
@@ -173,7 +321,8 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
         out = []
         for p in paths:
             fm = lf.parse_frontmatter(p) or {}
-            out.append({"name": namer(p), "status": fm.get("status")})
+            out.append({"name": namer(p), "status": fm.get("status"),
+                        "desc": _doc_summary(p, fm)})
         return sorted(out, key=lambda d: d["name"].lower())
 
     agents = sorted((ROOT / "design-brain" / "agents").glob("*.md"))
@@ -181,8 +330,9 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
     inv: dict[str, list[dict]] = {
         "Agents": items(agents, lambda p: p.stem),
         "Skills": [
-            {"name": (lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
-             "status": None}
+            {"name": (fm := lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
+             "status": None,
+             "desc": _doc_summary(p, fm)}
             for p in skills
         ],
         "Component contracts": items(by_type.get("component-contract", []), lambda p: p.stem),
@@ -194,12 +344,50 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
     return inv
 
 
+# The six inventory cards cover the reusable building blocks; the rest of the
+# vault is rules, reviews, benchmark records and indexes. Buckets are matched on
+# frontmatter `type` so the split is computed, never hand-counted — a reader who
+# subtracts 59 from 142 must find the remainder accounted for, not unexplained.
+REST_BUCKETS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("benchmark records", ("benchmark",)),
+    ("rules and foundations",
+     ("foundation", "principle", "token-contract", "tooling-guide", "orchestration",
+      "setup-guide", "governance", "visual-truth")),
+    ("reviews and proposals", ("review", "proposal", "lessons-inbox")),
+    ("discovery and concept briefs", ("discovery", "concept-brief")),
+)
+
+
+def rest_of_vault(docs: list[Path], inventory: dict[str, list[dict]]) -> dict:
+    """Account for every document the six inventory cards do not list."""
+    counted = sum(len(v) for v in inventory.values())
+    buckets: dict[str, int] = {label: 0 for label, _ in REST_BUCKETS}
+    other = 0
+    listed_types = {"example", "component-contract", "pattern-contract",
+                    "platform-profile", "builder-agent", "reviewer-agent",
+                    "coach-agent", "orchestration-agent", "maintenance-agent"}
+    for path in docs:
+        fm = lf.parse_frontmatter(path) or {}
+        t = fm.get("type") or ""
+        if t in listed_types or path.name == "SKILL.md":
+            continue
+        for label, prefixes in REST_BUCKETS:
+            if t.startswith(prefixes):
+                buckets[label] += 1
+                break
+        else:
+            other += 1
+    return {"listed": counted, "buckets": buckets, "other": other,
+            "total": counted + sum(buckets.values()) + other}
+
+
 def scan(today: date) -> dict:
     docs = all_docs()
     inventory = build_inventory(docs)
 
     areas = {label: len(inventory[label]) for label in inventory}
     areas["Total docs"] = len(docs)
+    rest = rest_of_vault(docs, inventory)
 
     # Status mix over docs that carry a status field (skill files legitimately
     # do not — they use the Claude-skill frontmatter shape).
@@ -245,6 +433,7 @@ def scan(today: date) -> dict:
         "stale": sorted(stale),
         "malformed": sorted(malformed),
         "integrity": integrity,
+        "rest": rest,
     }
 
 
@@ -275,15 +464,62 @@ def load_history() -> list[dict]:
         return []
 
 
-def snapshot(scanned: dict) -> dict:
+def story_coverage(inventory: dict) -> dict | None:
+    """Contracted-first story coverage.
+
+    The headline "1 of 52" answers "how much of the library is storied"; the
+    number the team can actually act on is "do the components we have already
+    written contracts for have stories?" — that is the near-term target. Returns
+    None when the status feed is absent so callers can degrade quietly.
+    """
+    if not STORYBOOK_STATUS.is_file():
+        return None
+    try:
+        d = json.loads(STORYBOOK_STATUS.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+    storied = set(d.get("storied_components") or [])
+    # build_inventory() yields [{name, status}, ...]; the name IS the contract slug.
+    slugs = [it["name"] for it in inventory.get("Component contracts", [])]
+
+    matched, unmapped = 0, []
+    for slug in slugs:
+        if slug not in CONTRACT_COMPONENTS:
+            unmapped.append(slug)
+            continue
+        comp = CONTRACT_COMPONENTS[slug]
+        if comp and comp in storied:
+            matched += 1
+    if unmapped:
+        print(f"warning: contract slug(s) not in CONTRACT_COMPONENTS, counted as "
+              f"no-stories: {', '.join(sorted(unmapped))}", file=sys.stderr)
+
     return {
+        "contracts": len(slugs),
+        "contracts_with_stories": matched,
+        "components": d.get("components") or 0,
+        "components_with_stories": d.get("components_with_stories") or 0,
+        "story_files": d.get("story_files") or 0,
+    }
+
+
+def snapshot(scanned: dict) -> dict:
+    snap = {
         "date": scanned["date"],
         "areas": scanned["areas"],
         "status": scanned["status"],
         "stale": len(scanned["stale"]),
         "malformed": len(scanned["malformed"]),
         "integrity_ok": all(scanned["integrity"].values()),
+        # Shared vocabulary for build_about_page.py — one source for check names.
+        "check_labels": {k: list(v) for k, v in CHECK_LABELS.items()},
     }
+    cov = story_coverage(scanned.get("inventory", {}))
+    if cov:
+        # Recorded from today so the trend can plot coverage once ≥2 points exist.
+        snap["coverage"] = cov
+    return snap
 
 
 def update_history(scanned: dict) -> tuple[list[dict], dict | None]:
@@ -478,10 +714,13 @@ STYLE = """
   .drawer .dgloss{padding:14px 20px 0;color:var(--muted);font-size:12.5px}
   .drawer-body{padding:10px 20px 24px;overflow:auto}
   .items{list-style:none;margin:0;padding:0}
-  .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  .items li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;
     padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
   .items li:first-child{border-top:none}
   .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* One-line description under each drawer item — private dashboard only.
+     A list of bare slugs says what exists but never what any of it is. */
+  .items li .dsc{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.45}
   @media (prefers-reduced-motion:reduce){
     .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
     body.drawer-open .drawer{transition:none}}
@@ -516,8 +755,55 @@ STYLE = """
   .fresh .item .k{font-size:13px;font-weight:600}
   .fresh .item .d{font-size:11.5px;color:var(--muted);margin-top:1px}
   .fresh .item.good .n{color:var(--stable)}
+  /* A coverage figure short of target must NOT wear the success colour that
+     "0 overdue" wears — the inverted colour language the 2026-07-29 review caught. */
+  .fresh .item.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+  .fresh .item.warn .n{color:var(--warn)}
+  .fresh .item .n .of{font-size:15px;font-weight:600;color:var(--muted)}
+  /* Answers "what am I looking at?" before any number does. */
+  .purpose{margin:10px 0 20px;font-size:14.5px;color:var(--muted);line-height:1.65;
+    max-width:64ch}
+  /* Public page: a card whose titles are withheld. Flat and chevron-less so it
+     never reads as an expander that failed to open. */
+  .kpi.inert{background:transparent;box-shadow:none;
+    border-style:dashed;border-color:color-mix(in srgb,var(--line) 80%,transparent)}
+  .kpi.inert .withheld{margin-top:8px;font-size:11px;color:var(--muted);font-style:italic}
+  /* Reference prose, one click away. Collapsed it keeps ~190px of grey text from
+     sitting between a phone reader and the first number; <details> needs no JS. */
+  .explain{margin:14px 0 0}
+  .explain>summary{cursor:pointer;font-size:12.5px;font-weight:650;color:var(--muted);
+    list-style:none;display:inline-flex;align-items:center;gap:6px;padding:5px 0}
+  .explain>summary::-webkit-details-marker{display:none}
+  .explain>summary::before{content:"›";display:inline-block;transition:transform .18s ease;
+    font-size:15px;line-height:1}
+  .explain[open]>summary::before{transform:rotate(90deg)}
+  .explain>summary:hover{color:var(--ink)}
+  .explain>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+    border-radius:4px}
+  @media (prefers-reduced-motion:reduce){.explain>summary::before{transition:none}}
+  .verdict-def{margin:6px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .denoms{margin:8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .verdict-def b,.denoms b{color:var(--ink);font-weight:650}
+  .row .name .nm{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+  .tr+.tr{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .tl{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .tl .tk{font-size:13px;font-weight:650;display:flex;align-items:center;gap:8px}
+  .tl .mv{font-size:10.5px;font-weight:650;text-transform:uppercase;letter-spacing:.04em;
+    padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tl .mv.good{color:var(--stable);border-color:color-mix(in srgb,var(--stable) 40%,var(--line))}
+  .tl .mv.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+  .tl .tv{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tl .tv b{color:var(--ink);font-weight:650}
+  .tl .ar{opacity:.6;padding:0 2px}
+  .spark.k-stable path{stroke:var(--stable)}
+  .spark.k-cov path{stroke:var(--accent)}
+  .spark.k-docs path{stroke:var(--accent)}
   .spark{width:100%;height:56px}
-  .spark path{fill:none;stroke:var(--accent);stroke-width:2}
+  /* preserveAspectRatio="none" scales the viewBox ~11x horizontally and 1x
+     vertically, which stretches the stroke itself — steep segments rendered as
+     solid wedges rather than lines. non-scaling-stroke keeps it a 2px line. */
+  .spark path{fill:none;stroke:var(--accent);stroke-width:2;
+    vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
   .cap{color:var(--muted);font-size:12.5px;margin:0}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
@@ -550,52 +836,156 @@ STYLE = """
 """
 
 
+# The raw frontmatter value is `stable`; the page's own legend calls that lifecycle
+# stage "approved". Showing the raw value in drawers while the bars said "approved"
+# read as a fourth, undocumented status — and made the visible library look as if
+# nothing in it had ever been approved. One vocabulary, everywhere.
+STATUS_LABEL = {"stable": "approved", "in-review": "in review", "draft": "draft"}
+
+
+def status_label(status: str | None) -> str:
+    return STATUS_LABEL.get(status or "", status or "")
+
+
 def _status_pill(status: str | None) -> str:
     if not status:
         return ""
     cls = {"stable": "s-stable", "in-review": "s-review", "draft": "s-draft"}.get(status, "s-draft")
-    return f'<span class="pill {cls}">{html.escape(status)}</span>'
+    return f'<span class="pill {cls}">{html.escape(status_label(status))}</span>'
 
 
 def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
     esc = html.escape(label)
     gloss = html.escape(AREA_GLOSS.get(label, ""))
     if label in expandable and inventory.get(label):
-        hint = (f'<span class="expand-hint"><span class="chev">›</span>See all {count}</span>')
+        hint = '<span class="expand-hint"><span class="chev">›</span>Open list</span>'
         return (
             f'<button type="button" class="kpi-btn" data-area="{esc}" '
             f'aria-expanded="false" aria-controls="detail-drawer" aria-label="See all {count} {esc}">'
             f'<span class="n mono">{count}</span>'
             f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</button>'
         )
-    return (f'<div class="kpi"><div class="n mono">{count}</div>'
-            f'<div class="k">{esc}</div><div class="gloss">{gloss}</div></div>')
+    # Withheld on the public page (their titles name product surfaces) rather
+    # than simply non-expandable. Looking identical to a genuine count-only card
+    # reads as a broken control; say so instead.
+    withheld = (label in PRIVATE_EXPANDABLE and label not in expandable
+                and inventory.get(label))
+    note = ('<div class="withheld">Titles are on the internal dashboard</div>'
+            if withheld else "")
+    cls = "kpi inert" if withheld else "kpi"
+    return (f'<div class="{cls}"><div class="n mono">{count}</div>'
+            f'<div class="k">{esc}</div><div class="gloss">{gloss}</div>{note}</div>')
 
 
-def _panel_src(label: str, inventory: dict) -> str:
-    """Hidden per-area list the drawer clones on open."""
-    items = "".join(
-        f'<li><span class="nm">{html.escape(it["name"])}</span>'
-        f'{_status_pill(it["status"])}</li>'
-        for it in inventory[label]
-    )
+def _panel_src(label: str, inventory: dict, *, public: bool) -> str:
+    """Hidden per-area list the drawer clones on open.
+
+    Descriptions are private-only: a one-line summary can name a product surface,
+    which the sanitized page must never carry. Public drawers stay titles-only.
+    """
+    entries = inventory[label]
+    # A status badge repeated identically on every row carries no information and
+    # buries the rows that do differ. When they are all the same, say it once in
+    # the drawer header instead.
+    statuses = {it.get("status") for it in entries}
+    only = next(iter(statuses)) if len(statuses) == 1 else None
+    uniform = bool(entries) and len(statuses) == 1 and only is not None
+    if uniform:
+        note = f'{len(entries)} · all {html.escape(status_label(only))}'
+    elif entries and statuses == {None}:
+        # Skills use the Claude-skill frontmatter shape, which has no status field.
+        # Saying so beats a silently blank column the reader reads as missing data.
+        note = f"{len(entries)} · no lifecycle status"
+    else:
+        note = str(len(entries))
+
+    def row(it: dict) -> str:
+        desc = "" if public or not it.get("desc") else (
+            f'<span class="dsc">{html.escape(it["desc"])}</span>')
+        pill = "" if uniform else _status_pill(it["status"])
+        return (f'<li><span class="nm">{html.escape(it["name"])}</span>'
+                f'{pill}{desc}</li>')
+
+    items = "".join(row(it) for it in entries)
     return (f'<div class="panel-src" data-area="{html.escape(label)}" '
-            f'data-count="{len(inventory[label])}" '
+            f'data-count="{note}" '
             f'data-gloss="{html.escape(AREA_GLOSS.get(label, ""))}" hidden>'
             f'<ul class="items">{items}</ul></div>')
 
 
-def _sparkline(points: list[int]) -> str:
-    if len(points) < 2:
-        return ('<p class="cap" style="margin:0">This is the first daily snapshot. The trend line — '
-                'document count and status mix over time — appears here once a few days of history '
-                'accumulate, so you can watch whether the in-review backlog is clearing or growing.</p>')
+def _series_path(points: list[float]) -> str:
+    """SVG path for one normalised series (own min/max — shape, not scale)."""
     lo, hi = min(points), max(points)
     span = (hi - lo) or 1
     n = len(points)
-    coords = [f"{round(100*i/(n-1),2)},{round(50-44*(v-lo)/span,2)}" for i, v in enumerate(points)]
-    return (f'<svg class="spark" role="img" aria-label="Document count over time" viewBox="0 0 100 56" preserveAspectRatio="none">'
-            f'<path d="M{"L".join(coords)}"/></svg>')
+    coords = [f"{round(100*i/(n-1),2)},{round(50-44*(v-lo)/span,2)}"
+              for i, v in enumerate(points)]
+    return "M" + "L".join(coords)
+
+
+def _trend(history: list[dict]) -> str:
+    """Labeled trend.
+
+    An unlabeled up-and-right line reads as reassurance it has not earned — the
+    2026-07-29 review's finding. Every series here prints its start value, end
+    value and date range as text, so the picture cannot be misread on its own.
+    Coverage joins automatically once two or more snapshots carry it.
+    """
+    if len(history) < 2:
+        return ('<p class="cap" style="margin:0">This is the first daily snapshot. The trend — '
+                'documents, approved share, and Storybook coverage over time — appears here once a '
+                'few days accumulate, so you can watch whether the backlog is clearing.</p>')
+
+    start, end = history[0].get("date", "?"), history[-1].get("date", "?")
+    rows: list[str] = []
+
+    def add(label: str, pts: list[float], fmt, cls: str, *, up_is_good: bool = True) -> None:
+        if len(pts) < 2 or len(set(pts)) < 1:
+            return
+        # Say which way it moved, in words. A line that drifts down under a heading
+        # called "Direction of travel" was previously left for the reader to notice.
+        delta = pts[-1] - pts[0]
+        # Only call a direction when the move is bigger than the rounding on the
+        # printed values; a 29%->28% drift is one document, not a trend.
+        if abs(delta) < 1:
+            move, mcls = "flat", "flat"
+        elif (delta > 0) == up_is_good:
+            move, mcls = ("up" if delta > 0 else "down"), "good"
+        else:
+            move, mcls = ("up" if delta > 0 else "down"), "warn"
+        rows.append(
+            f'<div class="tr"><div class="tl"><span class="tk">{label}'
+            f'<span class="mv {mcls}">{move}</span></span>'
+            f'<span class="tv">{fmt(pts[0])} <span class="ar">&rarr;</span> '
+            f'<b>{fmt(pts[-1])}</b></span></div>'
+            f'<svg class="spark {cls}" role="img" aria-label="{html.escape(label)}: '
+            f'{fmt(pts[0])} on {start} to {fmt(pts[-1])} on {end}" '
+            f'viewBox="0 0 100 56" preserveAspectRatio="none">'
+            f'<path d="{_series_path(pts)}"/></svg></div>')
+
+    add("Documents", [float(h["areas"].get("Total docs", 0)) for h in history],
+        lambda v: f"{int(v)}", "k-docs")
+
+    shares = []
+    for h in history:
+        st = h.get("status") or {}
+        tot = sum(st.values())
+        shares.append(100 * st.get("stable", 0) / tot if tot else 0.0)
+    add("Approved share", shares, lambda v: f"{v:.0f}%", "k-stable")
+
+    cov_pts = [h["coverage"]["contracts_with_stories"] for h in history
+               if isinstance(h.get("coverage"), dict)
+               and "contracts_with_stories" in h["coverage"]]
+    if len(cov_pts) >= 2:
+        add("Spec'd components rendered in Storybook", [float(v) for v in cov_pts],
+            lambda v: f"{int(v)}", "k-cov")
+    else:
+        rows.append('<p class="cap" style="margin:10px 0 0">Storybook coverage joins this '
+                    'chart from tomorrow — today is its first recorded snapshot, so the '
+                    'number to watch has no history here yet.</p>')
+
+    return (f'<p class="cap" style="margin:0 0 12px">{start} &rarr; {end} '
+            f'({len(history)} daily snapshots)</p>' + "".join(rows))
 
 
 def _artifacts_section() -> str:
@@ -610,7 +1000,14 @@ def _artifacts_section() -> str:
         data = json.loads(ARTIFACTS_MANIFEST.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return ""
-    groups = [g for g in data.get("groups", []) if g.get("items")]
+    # Drop the row that points at this very page — listing the dashboard as one of
+    # its own deliverables is a dead end and reads as a bug.
+    groups = []
+    for g in data.get("groups", []):
+        items = [it for it in g.get("items", [])
+                 if "vault health" not in it.get("title", "").lower()]
+        if items:
+            groups.append({**g, "items": items})
     if not groups:
         return ""
     total = sum(len(g["items"]) for g in groups)
@@ -635,16 +1032,16 @@ def _artifacts_section() -> str:
     return (
         '<section>\n'
         '    <h2 class="s-head">Artifacts</h2>\n'
-        f'    <p class="s-sub">The {total} deliverables built from the vault so far — forms, dashboards, '
-        'explainers, and concept prototypes. To actually open them, use the in-repo hub '
-        '(<b>artifacts/index.html</b>) or your gallery — links inside this dashboard can’t '
-        'navigate (a rendered artifact is sandboxed).</p>\n'
+        f'    <p class="s-sub">The {total} things built from the vault so far. '
+        '<b>Live</b> = a working tool the team uses; <b>Current</b> = an explainer that is '
+        'up to date. In a browser these links open normally; inside a rendered Claude '
+        'artifact they can’t navigate — use your gallery or the in-repo hub.</p>\n'
         f'    <div class="panel">{"".join(blocks)}</div>\n'
         '  </section>'
     )
 
 
-def _component_library_section(today: date, *, public: bool) -> str:
+def _component_library_section(today: date, cov: dict | None, *, public: bool) -> str:
     """Component-library build status + story coverage.
 
     Returns "" when the generated status file is missing, so the section simply
@@ -689,6 +1086,29 @@ def _component_library_section(today: date, *, public: bool) -> str:
         detail = f"Last run concluded {html.escape(str(conclusion))}."
 
     pct = round(storied / total * 100) if total else 0
+
+    # Contracted-first target: the near-term goal is stories for the components we
+    # have already written specs for. Green ONLY when that is complete — a 2%
+    # figure must never render in the same success colour as "0 overdue", which is
+    # exactly what the 2026-07-29 review caught.
+    c_total = cov.get("contracts", 0) if cov else 0
+    c_done = cov.get("contracts_with_stories", 0) if cov else 0
+    c_pct = round(c_done / c_total * 100) if c_total else 0
+    on_target = bool(c_total) and c_done == c_total
+    cov_cls = "good" if on_target else "warn"
+    goal = (f"Target met — next: the remaining {total - storied} in the library."
+            if on_target else
+            f"Target: stories for all {c_total} spec'd components ({c_done} done).")
+
+    # The jargon gloss sits BELOW the numbers, not above them. Explaining
+    # Storybook before showing the figure put ~120px of prose between a phone
+    # user and the first fact on the page.
+    gloss = ('<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, '
+             'browsable library where each component is rendered in every state. A '
+             'component that is not rendered there gets its spec written from source code '
+             'alone, which is weaker. The build status only stops coverage slipping '
+             'backwards.</p>')
+
     links = ""
     if not public:
         parts = []
@@ -698,64 +1118,93 @@ def _component_library_section(today: date, *, public: bool) -> str:
         if d.get("run_url"):
             parts.append(f'<a href="{html.escape(d["run_url"])}" target="_blank" '
                          f'rel="noopener">See the latest build &rarr;</a>')
-        if parts:
-            links = '<p class="cap" style="margin-top:14px">' + " · ".join(parts) + "</p>"
+        parts.append("Every new story set moves this number — run the "
+                     "<b>write-stories</b> skill.")
+        links = '<p class="cap" style="margin-top:14px">' + " · ".join(parts) + "</p>"
+    else:
+        # The Storybook and run URLs both contain a BLOCKLIST term, so the public
+        # page cannot link out. Say where the links live instead of dead-ending.
+        links = ('<p class="cap" style="margin-top:14px">Links to the live library '
+                 'and the latest build are on the internal dashboard.</p>')
 
     return (
         '<section>\n'
         '    <h2 class="s-head">Component library</h2>\n'
-        '    <p class="s-sub">Contracts are extracted from Storybook stories, so a component '
-        'without stories gets documented from source reading alone. Coverage is the number '
-        'to watch; the build status just stops it slipping backwards.</p>\n'
+        '    <p class="s-sub">How much of the component library is rendered in Storybook for '
+        'specs to be written from. This is the number to watch.</p>\n'
         '    <div class="panel">\n'
-        f'      <div class="checks"><div class="check {cls}">'
+        '      <div class="fresh">\n'
+        f'        <div class="item {cov_cls}"><div class="n mono">{c_done}<span class="of">'
+        f'/{c_total}</span></div>'
+        f'<div><div class="k">Spec\'d components rendered in Storybook</div>'
+        f'<div class="d">{c_pct}% &middot; {goal}</div></div></div>\n'
+        f'        <div class="item"><div class="n mono">{storied}<span class="of">/{total}'
+        f'</span></div>'
+        f'<div><div class="k">Whole library rendered in Storybook</div>'
+        f'<div class="d">{pct}% &middot; every component in the codebase, spec\'d or not'
+        f'</div></div></div>\n'
+        '      </div>\n'
+        f'      <div class="checks" style="margin-top:16px"><div class="check {cls}">'
         f'<span class="mk">{"✓" if cls == "ok" else "!"}</span>'
         f'<span><span class="ct">Build: {verdict}</span>'
         f'<span class="cd">{detail}</span></span></div></div>\n'
-        '      <div class="fresh" style="margin-top:16px">\n'
-        f'        <div class="item {"good" if pct else "bad"}"><div class="n mono">{storied}</div>'
-        f'<div><div class="k">Components with stories</div>'
-        f'<div class="d">of {total} in the library — {pct}%</div></div></div>\n'
-        f'        <div class="item"><div class="n mono">{d.get("story_files", 0)}</div>'
-        f'<div><div class="k">Story files</div>'
-        f'<div class="d">What the contract extractor can read</div></div></div>\n'
-        '      </div>\n'
-        f'{links}'
+        f'{gloss}{links}'
         '    </div>\n'
         '  </section>'
     )
 
 
-def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bool) -> str:
+def _shares(s: dict, total: int) -> dict[str, int]:
+    """Percentages that sum to exactly 100 (largest remainder).
+
+    Plain rounding gave 28+55+18 = 101%, which a numerate reader spots instantly
+    and which undermines every other number on the page.
+    """
+    keys = ["stable", "in-review", "draft"]
+    if not total:
+        return {k: 0 for k in keys}
+    exact = {k: 100 * s.get(k, 0) / total for k in keys}
+    out = {k: int(v) for k, v in exact.items()}
+    for k in sorted(keys, key=lambda k: exact[k] - int(exact[k]), reverse=True):
+        if sum(out.values()) >= 100:
+            break
+        out[k] += 1
+    return out
+
+
+def render_body(scanned: dict, history: list[dict], healthy: bool,
+                reasons: list[str] | None = None, *, public: bool) -> str:
     a = scanned["areas"]
     s = scanned["status"]
     inv = scanned["inventory"]
     total = scanned["status_total"] or 1
     expandable = PUBLIC_EXPANDABLE if public else PRIVATE_EXPANDABLE
     vcolor = "var(--stable)" if healthy else "var(--warn)"
-    vtext = "Healthy" if healthy else "Needs attention"
+    # Name the badge after what it actually measures. "Healthy" read as a verdict
+    # on the whole vault, so a 1-of-12 coverage figure underneath it looked like a
+    # contradiction the footnote had to apologise for. Scoping the label removes the
+    # need to apologise.
+    vtext = "All checks passing" if healthy else "Needs attention"
+    reasons = reasons or []
 
     cards = "".join(_card(label, a[label], inv, expandable) for label in CARD_ORDER)
     panel_srcs = "".join(
-        _panel_src(label, inv) for label in CARD_ORDER
+        _panel_src(label, inv, public=public) for label in CARD_ORDER
         if label in expandable and inv.get(label)
     )
 
+    shares = _shares(s, total)
+
     def bar(key: str, name: str) -> str:
-        pct = round(100 * s[key] / total)
+        # Meaning folded into the row label — the separate legend duplicated the
+        # labels sitting directly beneath it.
+        pct = shares[key]
         color = {"stable": "var(--stable)", "in-review": "var(--review)",
                  "draft": "var(--draft)"}[key]
-        return (f'<div class="row"><span class="name">{name}</span>'
+        return (f'<div class="row"><span class="name">{name}'
+                f'<span class="nm">{STATUS_MEANING[key]}</span></span>'
                 f'<span class="track"><span class="fill" style="width:{pct}%;background:{color}"></span></span>'
                 f'<span class="val"><b>{s[key]}</b> · {pct}%</span></div>')
-
-    legend = "".join(
-        f'<span class="lg"><span class="sw" style="background:{c}"></span>'
-        f'<b>{n}</b> — {STATUS_MEANING[k]}</span>'
-        for k, n, c in (("stable", "Stable", "var(--stable)"),
-                        ("in-review", "In review", "var(--review)"),
-                        ("draft", "Draft", "var(--draft)"))
-    )
 
     checks = "".join(
         f'<div class="check {"ok" if ok else "bad"}"><span class="mk">{"✓" if ok else "✕"}</span>'
@@ -764,34 +1213,79 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
         for name, ok in scanned["integrity"].items()
     )
     n_fail = sum(1 for ok in scanned["integrity"].values() if not ok)
-    checks_sub = ("Run automatically on every change — all passing."
-                  if n_fail == 0 else f"{n_fail} failing — see the internal report.")
 
-    # Plain-language hero summary — the at-a-glance answer.
-    overdue = len(scanned["stale"]) + len(scanned["malformed"])
-    summary = " · ".join([
-        f"{a['Total docs']} documents",
-        "all checks passing" if n_fail == 0 else f"{n_fail} check{'s' if n_fail != 1 else ''} failing",
-        "nothing overdue" if overdue == 0 else f"{overdue} item{'s' if overdue != 1 else ''} need attention",
-    ])
+    # The hero summary is built from the SAME reasons list the verdict is computed
+    # from. Previously the summary only knew about checks and overdue counts, so a
+    # backlog-drift day rendered "Needs attention" directly above "all checks
+    # passing · nothing overdue" — the page contradicting itself.
+    cov = story_coverage(inv)
+    if healthy:
+        # The badge itself now says "All checks passing", so the summary adds the
+        # facts it does NOT cover rather than repeating it.
+        summary = " · ".join([
+            f"{a['Total docs']} documents",
+            "nothing overdue",
+            "no backlog growth",
+        ] + ([f"Storybook coverage {cov['contracts_with_stories']}/{cov['contracts']}"]
+             if cov else []))
+    else:
+        summary = " · ".join(reasons) if reasons else "see the internal report"
 
     stale_good = "good" if not scanned["stale"] else "bad"
     mal_good = "good" if not scanned["malformed"] else "bad"
-    spark = _sparkline([h["areas"].get("Total docs", 0) for h in history])
+    trend = _trend(history)
     reveal = ("Agents, Skills, Components and Patterns"
               if public else "Every card")
+    owner = (f"Owner: {OWNER_NAME} · {OWNER_ROLE}" if not public
+             else f"Maintained by the {OWNER_ROLE} owner")
+    # The redaction promise describes the sanitised build. On the internal
+    # dashboard it was simply untrue — that page does show paths and names.
+    footer_note = ("Sanitized aggregate health of the shared Orbit Design Brain vault. "
+                   "Counts and maturity only — never internal file paths."
+                   if public else
+                   "Internal view of the shared Orbit Design Brain vault. "
+                   "The stakeholder page carries counts and maturity only.")
     # Artifact index is private-only: several titles name product surfaces, so it
     # never renders on the public/sanitized page (consistent with hiding platform profiles).
     artifacts = "" if public else _artifacts_section()
     # Rendered on both pages, but the private one carries the links (see the
     # function's docstring for why the public page withholds the URL).
     component_library = _component_library_section(
-        date.fromisoformat(scanned["date"]), public=public)
+        date.fromisoformat(scanned["date"]), cov, public=public)
+
+    # One sentence that reconciles every denominator on the page. Four numbers
+    # (documents / with-status / library / spec'd) previously appeared in four
+    # different sections with no explanation of how they relate.
+    rest = scanned.get("rest") or {}
+    parts = [f"<b>{n}</b> {label}" for label, n in (rest.get("buckets") or {}).items() if n]
+    if rest.get("other"):
+        parts.append(f"<b>{rest['other']}</b> indexes, templates and generated files")
+    remainder = ""
+    if parts:
+        listed = rest.get("listed", 0)
+        phrase = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + f", and {parts[-1]}"
+        remainder = (f" The six cards below list <b>{listed}</b> of them — the reusable "
+                     f"building blocks. The other "
+                     f"<b>{a['Total docs'] - listed}</b> are {phrase}.")
+    denominators = (
+        f"<b>{a['Total docs']}</b> documents in the vault; <b>{scanned['status_total']}</b> "
+        f"carry a lifecycle status."
+        + remainder
+        + " The component library is a separate codebase, counted separately: "
+        + (f"<b>{cov['components']}</b> components, <b>{cov['contracts']}</b> of which have "
+           f"a written spec here ({round(100 * cov['contracts'] / cov['components']) if cov['components'] else 0}%), "
+           f"and <b>{cov['contracts_with_stories']}</b> rendered in Storybook. Specs for the remaining "
+           f"<b>{cov['components'] - cov['contracts']}</b> are the work after that."
+           if cov else "counts appear once the component feed reports.")
+    )
 
     return f"""<div id="shell"><div class="wrap">
   <header>
     <div class="eyebrow">Orbit Design Brain</div>
     <h1>Vault Health</h1>
+    <p class="purpose">The Orbit Design Brain is the living specification our products are
+      built to — the written rules, component specs and worked examples that both people
+      and AI tools follow. This page is its health check.</p>
     <div class="banner" style="--verdict:{vcolor}">
       <span class="dot"></span>
       <div>
@@ -800,41 +1294,25 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
       </div>
       <span class="meta">Updated {scanned['date']}<br>Refreshes daily</span>
     </div>
+    <details class="explain">
+      <summary>How to read these numbers</summary>
+      <p class="verdict-def">This badge covers three things only: the automated checks pass,
+        nothing is overdue for review, and the review backlog isn’t growing. It is not a
+        verdict on the vault as a whole — Storybook coverage and how much is still in review
+        are separate measures, reported below.</p>
+      <p class="denoms">{denominators}</p>
+    </details>
   </header>
-
-  <section>
-    <h2 class="s-head">What's inside</h2>
-    <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
-    <div class="kpis">{cards}</div>
-  </section>
-  <div hidden>{panel_srcs}</div>
-
-  <section>
-    <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the {scanned['status_total']} of {a['Total docs']} documents that carry a
-      lifecycle status sit on the way to approved (the rest are generated indexes and READMEs). A large
-      in-review share is normal while the team is actively building the vault.</p>
-    <div class="panel">
-      <div class="legend">{legend}</div>
-      {bar('stable','Stable')}{bar('in-review','In review')}{bar('draft','Draft')}
-    </div>
-  </section>
-
-  <section>
-    <h2 class="s-head">Is anything wrong?</h2>
-    <p class="s-sub">{checks_sub}</p>
-    <div class="panel">
-      <div class="checks">{checks}</div>
-    </div>
-  </section>
 
   {component_library}
 
   <section>
-    <h2 class="s-head">Needs attention</h2>
-    <p class="s-sub">Documents that have drifted out of good standing.</p>
+    <h2 class="s-head">Checks &amp; attention</h2>
+    <p class="s-sub">Run automatically on every change. The first four are pass/fail; the
+      last two count documents that have drifted out of good standing.</p>
     <div class="panel">
-      <div class="fresh">
+      <div class="checks">{checks}</div>
+      <div class="fresh" style="margin-top:16px">
         <div class="item {stale_good}"><div class="n mono">{len(scanned['stale'])}</div>
           <div><div class="k">Overdue for review</div><div class="d">Not looked at in {STALE_AFTER_DAYS}+ days</div></div></div>
         <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
@@ -844,14 +1322,33 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
   </section>
 
   <section>
+    <h2 class="s-head">How ready it is</h2>
+    <p class="s-sub">Where the {scanned['status_total']} documents that carry a lifecycle
+      status (draft → in review → approved) sit today. The vault is still being built, so
+      most documents have not reached approved yet; the target is to move the in-review
+      column down over time.</p>
+    <div class="panel">
+      {bar('stable','Approved')}{bar('in-review','In review')}{bar('draft','Draft')}
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">What's inside</h2>
+    <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
+    <div class="kpis">{cards}</div>
+  </section>
+  <div hidden>{panel_srcs}</div>
+
+  <section>
     <h2 class="s-head">Trend</h2>
-    <p class="s-sub">How the vault is growing over time.</p>
-    <div class="panel">{spark}</div>
+    <p class="s-sub">Direction of travel since daily snapshots began. Each line shows its
+      start value, its end value, and which way it moved.</p>
+    <div class="panel">{trend}</div>
   </section>
 
   {artifacts}
 
-  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
+  <footer>{owner}<br>{footer_note}</footer>
 </div></div>
 
 <aside class="drawer" id="detail-drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">
@@ -907,8 +1404,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool, *, public: bo
 </script>"""
 
 
-def render_standalone(scanned: dict, history: list[dict], healthy: bool) -> str:
-    body = render_body(scanned, history, healthy, public=True)
+def render_standalone(scanned: dict, history: list[dict], healthy: bool,
+                      reasons: list[str] | None = None) -> str:
+    body = render_body(scanned, history, healthy, reasons, public=True)
     # No hardcoded data-theme: let the viewer's OS preference drive the page
     # (prefers-color-scheme). The :root[data-theme=…] overrides still win if a
     # host stamps the attribute.
@@ -927,9 +1425,10 @@ def render_standalone(scanned: dict, history: list[dict], healthy: bool) -> str:
 """
 
 
-def render_artifact(scanned: dict, history: list[dict], healthy: bool) -> str:
+def render_artifact(scanned: dict, history: list[dict], healthy: bool,
+                    reasons: list[str] | None = None) -> str:
     """Body-only (full drill-down) for the private Claude Artifact."""
-    body = render_body(scanned, history, healthy, public=False)
+    body = render_body(scanned, history, healthy, reasons, public=False)
     return (f"<title>Orbit Design Brain — Vault Health</title>\n"
             f"<style>{STYLE}</style>\n{body}\n")
 
@@ -951,10 +1450,10 @@ def main() -> None:
     healthy, reasons = verdict(scanned, previous)
 
     HEALTH_MD.write_text(render_md(scanned, previous, healthy, reasons), encoding="utf-8")
-    HEALTH_HTML.write_text(render_standalone(scanned, history, healthy), encoding="utf-8")
+    HEALTH_HTML.write_text(render_standalone(scanned, history, healthy, reasons), encoding="utf-8")
     if args.artifact_out:
         Path(args.artifact_out).write_text(
-            render_artifact(scanned, history, healthy), encoding="utf-8")
+            render_artifact(scanned, history, healthy, reasons), encoding="utf-8")
 
     if args.json:
         print(json.dumps({

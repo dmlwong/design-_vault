@@ -11,5 +11,8 @@
   "story_files": 1,
   "components": 52,
   "components_with_stories": 1,
+  "storied_components": [
+    "Button"
+  ],
   "tree_truncated": false
 }

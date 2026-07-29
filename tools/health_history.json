@@ -177,6 +177,31 @@
     },
     "stale": 0,
     "malformed": 0,
-    "integrity_ok": true
+    "integrity_ok": true,
+    "check_labels": {
+      "export self-check": [
+        "All required files present",
+        "Nothing the system depends on is missing."
+      ],
+      "link check": [
+        "Every internal link works",
+        "No broken references between documents."
+      ],
+      "frontmatter lint": [
+        "Document metadata is valid",
+        "Every doc is tagged and dated correctly."
+      ],
+      "graph links": [
+        "Navigation index up to date",
+        "The cross-links between docs are current."
+      ]
+    },
+    "coverage": {
+      "contracts": 12,
+      "contracts_with_stories": 1,
+      "components": 52,
+      "components_with_stories": 1,
+      "story_files": 1
+    }
   }
 ]
