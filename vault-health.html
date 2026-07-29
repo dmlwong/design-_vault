@@ -103,10 +103,13 @@
   .drawer .dgloss{padding:14px 20px 0;color:var(--muted);font-size:12.5px}
   .drawer-body{padding:10px 20px 24px;overflow:auto}
   .items{list-style:none;margin:0;padding:0}
-  .items li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  .items li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;
     padding:10px 0;border-top:1px solid var(--line);font-size:13.5px}
   .items li:first-child{border-top:none}
   .items li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* One-line description under each drawer item — private dashboard only.
+     A list of bare slugs says what exists but never what any of it is. */
+  .items li .dsc{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.45}
   @media (prefers-reduced-motion:reduce){
     .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
     body.drawer-open .drawer{transition:none}}
@@ -141,8 +144,55 @@
   .fresh .item .k{font-size:13px;font-weight:600}
   .fresh .item .d{font-size:11.5px;color:var(--muted);margin-top:1px}
   .fresh .item.good .n{color:var(--stable)}
+  /* A coverage figure short of target must NOT wear the success colour that
+     "0 overdue" wears — the inverted colour language the 2026-07-29 review caught. */
+  .fresh .item.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+  .fresh .item.warn .n{color:var(--warn)}
+  .fresh .item .n .of{font-size:15px;font-weight:600;color:var(--muted)}
+  /* Answers "what am I looking at?" before any number does. */
+  .purpose{margin:10px 0 20px;font-size:14.5px;color:var(--muted);line-height:1.65;
+    max-width:64ch}
+  /* Public page: a card whose titles are withheld. Flat and chevron-less so it
+     never reads as an expander that failed to open. */
+  .kpi.inert{background:transparent;box-shadow:none;
+    border-style:dashed;border-color:color-mix(in srgb,var(--line) 80%,transparent)}
+  .kpi.inert .withheld{margin-top:8px;font-size:11px;color:var(--muted);font-style:italic}
+  /* Reference prose, one click away. Collapsed it keeps ~190px of grey text from
+     sitting between a phone reader and the first number; <details> needs no JS. */
+  .explain{margin:14px 0 0}
+  .explain>summary{cursor:pointer;font-size:12.5px;font-weight:650;color:var(--muted);
+    list-style:none;display:inline-flex;align-items:center;gap:6px;padding:5px 0}
+  .explain>summary::-webkit-details-marker{display:none}
+  .explain>summary::before{content:"›";display:inline-block;transition:transform .18s ease;
+    font-size:15px;line-height:1}
+  .explain[open]>summary::before{transform:rotate(90deg)}
+  .explain>summary:hover{color:var(--ink)}
+  .explain>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;
+    border-radius:4px}
+  @media (prefers-reduced-motion:reduce){.explain>summary::before{transition:none}}
+  .verdict-def{margin:6px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .denoms{margin:8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .verdict-def b,.denoms b{color:var(--ink);font-weight:650}
+  .row .name .nm{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+  .tr+.tr{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .tl{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .tl .tk{font-size:13px;font-weight:650;display:flex;align-items:center;gap:8px}
+  .tl .mv{font-size:10.5px;font-weight:650;text-transform:uppercase;letter-spacing:.04em;
+    padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .tl .mv.good{color:var(--stable);border-color:color-mix(in srgb,var(--stable) 40%,var(--line))}
+  .tl .mv.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+  .tl .tv{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .tl .tv b{color:var(--ink);font-weight:650}
+  .tl .ar{opacity:.6;padding:0 2px}
+  .spark.k-stable path{stroke:var(--stable)}
+  .spark.k-cov path{stroke:var(--accent)}
+  .spark.k-docs path{stroke:var(--accent)}
   .spark{width:100%;height:56px}
-  .spark path{fill:none;stroke:var(--accent);stroke-width:2}
+  /* preserveAspectRatio="none" scales the viewBox ~11x horizontally and 1x
+     vertically, which stretches the stroke itself — steep segments rendered as
+     solid wedges rather than lines. non-scaling-stroke keeps it a 2px line. */
+  .spark path{fill:none;stroke:var(--accent);stroke-width:2;
+    vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
   .cap{color:var(--muted);font-size:12.5px;margin:0}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
@@ -179,59 +229,46 @@
   <header>
     <div class="eyebrow">Orbit Design Brain</div>
     <h1>Vault Health</h1>
+    <p class="purpose">The Orbit Design Brain is the living specification our products are
+      built to — the written rules, component specs and worked examples that both people
+      and AI tools follow. This page is its health check.</p>
     <div class="banner" style="--verdict:var(--stable)">
       <span class="dot"></span>
       <div>
-        <div class="verdict">Healthy</div>
-        <div class="summary-line">142 documents · all checks passing · nothing overdue</div>
+        <div class="verdict">All checks passing</div>
+        <div class="summary-line">142 documents · nothing overdue · no backlog growth · Storybook coverage 1/12</div>
       </div>
       <span class="meta">Updated 2026-07-29<br>Refreshes daily</span>
     </div>
+    <details class="explain">
+      <summary>How to read these numbers</summary>
+      <p class="verdict-def">This badge covers three things only: the automated checks pass,
+        nothing is overdue for review, and the review backlog isn’t growing. It is not a
+        verdict on the vault as a whole — Storybook coverage and how much is still in review
+        are separate measures, reported below.</p>
+      <p class="denoms"><b>142</b> documents in the vault; <b>137</b> carry a lifecycle status. The six cards below list <b>59</b> of them — the reusable building blocks. The other <b>83</b> are <b>22</b> benchmark records, <b>20</b> rules and foundations, <b>17</b> reviews and proposals, <b>7</b> discovery and concept briefs, and <b>17</b> indexes, templates and generated files. The component library is a separate codebase, counted separately: <b>52</b> components, <b>12</b> of which have a written spec here (23%), and <b>1</b> rendered in Storybook. Specs for the remaining <b>40</b> are the work after that.</p>
+    </details>
   </header>
 
   <section>
-    <h2 class="s-head">What's inside</h2>
-    <p class="s-sub">The building blocks the vault holds. Agents, Skills, Components and Patterns can be opened to list what's in them.</p>
-    <div class="kpis"><button type="button" class="kpi-btn" data-area="Agents" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 11 Agents"><span class="n mono">11</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span>See all 11</span></button><button type="button" class="kpi-btn" data-area="Skills" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 5 Skills"><span class="n mono">5</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span>See all 5</span></button><button type="button" class="kpi-btn" data-area="Component contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 12 Component contracts"><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Specs for reusable UI components</span><span class="expand-hint"><span class="chev">›</span>See all 12</span></button><button type="button" class="kpi-btn" data-area="Pattern contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 11 Pattern contracts"><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Specs for page-level layouts</span><span class="expand-hint"><span class="chev">›</span>See all 11</span></button><div class="kpi"><div class="n mono">18</div><div class="k">Examples</div><div class="gloss">Reference screens to build from</div></div><div class="kpi"><div class="n mono">2</div><div class="k">Platform profiles</div><div class="gloss">The products the vault serves</div></div></div>
-  </section>
-  <div hidden><div class="panel-src" data-area="Agents" data-count="11" data-gloss="AI agents that build &amp; review designs" hidden><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in-review</span></li><li><span class="nm">brief-coach</span><span class="pill s-draft">draft</span></li><li><span class="nm">brief-reviewer</span><span class="pill s-review">in-review</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">stable</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">stable</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">stable</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">stable</span></li><li><span class="nm">porter</span><span class="pill s-review">in-review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in-review</span></li><li><span class="nm">story-author</span><span class="pill s-draft">draft</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Skills" data-count="5" data-gloss="Guided workflows the team runs" hidden><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li><li><span class="nm">write-stories</span></li></ul></div><div class="panel-src" data-area="Component contracts" data-count="12" data-gloss="Specs for reusable UI components" hidden><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in-review</span></li><li><span class="nm">button</span><span class="pill s-review">in-review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in-review</span></li><li><span class="nm">chip</span><span class="pill s-review">in-review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in-review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in-review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in-review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in-review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in-review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in-review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in-review</span></li></ul></div><div class="panel-src" data-area="Pattern contracts" data-count="11" data-gloss="Specs for page-level layouts" hidden><ul class="items"><li><span class="nm">analytics-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">config-wizard</span><span class="pill s-review">in-review</span></li><li><span class="nm">focus-mode-results</span><span class="pill s-review">in-review</span></li><li><span class="nm">guided-conversational-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">home-dashboard</span><span class="pill s-review">in-review</span></li><li><span class="nm">list-detail</span><span class="pill s-review">in-review</span></li><li><span class="nm">lovable-port</span><span class="pill s-review">in-review</span></li><li><span class="nm">review-and-approve-workflow</span><span class="pill s-review">in-review</span></li><li><span class="nm">settings-form-validation</span><span class="pill s-review">in-review</span></li><li><span class="nm">tool-hub</span><span class="pill s-review">in-review</span></li><li><span class="nm">work-card</span><span class="pill s-review">in-review</span></li></ul></div></div>
-
-  <section>
-    <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the 137 of 142 documents that carry a
-      lifecycle status sit on the way to approved (the rest are generated indexes and READMEs). A large
-      in-review share is normal while the team is actively building the vault.</p>
-    <div class="panel">
-      <div class="legend"><span class="lg"><span class="sw" style="background:var(--stable)"></span><b>Stable</b> — reviewed & approved</span><span class="lg"><span class="sw" style="background:var(--review)"></span><b>In review</b> — being worked on</span><span class="lg"><span class="sw" style="background:var(--draft)"></span><b>Draft</b> — just started</span></div>
-      <div class="row"><span class="name">Stable</span><span class="track"><span class="fill" style="width:28%;background:var(--stable)"></span></span><span class="val"><b>38</b> · 28%</span></div><div class="row"><span class="name">In review</span><span class="track"><span class="fill" style="width:55%;background:var(--review)"></span></span><span class="val"><b>75</b> · 55%</span></div><div class="row"><span class="name">Draft</span><span class="track"><span class="fill" style="width:18%;background:var(--draft)"></span></span><span class="val"><b>24</b> · 18%</span></div>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="s-head">Is anything wrong?</h2>
-    <p class="s-sub">Run automatically on every change — all passing.</p>
-    <div class="panel">
-      <div class="checks"><div class="check ok"><span class="mk">✓</span><span><span class="ct">All required files present</span><span class="cd">Nothing the system depends on is missing.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Every internal link works</span><span class="cd">No broken references between documents.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Document metadata is valid</span><span class="cd">Every doc is tagged and dated correctly.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Navigation index up to date</span><span class="cd">The cross-links between docs are current.</span></span></div></div>
-    </div>
-  </section>
-
-  <section>
     <h2 class="s-head">Component library</h2>
-    <p class="s-sub">Contracts are extracted from Storybook stories, so a component without stories gets documented from source reading alone. Coverage is the number to watch; the build status just stops it slipping backwards.</p>
-    <div class="panel">
-      <div class="checks"><div class="check ok"><span class="mk">✓</span><span><span class="ct">Build: Passing</span><span class="cd">Types, lint, the component tests and a full Storybook build.</span></span></div></div>
-      <div class="fresh" style="margin-top:16px">
-        <div class="item good"><div class="n mono">1</div><div><div class="k">Components with stories</div><div class="d">of 52 in the library — 2%</div></div></div>
-        <div class="item"><div class="n mono">1</div><div><div class="k">Story files</div><div class="d">What the contract extractor can read</div></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="s-head">Needs attention</h2>
-    <p class="s-sub">Documents that have drifted out of good standing.</p>
+    <p class="s-sub">How much of the component library is rendered in Storybook for specs to be written from. This is the number to watch.</p>
     <div class="panel">
       <div class="fresh">
+        <div class="item warn"><div class="n mono">1<span class="of">/12</span></div><div><div class="k">Spec'd components rendered in Storybook</div><div class="d">8% &middot; Target: stories for all 12 spec'd components (1 done).</div></div></div>
+        <div class="item"><div class="n mono">1<span class="of">/52</span></div><div><div class="k">Whole library rendered in Storybook</div><div class="d">2% &middot; every component in the codebase, spec'd or not</div></div></div>
+      </div>
+      <div class="checks" style="margin-top:16px"><div class="check ok"><span class="mk">✓</span><span><span class="ct">Build: Passing</span><span class="cd">Types, lint, the component tests and a full Storybook build.</span></span></div></div>
+<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, browsable library where each component is rendered in every state. A component that is not rendered there gets its spec written from source code alone, which is weaker. The build status only stops coverage slipping backwards.</p><p class="cap" style="margin-top:14px">Links to the live library and the latest build are on the internal dashboard.</p>    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">Checks &amp; attention</h2>
+    <p class="s-sub">Run automatically on every change. The first four are pass/fail; the
+      last two count documents that have drifted out of good standing.</p>
+    <div class="panel">
+      <div class="checks"><div class="check ok"><span class="mk">✓</span><span><span class="ct">All required files present</span><span class="cd">Nothing the system depends on is missing.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Every internal link works</span><span class="cd">No broken references between documents.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Document metadata is valid</span><span class="cd">Every doc is tagged and dated correctly.</span></span></div><div class="check ok"><span class="mk">✓</span><span><span class="ct">Navigation index up to date</span><span class="cd">The cross-links between docs are current.</span></span></div></div>
+      <div class="fresh" style="margin-top:16px">
         <div class="item good"><div class="n mono">0</div>
           <div><div class="k">Overdue for review</div><div class="d">Not looked at in 90+ days</div></div></div>
         <div class="item good"><div class="n mono">0</div>
@@ -241,14 +278,33 @@
   </section>
 
   <section>
+    <h2 class="s-head">How ready it is</h2>
+    <p class="s-sub">Where the 137 documents that carry a lifecycle
+      status (draft → in review → approved) sit today. The vault is still being built, so
+      most documents have not reached approved yet; the target is to move the in-review
+      column down over time.</p>
+    <div class="panel">
+      <div class="row"><span class="name">Approved<span class="nm">reviewed & approved</span></span><span class="track"><span class="fill" style="width:28%;background:var(--stable)"></span></span><span class="val"><b>38</b> · 28%</span></div><div class="row"><span class="name">In review<span class="nm">being worked on</span></span><span class="track"><span class="fill" style="width:55%;background:var(--review)"></span></span><span class="val"><b>75</b> · 55%</span></div><div class="row"><span class="name">Draft<span class="nm">just started</span></span><span class="track"><span class="fill" style="width:17%;background:var(--draft)"></span></span><span class="val"><b>24</b> · 17%</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="s-head">What's inside</h2>
+    <p class="s-sub">The building blocks the vault holds. Agents, Skills, Components and Patterns can be opened to list what's in them.</p>
+    <div class="kpis"><button type="button" class="kpi-btn" data-area="Agents" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 11 Agents"><span class="n mono">11</span><span class="k">Agents</span><span class="gloss">AI agents that build &amp; review designs</span><span class="expand-hint"><span class="chev">›</span>Open list</span></button><button type="button" class="kpi-btn" data-area="Skills" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 5 Skills"><span class="n mono">5</span><span class="k">Skills</span><span class="gloss">Guided workflows the team runs</span><span class="expand-hint"><span class="chev">›</span>Open list</span></button><button type="button" class="kpi-btn" data-area="Component contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 12 Component contracts"><span class="n mono">12</span><span class="k">Component contracts</span><span class="gloss">Written specs for reusable UI pieces (not commercial contracts)</span><span class="expand-hint"><span class="chev">›</span>Open list</span></button><button type="button" class="kpi-btn" data-area="Pattern contracts" aria-expanded="false" aria-controls="detail-drawer" aria-label="See all 11 Pattern contracts"><span class="n mono">11</span><span class="k">Pattern contracts</span><span class="gloss">Written specs for whole-page layouts</span><span class="expand-hint"><span class="chev">›</span>Open list</span></button><div class="kpi inert"><div class="n mono">18</div><div class="k">Examples</div><div class="gloss">Golden reference screens to build from</div><div class="withheld">Titles are on the internal dashboard</div></div><div class="kpi inert"><div class="n mono">2</div><div class="k">Platform profiles</div><div class="gloss">The products the vault serves</div><div class="withheld">Titles are on the internal dashboard</div></div></div>
+  </section>
+  <div hidden><div class="panel-src" data-area="Agents" data-count="11" data-gloss="AI agents that build &amp; review designs" hidden><ul class="items"><li><span class="nm">benchmark-judge</span><span class="pill s-review">in review</span></li><li><span class="nm">brief-coach</span><span class="pill s-draft">draft</span></li><li><span class="nm">brief-reviewer</span><span class="pill s-review">in review</span></li><li><span class="nm">component-builder</span><span class="pill s-stable">approved</span></li><li><span class="nm">context-scout</span><span class="pill s-stable">approved</span></li><li><span class="nm">contract-extractor</span><span class="pill s-stable">approved</span></li><li><span class="nm">design-reviewer</span><span class="pill s-stable">approved</span></li><li><span class="nm">porter</span><span class="pill s-review">in review</span></li><li><span class="nm">screen-builder</span><span class="pill s-review">in review</span></li><li><span class="nm">story-author</span><span class="pill s-draft">draft</span></li><li><span class="nm">vault-librarian</span><span class="pill s-review">in review</span></li></ul></div><div class="panel-src" data-area="Skills" data-count="5 · no lifecycle status" data-gloss="Guided workflows the team runs" hidden><ul class="items"><li><span class="nm">component-contract</span></li><li><span class="nm">explore</span></li><li><span class="nm">extract-contract</span></li><li><span class="nm">port-to-orbit</span></li><li><span class="nm">write-stories</span></li></ul></div><div class="panel-src" data-area="Component contracts" data-count="12" data-gloss="Written specs for reusable UI pieces (not commercial contracts)" hidden><ul class="items"><li><span class="nm">badge-status</span><span class="pill s-review">in review</span></li><li><span class="nm">button</span><span class="pill s-review">in review</span></li><li><span class="nm">card-panel</span><span class="pill s-review">in review</span></li><li><span class="nm">chip</span><span class="pill s-review">in review</span></li><li><span class="nm">data-table</span><span class="pill s-review">in review</span></li><li><span class="nm">dialog</span><span class="pill s-review">in review</span></li><li><span class="nm">drawer</span><span class="pill s-draft">draft</span></li><li><span class="nm">input</span><span class="pill s-review">in review</span></li><li><span class="nm">select-combobox</span><span class="pill s-review">in review</span></li><li><span class="nm">status-indicator</span><span class="pill s-review">in review</span></li><li><span class="nm">tabs</span><span class="pill s-review">in review</span></li><li><span class="nm">toast-notification</span><span class="pill s-review">in review</span></li></ul></div><div class="panel-src" data-area="Pattern contracts" data-count="11 · all in review" data-gloss="Written specs for whole-page layouts" hidden><ul class="items"><li><span class="nm">analytics-dashboard</span></li><li><span class="nm">config-wizard</span></li><li><span class="nm">focus-mode-results</span></li><li><span class="nm">guided-conversational-workflow</span></li><li><span class="nm">home-dashboard</span></li><li><span class="nm">list-detail</span></li><li><span class="nm">lovable-port</span></li><li><span class="nm">review-and-approve-workflow</span></li><li><span class="nm">settings-form-validation</span></li><li><span class="nm">tool-hub</span></li><li><span class="nm">work-card</span></li></ul></div></div>
+
+  <section>
     <h2 class="s-head">Trend</h2>
-    <p class="s-sub">How the vault is growing over time.</p>
-    <div class="panel"><svg class="spark" role="img" aria-label="Document count over time" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,50.0L12.5,31.14L25.0,24.86L37.5,24.86L50.0,24.86L62.5,24.86L75.0,24.86L87.5,6.0L100.0,6.0"/></svg></div>
+    <p class="s-sub">Direction of travel since daily snapshots began. Each line shows its
+      start value, its end value, and which way it moved.</p>
+    <div class="panel"><p class="cap" style="margin:0 0 12px">2026-07-21 &rarr; 2026-07-29 (9 daily snapshots)</p><div class="tr"><div class="tl"><span class="tk">Documents<span class="mv good">up</span></span><span class="tv">135 <span class="ar">&rarr;</span> <b>142</b></span></div><svg class="spark k-docs" role="img" aria-label="Documents: 135 on 2026-07-21 to 142 on 2026-07-29" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,50.0L12.5,31.14L25.0,24.86L37.5,24.86L50.0,24.86L62.5,24.86L75.0,24.86L87.5,6.0L100.0,6.0"/></svg></div><div class="tr"><div class="tl"><span class="tk">Approved share<span class="mv warn">down</span></span><span class="tv">29% <span class="ar">&rarr;</span> <b>28%</b></span></div><svg class="spark k-stable" role="img" aria-label="Approved share: 29% on 2026-07-21 to 28% on 2026-07-29" viewBox="0 0 100 56" preserveAspectRatio="none"><path d="M0.0,6.0L12.5,28.49L25.0,35.77L37.5,35.77L50.0,35.77L62.5,35.77L75.0,35.77L87.5,50.0L100.0,50.0"/></svg></div><p class="cap" style="margin:10px 0 0">Storybook coverage joins this chart from tomorrow — today is its first recorded snapshot, so the number to watch has no history here yet.</p></div>
   </section>
 
   
 
-  <footer>Sanitized aggregate health of the shared Orbit Design Brain vault.<br>Counts and maturity only — never internal file paths.</footer>
+  <footer>Maintained by the design-system owner<br>Sanitized aggregate health of the shared Orbit Design Brain vault. Counts and maturity only — never internal file paths.</footer>
 </div></div>
 
 <aside class="drawer" id="detail-drawer" role="region" aria-labelledby="drawer-title" aria-hidden="true">

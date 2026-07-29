@@ -60,7 +60,26 @@ BANNED = [
     "Eight specialist", "eight specialist", "8 agents", "8 AI agents",
     "97 ", "~85", "85 / 100", "85/100", "13 heuristics", "13 interaction",
     "weekly staleness",
+    # The pre-2026-07-29 hand-written check list. The names now come from
+    # vault_health.CHECK_LABELS via {{CHECK_LIST}}; if this phrasing ever
+    # reappears, the two pages have diverged again.
+    "required files, links &amp; routing, frontmatter, graph links",
+    "four checks every change",
 ]
+
+
+def check_list(h: dict) -> str:
+    """The CI check names, from the same dict the dashboard renders.
+
+    Both pages used to hand-maintain their own wording and had already drifted
+    ("Document metadata is valid" here vs "frontmatter" there), so a reader
+    comparing the two concluded there were eight checks. One source now.
+    """
+    labels = h.get("check_labels") or {}
+    names = [v[0].lower() for v in labels.values()] if labels else []
+    if not names:  # pre-migration history entry — say nothing rather than guess
+        return "its integrity checks"
+    return ", ".join(names[:-1]) + f", and {names[-1]}" if len(names) > 1 else names[0]
 
 
 def latest_health() -> dict:
@@ -125,6 +144,7 @@ def main() -> None:
         "PCT_INREVIEW": pct(s.get("in-review", 0)),
         "PCT_DRAFT": pct(s.get("draft", 0)),
         "HEALTH_VERDICT": "HEALTHY" if healthy else "NEEDS ATTENTION",
+        "CHECK_LIST": check_list(h),
         "AGENT_ROSTER": build_roster(),
         "BUILD_DATE": h.get("date", date.today().isoformat()),
     }
