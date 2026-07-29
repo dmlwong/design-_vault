@@ -63,6 +63,16 @@ STORYBOOK_STALE_DAYS = 3
 
 STALE_AFTER_DAYS = lf.STALE_AFTER_DAYS
 HISTORY_CAP = 180
+
+# The feedback loop's queue (AGENTS.md §6). Agents append corrections here mid-task;
+# a human triages them into a brain file or an agent trap, then deletes the entry.
+# Nothing reads this file at build time and triage is deliberately not wired to CI
+# (design-brain/orchestration.md), so a stalled queue is invisible unless reported.
+# That is what this counter is for — it does not automate triage, it just stops the
+# backlog being silently indistinguishable from an empty one.
+LESSONS_INBOX = ROOT / "design-brain" / "lessons" / "INBOX.md"
+LESSON_ENTRY = re.compile(r"^### (\d{4}-\d{2}-\d{2})\s+·", re.M)
+LESSON_STATUS = re.compile(r"^- Status:\s*(\S+)", re.M)
 SKIP_PARTS = {"_archive", ".obsidian", ".git"}
 
 # Areas keyed by frontmatter `type` (robust to file moves/renames).
@@ -311,6 +321,7 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
 
     `desc` is rendered on the private dashboard only (see `_doc_summary`).
     """
+    traps = agent_traps()
     by_type: dict[str, list[Path]] = {}
     for path in docs:
         fm = lf.parse_frontmatter(path)
@@ -328,7 +339,10 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
     agents = sorted((ROOT / "design-brain" / "agents").glob("*.md"))
     skills = sorted((ROOT / "design-brain" / "skills").glob("*/SKILL.md"))
     inv: dict[str, list[dict]] = {
-        "Agents": items(agents, lambda p: p.stem),
+        # Agent rows carry their trap/evidence counts so the private drawer can
+        # show which agents have accumulated failure knowledge and which haven't.
+        "Agents": [{**it, "traps": traps.get(it["name"])}
+                   for it in items(agents, lambda p: p.stem)],
         "Skills": [
             {"name": (fm := lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
              "status": None,
@@ -379,6 +393,113 @@ def rest_of_vault(docs: list[Path], inventory: dict[str, list[dict]]) -> dict:
             other += 1
     return {"listed": counted, "buckets": buckets, "other": other,
             "total": counted + sum(buckets.values()) + other}
+
+
+AGENTS_DIR = ROOT / "design-brain" / "agents"
+BENCHMARK_RESULTS = ROOT / "_benchmarks" / "results"
+TRAPS_HEADING = re.compile(r"^## .*\btraps\b.*$", re.I | re.M)
+TRAP_BULLET = re.compile(r"^- ", re.M)
+CITED_FILE = re.compile(r"`([^`]+\.md)`")
+
+
+def agent_traps() -> dict[str, dict]:
+    """Per-agent trap count and evidence base, keyed by agent stem.
+
+    `runs` counts citations that resolve to a file in `_benchmarks/results/` —
+    a scored run. `sources` counts every distinct cited file, which includes
+    doctrine files and dated incident records. The distinction matters: a trap
+    citing a scorecard is stronger evidence than one citing a rule, and today
+    most traps are the latter.
+    """
+    results = {p.name for p in BENCHMARK_RESULTS.glob("*.md")} \
+        if BENCHMARK_RESULTS.is_dir() else set()
+    out: dict[str, dict] = {}
+    for path in sorted(AGENTS_DIR.glob("*.md")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        head = TRAPS_HEADING.search(text)
+        if not head:
+            out[path.stem] = {"traps": 0, "sources": 0, "runs": 0}
+            continue
+        rest = text[head.end():]
+        nxt = re.search(r"^## ", rest, re.M)
+        section = rest[: nxt.start()] if nxt else rest
+        cited = {Path(c).name for c in CITED_FILE.findall(section)}
+        out[path.stem] = {
+            "traps": len(TRAP_BULLET.findall(section)),
+            "sources": len(cited),
+            "runs": len(cited & results),
+        }
+    return out
+
+
+def trap_coverage() -> dict:
+    """How much recorded evidence the agents' traps actually rest on.
+
+    Traps are inline failure modes on an agent, each citing the benchmark result
+    or correction that produced it (`design-brain/orchestration.md`). They are
+    only as good as that evidence, so this reports the base rather than implying
+    the traps are finished: how many agents carry any, how many recorded results
+    exist, and how many of those have never been cited by a trap. The last number
+    is the actionable one — it is unmined evidence, not a defect.
+    """
+    agents = sorted(AGENTS_DIR.glob("*.md"))
+    traps = 0
+    with_traps = 0
+    cited: set[str] = set()
+    for path in agents:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        head = TRAPS_HEADING.search(text)
+        if not head:
+            continue
+        rest = text[head.end():]
+        nxt = re.search(r"^## ", rest, re.M)
+        section = rest[: nxt.start()] if nxt else rest
+        n = len(TRAP_BULLET.findall(section))
+        if not n:
+            continue
+        with_traps += 1
+        traps += n
+        cited.update(Path(c).name for c in CITED_FILE.findall(section))
+    results = sorted(p.name for p in BENCHMARK_RESULTS.glob("*.md")) \
+        if BENCHMARK_RESULTS.is_dir() else []
+    return {
+        "agents": len(agents),
+        "with_traps": with_traps,
+        "traps": traps,
+        "sources": len(cited),
+        "results": len(results),
+        "unmined": len([r for r in results if r not in cited]),
+    }
+
+
+def open_lessons(today: date) -> list[str]:
+    """Inbox entries whose fix has not landed yet, oldest first.
+
+    An entry is open unless its Status line starts with `applied`. The template
+    block inside the file is skipped: it documents the shape, not a real entry.
+    Returns [] when the file is missing — the counter reports zero rather than
+    breaking the whole report over a missing optional input.
+    """
+    if not LESSONS_INBOX.is_file():
+        return []
+    text = LESSONS_INBOX.read_text(encoding="utf-8", errors="ignore")
+    body = text.split("## Entries", 1)[-1]
+    out: list[str] = []
+    for match in LESSON_ENTRY.finditer(body):
+        entry = body[match.start():]
+        nxt = LESSON_ENTRY.search(entry[1:])
+        if nxt:
+            entry = entry[: nxt.start() + 1]
+        status = LESSON_STATUS.search(entry)
+        if status and status.group(1).lower().startswith("applied"):
+            continue
+        raised = match.group(1)
+        try:
+            age = (today - date.fromisoformat(raised)).days
+        except ValueError:
+            age = 0
+        out.append(f"{raised}  ({age}d open)")
+    return sorted(out)
 
 
 def scan(today: date) -> dict:
@@ -434,6 +555,8 @@ def scan(today: date) -> dict:
         "malformed": sorted(malformed),
         "integrity": integrity,
         "rest": rest,
+        "lessons": open_lessons(today),
+        "traps": trap_coverage(),
     }
 
 
@@ -721,6 +844,12 @@ STYLE = """
   /* One-line description under each drawer item — private dashboard only.
      A list of bare slugs says what exists but never what any of it is. */
   .items li .dsc{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.45}
+  /* Agent evidence base — private drawer only. */
+  .items li .ev{grid-column:1/-1;font-size:10.5px;font-weight:650;letter-spacing:.02em;
+    text-transform:uppercase;padding:2px 7px;border-radius:999px;justify-self:start;
+    border:1px solid var(--line);color:var(--muted)}
+  .items li .ev.ok{color:var(--stable);border-color:color-mix(in srgb,var(--stable) 40%,var(--line))}
+  .items li .ev.thin{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
   @media (prefers-reduced-motion:reduce){
     .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
     body.drawer-open .drawer{transition:none}}
@@ -910,8 +1039,24 @@ def _panel_src(label: str, inventory: dict, *, public: bool) -> str:
         desc = "" if public or not it.get("desc") else (
             f'<span class="dsc">{html.escape(it["desc"])}</span>')
         pill = "" if uniform else _status_pill(it["status"])
+        # Agent evidence base, private only. "runs" are scored benchmark results;
+        # "sources" also counts doctrine files and dated incident records, so the
+        # two numbers differing is the point — it shows how much of an agent's
+        # knowledge rests on a measured run rather than a rule.
+        ev = ""
+        t = it.get("traps")
+        if t is not None and not public:
+            if not t["traps"]:
+                ev = '<span class="ev none">no traps yet</span>'
+            else:
+                cls = "thin" if not t["runs"] else "ok"
+                runs = (f'{t["runs"]} scored run{"s" if t["runs"] != 1 else ""}'
+                        if t["runs"] else "no scored run")
+                ev = (f'<span class="ev {cls}">{t["traps"]} traps · '
+                      f'{t["sources"]} source{"s" if t["sources"] != 1 else ""} · '
+                      f'{runs}</span>')
         return (f'<li><span class="nm">{html.escape(it["name"])}</span>'
-                f'{pill}{desc}</li>')
+                f'{pill}{desc}{ev}</li>')
 
     items = "".join(row(it) for it in entries)
     return (f'<div class="panel-src" data-area="{html.escape(label)}" '
@@ -1237,6 +1382,45 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
     stale_good = "good" if not scanned["stale"] else "bad"
     mal_good = "good" if not scanned["malformed"] else "bad"
+
+    # Private only: entries quote corrections and product-surface names verbatim,
+    # so this tile never renders on the sanitised page (same rule as the artifact
+    # index). An untriaged queue is a warning, not a failure — the vault is still
+    # correct, it just hasn't absorbed a correction yet.
+    # Traps are the agents' accumulated failure knowledge. Reporting the count
+    # alone would read as "done"; what matters is the evidence under it, so this
+    # says how much recorded material has not yet been mined. Private only — it
+    # names internal process, and a stakeholder has no action to take on it.
+    tr = scanned.get("traps") or {}
+    traps_note = ""
+    if tr.get("traps") and not public:
+        per = agent_traps()
+        thin = sorted(n for n, d in per.items() if d["traps"] and not d["runs"])
+        named = (f" Resting on no scored run yet: "
+                 + ", ".join(f"<b>{html.escape(n)}</b>" for n in thin) + "."
+                 if thin else " Every agent with traps cites at least one scored run.")
+        unmined = tr.get("unmined", 0)
+        gap = (f" <b>{unmined}</b> of <b>{tr['results']}</b> recorded benchmark results have "
+               f"not yet produced a trap — unmined evidence, not a defect."
+               if unmined else " Every recorded benchmark result has been mined.")
+        traps_note = (
+            f'<p class="cap" style="margin-top:14px"><b>{tr["traps"]}</b> agent traps — '
+            f'recorded failure modes stated inline on the agent that makes them — across '
+            f'<b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b> agents. They are only as good '
+            f'as the evidence beneath them.{named}{gap} Open an agent above to see its base; '
+            f'each carries an <b>Evidence base</b> section saying what would strengthen it.</p>')
+
+    lessons = scanned.get("lessons") or []
+    lessons_tile = ""
+    if not public:
+        oldest = lessons[0].split("(")[-1].rstrip(")") if lessons else ""
+        detail = (f"Captured corrections not yet applied — oldest {oldest}"
+                  if lessons else "Every captured correction has landed")
+        lessons_tile = (
+            f'<div class="item {"warn" if lessons else "good"}">'
+            f'<div class="n mono">{len(lessons)}</div>'
+            f'<div><div class="k">Open lessons</div>'
+            f'<div class="d">{html.escape(detail)}</div></div></div>')
     trend = _trend(history)
     reveal = ("Agents, Skills, Components and Patterns"
               if public else "Every card")
@@ -1312,8 +1496,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
   <section>
     <h2 class="s-head">Checks &amp; attention</h2>
-    <p class="s-sub">Run automatically on every change. The first four are pass/fail; the
-      last two count documents that have drifted out of good standing.</p>
+    <p class="s-sub">The ticks run automatically on every change and are pass/fail. The
+      counters beneath them track things that have drifted out of good standing — nothing
+      here is broken, but a non-zero count is work someone owes the vault.</p>
     <div class="panel">
       <div class="checks">{checks}</div>
       <div class="fresh" style="margin-top:16px">
@@ -1321,6 +1506,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
           <div><div class="k">Overdue for review</div><div class="d">Not looked at in {STALE_AFTER_DAYS}+ days</div></div></div>
         <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
           <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
+        {lessons_tile}
       </div>
     </div>
   </section>
@@ -1340,6 +1526,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     <h2 class="s-head">What's inside</h2>
     <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
     <div class="kpis">{cards}</div>
+    {traps_note}
   </section>
   <div hidden>{panel_srcs}</div>
 
