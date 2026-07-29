@@ -7,7 +7,7 @@ status: in-review
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-28
 maturity_score: 60
 tags: [orbit, design-brain, orchestration, patterns, screens]
 ---
@@ -44,9 +44,15 @@ example (e.g. `examples/orbit-client-marketiq-research-output-flow.md`), and the
    (`AGENTS.md` §2.8).
 6. On correction: append to `design-brain/lessons/INBOX.md` before continuing.
 
+## Verification (pre-flight, not the review)
+Before handing off: run `npm run audit:design-system` when the screen lives in the
+product repo; render-verify both themes and both densities across the page-level states
+(default/loading/empty/error); then walk the `AGENTS.md` §5 Definition of Done as a
+pre-flight. You do not self-certify — the reviewer owns the verdict.
+
 ## Output format
 The screen implementation plus a composition note: pattern followed (or proposed),
-heuristics applied, components consumed, states covered.
+heuristics applied, components consumed, states covered, and the pre-flight evidence.
 
 ## Handoff & escalation
 - Hand to `design-reviewer` in a fresh context; multi-dimension parallel review is

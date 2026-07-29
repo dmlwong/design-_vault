@@ -38,6 +38,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "tools" / "site-manifest.json"
 
+# index.html is the entry page (orb + Enter); the tool hub lives one click away.
+# Not a manifest entry: the hub is not a "tool", and listing it there would put
+# it in its own nav twice.
+HUB_HREF = "tools.html"
+
 # --------------------------------------------------------------------------- #
 # Public sanitisation
 #
@@ -53,6 +58,7 @@ SANITISE: list[tuple[str, str]] = [
     # single-word rules (otherwise "Efficio" -> "the platform" mangles the phrase
     # it appears inside). Add new phrase rules at the top of this list.
     ("About the Vault · Efficio Orbit", "About the Vault · Orbit"),
+    ("Connected Platform initiative / governance", "Internal platform initiative / governance"),
     ("Connected Platform (internal Efficio users) and Orbit / Client Connected Platform (external clients)",
      "The internal platform (for our own teams) and the client-facing platform"),
     ("efficio-orbit repo", "the component repo"),
@@ -153,15 +159,21 @@ HUB_STYLE = """
   @media (prefers-reduced-motion:reduce){a.row{transition:none}}
   @media (max-width:560px){.open{display:none}}
 
-  /* ---- hero stage ----------------------------------------------------------
-     A deliberate single-world dark band: the orb reads as a light source, so it
-     needs a dark ground in both themes. Everything below returns to the site's
-     normal surface. Pure CSS — the rotating inset box-shadows are the whole
-     effect; the letters are staggered by animation-delay. */
+  /* ---- entry stage ---------------------------------------------------------
+     The orb reads as a light source, so it needs a dark ground in both themes —
+     this page is single-world by design. Pure CSS: the rotating inset
+     box-shadows are the whole effect, and the letters stagger by
+     animation-delay. This is the site's front door; the tools live one click
+     away at tools.html. */
   .hero{position:relative;overflow:hidden;background:
       radial-gradient(120% 90% at 50% 0%, #1c3a86 0%, #14224d 42%, #0b1020 72%, #05070d 100%);
     padding:clamp(48px,9vw,86px) 20px clamp(44px,8vw,72px);
-    display:flex;flex-direction:column;align-items:center;text-align:center}
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    /* svh, not vh: on mobile, vh measures the viewport WITHOUT browser chrome,
+       so the Enter button lands under the URL bar on first paint. */
+    min-height:100svh;justify-content:center}
+  /* Fallback for engines without svh — dvh/vh both beat nothing. */
+  @supports not (height:100svh){.hero{min-height:100vh}}
   .orb{position:relative;display:flex;align-items:center;justify-content:center;
     width:clamp(158px,42vw,208px);aspect-ratio:1/1;user-select:none;flex:none}
   .orb .ring{position:absolute;inset:0;border-radius:50%;animation:orbSpin 5s linear infinite}
@@ -184,8 +196,28 @@ HUB_STYLE = """
     40%{opacity:.7;transform:translateY(0)}}
   .hero h1{color:#fff;margin:clamp(26px,4vw,38px) 0 0;max-width:24ch;text-wrap:balance}
   .hero .lede{color:#c3cede;margin:14px auto 0;max-width:52ch}
-  .hero .scroll-cue{margin-top:26px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-    color:#93a3bd;font-weight:650}
+  /* The single way forward. A real <a> — it navigates, so it must be a link:
+     Enter/Return activates it, it opens in a new tab on middle-click, and screen
+     readers announce it as a link rather than a button that does nothing.
+     Min 44x44px hit area (WCAG 2.2 AA 2.5.8 Target Size). */
+  .hero .enter{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:clamp(30px,5vw,42px);min-height:48px;padding:0 34px;border-radius:999px;
+    font-size:15px;font-weight:650;letter-spacing:.02em;text-decoration:none;
+    color:#0b1020;background:#eef2fb;border:1px solid rgba(255,255,255,.5);
+    transition:background .14s ease,transform .14s ease,box-shadow .14s ease;
+    box-shadow:0 2px 10px rgba(5,7,13,.45),0 0 0 0 rgba(126,166,255,0)}
+  .hero .enter .arw{transition:transform .14s ease}
+  .hero .enter:hover{background:#fff;transform:translateY(-1px);
+    box-shadow:0 6px 20px rgba(5,7,13,.55),0 0 0 6px rgba(126,166,255,.14)}
+  .hero .enter:hover .arw{transform:translateX(3px)}
+  .hero .enter:active{transform:translateY(0)}
+  /* White ring on the dark ground: ~13:1 against #05070d, well past the 3:1
+     WCAG 2.2 AA needs for a focus indicator (1.4.11). */
+  .hero .enter:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  @media (prefers-reduced-motion:reduce){
+    .hero .enter,.hero .enter .arw{transition:none}
+    .hero .enter:hover{transform:none}
+    .hero .enter:hover .arw{transform:none}}
   /* Reduced motion: hold the orb at its most luminous frame rather than spinning. */
   @media (prefers-reduced-motion:reduce){
     .orb .ring{animation:none;transform:rotate(270deg);
@@ -327,7 +359,9 @@ h1{font-family:var(--site-serif);font-weight:640;letter-spacing:-.015em}
 
 def render_nav(manifest: dict, current: str) -> str:
     """Sticky nav listing every page in the manifest, marking the current one."""
-    items = [("index.html", "Home")] + [
+    # "Home" points at the hub, not index.html: index.html is the entry splash,
+    # and sending a reader back through the front door mid-session is a dead end.
+    items = [(HUB_HREF, "Home")] + [
         (t["href"], t.get("nav") or t["title"]) for t in manifest["tools"]
     ]
     links = "".join(
@@ -341,7 +375,7 @@ def render_nav(manifest: dict, current: str) -> str:
     return (
         '<a class="skip-link" href="#main-content">Skip to content</a>'
         '<nav class="sitenav" aria-label="Site">'
-        f'<div class="snwrap"><a class="brand" href="index.html">'
+        f'<div class="snwrap"><a class="brand" href="{html.escape(HUB_HREF)}">'
         f'<span class="mk"></span><span>{html.escape(SITE_NAME)}</span></a>'
         f'<div class="links">{links}</div></div></nav>'
         '<span id="main-content" tabindex="-1"></span>'
@@ -386,6 +420,42 @@ def inject_chrome(text: str, nav: str, fallback_title: str = SITE_NAME) -> str:
     )
 
 
+def render_entry(manifest: dict) -> str:
+    """The front door: orb, title, tagline, and a single Enter link.
+
+    Deliberately carries no site nav (see build()) — a splash you can click past
+    from a nav bar is not a splash. Enter is the only control on the page.
+    """
+    site = manifest["site"]
+    wordmark = site.get("wordmark", "ORBIT")
+    letters = "".join(
+        f'<span class="ltr" aria-hidden="true" style="animation-delay:{i * 0.1:.1f}s">'
+        f'{html.escape(ch)}</span>'
+        for i, ch in enumerate(wordmark)
+    )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(site['title'])}</title>
+<style>{HUB_STYLE}</style>
+</head>
+<body>
+  <main class="hero">
+    <div class="orb" role="img" aria-label="{html.escape(wordmark)}">
+      <span class="ring" aria-hidden="true"></span>
+      {letters}
+    </div>
+    <h1>{html.escape(site['title'])}</h1>
+    <p class="lede">{html.escape(site['tagline'])}</p>
+    <a class="enter" href="{html.escape(HUB_HREF)}">Enter<span class="arw" aria-hidden="true">&rarr;</span></a>
+  </main>
+</body>
+</html>
+"""
+
+
 def render_hub(manifest: dict) -> str:
     site = manifest["site"]
     rows = []
@@ -404,12 +474,6 @@ def render_hub(manifest: dict) -> str:
             )
         )
     body = "\n".join(rows)
-    wordmark = site.get("wordmark", "ORBIT")
-    letters = "".join(
-        f'<span class="ltr" aria-hidden="true" style="animation-delay:{i * 0.1:.1f}s">'
-        f'{html.escape(ch)}</span>'
-        for i, ch in enumerate(wordmark)
-    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -419,16 +483,9 @@ def render_hub(manifest: dict) -> str:
 <style>{HUB_STYLE}</style>
 </head>
 <body>
-  <section class="hero">
-    <div class="orb" role="img" aria-label="{html.escape(wordmark)}">
-      <span class="ring" aria-hidden="true"></span>
-      {letters}
-    </div>
+  <div class="tools-wrap">
     <h1>{html.escape(site['title'])}</h1>
     <p class="lede">{html.escape(site['tagline'])}</p>
-    <p class="scroll-cue">The tools &darr;</p>
-  </section>
-  <div class="tools-wrap">
     <div class="group">
 {body}
     </div>
@@ -450,13 +507,24 @@ def build(out: Path, public: bool) -> list[str]:
     out.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
 
-    # Hub
-    hub = inject_chrome(render_hub(manifest), render_nav(manifest, "index.html"))
+    # Entry page. Chrome is injected with an EMPTY nav: the whole point of a
+    # front door is that Enter is the only way through it, so a nav bar offering
+    # five bypasses would defeat it. It still gets the token skin, so it tracks
+    # the site's theme like every other page.
+    entry = inject_chrome(render_entry(manifest), "")
+    if public:
+        entry = sanitise(entry)
+        assert_clean("index.html", entry)
+    (out / "index.html").write_text(entry, encoding="utf-8")
+    written.append("index.html")
+
+    # Tool hub — everything the entry page used to sit on top of.
+    hub = inject_chrome(render_hub(manifest), render_nav(manifest, HUB_HREF))
     if public:
         hub = sanitise(hub)
-        assert_clean("index.html", hub)
-    (out / "index.html").write_text(hub, encoding="utf-8")
-    written.append("index.html")
+        assert_clean(HUB_HREF, hub)
+    (out / HUB_HREF).write_text(hub, encoding="utf-8")
+    written.append(HUB_HREF)
 
     # Tools
     for tool in manifest["tools"]:

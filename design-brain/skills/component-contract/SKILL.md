@@ -12,17 +12,23 @@ because component-level work is where generic-AI aesthetics and missing states c
 ## Workflow
 
 ### 1. Locate or create the contract
-- If `components/<name>.md` exists, read it in full. It is authoritative.
+- If `design-brain/components/<name>.md` exists, read it in full. It is authoritative.
 - If it does not exist, **do not start coding.** Draft a contract from
-  `components/_TEMPLATE.md`, fill every section, and confirm with the user first.
-  A component without a contract has no definition of "correct".
+  `design-brain/components/_TEMPLATE.md`, fill every section, and confirm with the user
+  first. A component without a contract has no definition of "correct".
 
 ### 2. Load required context
 Read, in this order:
-1. The contract (`components/<name>.md`)
-2. `tokens.md` — and the real token source files it points to
-3. The nearest golden example in `examples/` (match the component family)
-4. `accessibility.md`, `motion.md`, `ux-copy.md` for the slices the component touches
+1. The contract (`design-brain/components/<name>.md`)
+2. `design-brain/tokens.md` — and the real token source files it points to
+3. `design-brain/defaults.md` — where the contract is silent, the Orbit default is the
+   choice, never taste
+4. The matching platform profile (`design-brain/platforms/`) — identify the platform
+   first; unclear → ask before building (`AGENTS.md` §2.2)
+5. The nearest golden example in `design-brain/examples/` (match the component family)
+6. `design-brain/accessibility.md`, `design-brain/motion.md`, `design-brain/ux-copy.md`
+   for the slices the component touches
+7. `design-brain/storybook.md` — how the render-verification in step 4 works
 
 ### 3. Build to spec
 - Consume **Tier-2 semantic tokens** only. No primitives, no hardcoded values.
@@ -34,32 +40,50 @@ Read, in this order:
 - Keep the public API (props) exactly as the contract specifies. If the API needs to
   change, update the contract first and flag it.
 
-### 4. Self-review against the Definition of Done
-Before presenting, verify the `AGENTS.md` §5 checklist line by line:
-- [ ] Zero hardcoded visual values
-- [ ] Correct in both `efficio` and `orbit` themes (no theme-conditional code)
-- [ ] All states present
-- [ ] Keyboard-operable, visible focus ring, WCAG 2.2 AA contrast
-- [ ] Comfortable + compact density
-- [ ] Copy per `ux-copy.md`, motion per `motion.md`
-- [ ] No `anti-patterns.md` violations
-If any item fails, fix it before showing the user. Do not present partial work as done.
+### 4. Render-verify (proven in the 2026-07-17 build trial)
+Two Definition-of-Done lines cannot be checked by reading code — verify them by
+rendering:
+- Run the component's stories (`npm run dev:storybook`, or a headless pass asserting
+  computed styles). Flip the **Theme** toolbar on each story — it sets/removes
+  `data-theme="orbit"`, the same mechanism production uses — and check both densities.
+- Read the a11y panel (a floor check, not the accessibility contract).
+- No stories yet → say so explicitly; the `write-stories` task follows a component
+  build, and the check is *pending*, not passed.
 
-### 5. Report
-State plainly: which contract was used, which states/variants were implemented, any
-deviations and why, and anything the contract was silent on that you had to decide.
+### 5. Self-review against the Definition of Done
+Walk **the full `AGENTS.md` §5 checklist** — read it from the file; do not work from a
+paraphrase (an abridged copy of this list once hid four items). It includes, beyond the
+obvious: Orbit defaults used (no invented values), platform identified and profile
+followed, benchmark-route artifacts where applicable, and the `<OrbitInspector />`
+mount rule for generated prototypes (§2.8). This pass is a **pre-flight, not the
+review** — the design-reviewer owns the verdict in a fresh context. Fix what fails
+before presenting; never present partial work as done.
+
+### 6. Report
+State plainly: which contract was used, which states/variants were implemented, the
+render-verify evidence, any deviations and why, and anything the contract was silent on
+that you had to decide.
 
 ## Hard stops
 - A request to "just make it look nice" without tokens → redirect to tokens.
 - A new component with no contract → write the contract first.
+- A token the design needs that doesn't exist → **stop; propose it as a governed change
+  with a documented derivation (2026-07-17 hover-token precedent) — never invent the
+  value inline.**
 - A conflict between the request and `AGENTS.md` rules → stop and ask.
 
+## On correction
+When a human corrects an assumption this skill made, append the lesson to
+`design-brain/lessons/INBOX.md` (`AGENTS.md` §6) before continuing — corrections that
+stay in the conversation are lost.
+
 ## References
-- Contract template: `../../components/_TEMPLATE.md`
-- Token governance: `../../tokens.md`
-- Anti-patterns to avoid: `../../anti-patterns.md`
+- Contract template: `design-brain/components/_TEMPLATE.md`
+- Token governance: `design-brain/tokens.md`
+- Anti-patterns to avoid: `design-brain/anti-patterns.md`
+- Storybook + render-verification: `design-brain/storybook.md`
 
 <!-- graph-links:start — generated by tools/gen_graph_links.py; do not hand-edit -->
 ## Vault graph
-[[AGENTS|AGENTS]] · [[design-brain/accessibility|accessibility]] · [[design-brain/anti-patterns|anti-patterns]] · [[design-brain/components/_TEMPLATE|components _TEMPLATE]] · [[design-brain/motion|motion]] · [[design-brain/tokens|tokens]] · [[design-brain/ux-copy|ux-copy]]
+[[AGENTS|AGENTS]] · [[design-brain/accessibility|accessibility]] · [[design-brain/anti-patterns|anti-patterns]] · [[design-brain/components/_TEMPLATE|components _TEMPLATE]] · [[design-brain/defaults|defaults]] · [[design-brain/lessons/INBOX|lessons INBOX]] · [[design-brain/motion|motion]] · [[design-brain/storybook|storybook]] · [[design-brain/tokens|tokens]] · [[design-brain/ux-copy|ux-copy]]
 <!-- graph-links:end -->

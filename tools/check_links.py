@@ -160,10 +160,17 @@ def check_manifest() -> list[tuple[str, str]]:
         return [(src, f"invalid JSON: {exc}")]
 
     broken: list[tuple[str, str]] = []
+    task_keys = set(data.get("tasks", {}))
     for key, task in data.get("tasks", {}).items():
         for ref in task.get("load", []):
             if not manifest_path_ok(ref):
                 broken.append((src, f"tasks.{key}.load -> {ref}"))
+        # then: chains must point at real task keys, or a pipeline silently
+        # dead-ends at handoff (folder_defaults.load_when values are conceptual
+        # tags, not task keys — deliberately not validated here).
+        for follow in task.get("then", []):
+            if follow not in task_keys:
+                broken.append((src, f"tasks.{key}.then -> {follow} (no such task key)"))
         agent = task.get("agent")
         if agent and not (ROOT / "design-brain" / "agents" / f"{agent}.md").is_file():
             broken.append((src, f"tasks.{key}.agent -> {agent} (no agent file)"))

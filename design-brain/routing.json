@@ -14,9 +14,24 @@
         "design-brain/examples/<nearest>.md",
         "design-brain/accessibility.md",
         "design-brain/motion.md",
-        "design-brain/ux-copy.md"
+        "design-brain/ux-copy.md",
+        "design-brain/storybook.md",
+        "design-brain/anti-patterns.md",
+        "design-brain/components/_TEMPLATE.md"
       ],
-      "then": ["design-review"]
+      "then": ["write-stories", "design-review"]
+    },
+    "write-stories": {
+      "agent": "story-author",
+      "model": "sonnet",
+      "skill": "write-stories",
+      "load": [
+        "design-brain/storybook.md",
+        "design-brain/components/<name>.md",
+        "design-brain/tokens.md",
+        "design-brain/defaults.md"
+      ],
+      "then": ["extract-contract"]
     },
     "build-screen": {
       "agent": "screen-builder",
@@ -32,7 +47,12 @@
         "design-brain/components/<used>.md",
         "design-brain/examples/<nearest-flow>.md",
         "discovery/<initiative>.md",
-        "design-brain/anti-patterns.md"
+        "design-brain/anti-patterns.md",
+        "design-brain/tokens.md",
+        "design-brain/accessibility.md",
+        "design-brain/motion.md",
+        "design-brain/ux-copy.md",
+        "design-brain/patterns/_TEMPLATE.md"
       ],
       "then": ["design-review"]
     },
@@ -42,8 +62,12 @@
       "skill": "extract-contract",
       "load": [
         "design-brain/components/_TEMPLATE.md",
+        "design-brain/patterns/_TEMPLATE.md",
         "design-brain/tokens.md",
-        "design-brain/components/data-table.md"
+        "design-brain/accessibility.md",
+        "design-brain/storybook.md",
+        "design-brain/components/data-table.md",
+        "design-brain/components/README.md"
       ],
       "then": []
     },
@@ -53,10 +77,15 @@
       "skill": "port-to-orbit",
       "load": [
         "design-brain/platforms/<platform>.md",
+        "design-brain/platforms/<platform>-visual-truth.md",
         "design-brain/tokens.md",
         "design-brain/defaults.md",
         "design-brain/components/<used>.md",
-        "design-brain/anti-patterns.md"
+        "design-brain/patterns/<target>.md",
+        "design-brain/accessibility.md",
+        "design-brain/ux-copy.md",
+        "design-brain/anti-patterns.md",
+        "design-brain/storybook.md"
       ],
       "then": ["design-review"]
     },
@@ -75,7 +104,10 @@
         "design-brain/ux-copy.md",
         "design-brain/interaction-defaults.md",
         "design-brain/platforms/<platform>.md",
-        "design-brain/platforms/<platform>-visual-truth.md"
+        "design-brain/platforms/<platform>-visual-truth.md",
+        "design-brain/defaults.md",
+        "design-brain/storybook.md",
+        "_benchmarks/accessibility-artifact-process.md"
       ],
       "fresh_context": true,
       "then": []
@@ -85,7 +117,9 @@
       "model": "opus",
       "skill": null,
       "load": [
-        "_benchmarks/<rubric>.md"
+        "_benchmarks/<rubric>.md",
+        "_benchmarks/scorecard-template.md",
+        "_benchmarks/ux-scorecard-template.md"
       ],
       "fresh_context": true,
       "blind": true,
@@ -109,7 +143,10 @@
       "load": [
         "design-brain/lessons/INBOX.md",
         "_review/Parked Items.md",
-        "_review/Maintenance Workflow.md"
+        "_review/Maintenance Workflow.md",
+        "_review/Governance.md",
+        "design-brain/routing.json",
+        "AGENTS.md"
       ],
       "then": []
     },
@@ -120,6 +157,7 @@
       "load": [
         "design-brain/brief-contract.md",
         "discovery/briefs/_TEMPLATE.md",
+        "discovery/briefs/README.md",
         "design-brain/platforms/<platform>.md"
       ],
       "then": ["brief-review"]
@@ -143,7 +181,8 @@
       "load": [
         "design-brain/platforms/<platform>.md",
         "discovery/briefs/<brief>.md",
-        "design-brain/principles.md"
+        "design-brain/principles.md",
+        "discovery/<initiative>.md"
       ],
       "then": ["port-prototype"]
     }

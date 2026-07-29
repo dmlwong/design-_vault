@@ -127,7 +127,7 @@
     {v:"orbit-client-connected-platform",label:"Orbit / Client Connected Platform (external)"},
     {v:"both",label:"Both"}
   ];
-  var SURFACES=["ClauseIQ","MarketIQ","RFP Analytics","RFP Builder","Other / shared"];
+  var SURFACES=["ClauseIQ","MarketIQ","RFP Analytics","RFP Builder","Connected Platform initiative / governance","Other / shared"];
   var JUNK=["n/a","na","tbd","tba","-","--","none","test","asdf","xxx"];
 
   // group: [title, desc], fields config
@@ -140,7 +140,7 @@
     ]},
     {key:"A",title:"Which corner of Efficio",desc:"Tells the vault which context to load.",fields:[
       {id:"platform",label:"Platform",type:"select",req:true,options:PLATFORMS.map(function(p){return {v:p.v,t:p.label};})},
-      {id:"surface",label:"Surface / feature area",type:"select",req:true,options:SURFACES.map(function(s){return {v:s,t:s};})}
+      {id:"surface",label:"Surface / feature area",type:"select",req:true,hint:"If Other: name the concrete surface in the problem statement — an unresolvable surface fails the gate.",options:SURFACES.map(function(s){return {v:s,t:s};})}
     ]},
     {key:"B",title:"The problem",desc:"The heart of the brief — what hurts, and why now.",fields:[
       {id:"problem",label:"Problem statement",type:"textarea",req:true,min:20,

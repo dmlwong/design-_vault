@@ -158,15 +158,17 @@ works and a tuned set of principles — *now* it's worth scaling.
    ```bash
    .claude/skills/component-contract
    .claude/skills/extract-contract
+   .claude/skills/write-stories
    .claude/skills/port-to-orbit
-   .claude/agents/design-reviewer.md
+   .claude/skills/explore
+   .claude/agents/design-reviewer.md   (plus the rest of design-brain/agents/)
    ```
 3. Place the same skills in your Codex skills location if you want them available as
    named Codex skills outside this vault.
 4. Add real port-skill reference files when available: component mapping, token
    translation, and validation checklist.
 
-**Verify (Claude Code):** `/skills` lists `component-contract` and `port-to-orbit`.
+**Verify (Claude Code):** `/skills` lists all five vault skills (`component-contract`, `extract-contract`, `write-stories`, `port-to-orbit`, `explore`).
 
 ---
 

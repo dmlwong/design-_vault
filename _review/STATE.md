@@ -4,7 +4,7 @@ status: in-review
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-28
 maturity_score: 0
 tags: [orbit, design-brain, state, resume, handoff]
 ---
@@ -58,9 +58,9 @@ tags: [orbit, design-brain, state, resume, handoff]
 ## 🧭 Snapshot of the brain
 - **Always-on:** `AGENTS.md` (9 rules, routing table, Definition of Done) ← `CLAUDE.md` imports it.
 - **Reference layer** (`design-brain/`): 12 component contracts, 11 page patterns, golden examples
-  with real code, 2 platform profiles + visual-truth notes, 3 skills, lovable projections.
+  with real code, 2 platform profiles + visual-truth notes, 5 skills, lovable projections.
 - **Orchestration layer** (added 2026-07-17, in-review): `orchestration.md` doctrine,
-  8-agent roster in `agents/` with per-agent model tiers, machine-readable
+  11-agent roster in `agents/` with per-agent model tiers (incl. the 2026-07-21 intake pair and 2026-07-28 story-author), machine-readable
   `routing.json` (CI-checked), `lessons/INBOX.md` correction capture, frontmatter lint
   + weekly staleness CI. See `_review/2026-07-17-orchestration-and-optimisation-proposal.md`.
   **Dry run passed 2026-07-17** (`_review/2026-07-17-orchestration-dry-run.md`):
@@ -75,8 +75,13 @@ tags: [orbit, design-brain, state, resume, handoff]
   `claude/storybook-setup`) and the `extract-contract` upstream stream was proven blind.
   **Promoted `in-review → stable`:** `orchestration.md`, `context-scout`,
   `component-builder`, `contract-extractor` (design-reviewer already stable).
-  **Still `in-review`** (not yet exercised): `screen-builder`, `porter`,
-  `benchmark-judge`, `vault-librarian`.
+  **Still `in-review`:** `screen-builder` (exercised 2026-07-17 on the Commentary
+  prototype — see `Parked Items.md`), `porter`, `benchmark-judge`, `vault-librarian`.
+  **2026-07-28 addendum (see git log for detail):** Storybook merged to the component
+  repo's `main` with its first CI + published GitHub Pages instance; vault health now
+  reports build status + story coverage (1/52); intake pipeline piloted 2026-07-21;
+  agents/skills hardened from the three-audit review (render-verify, write-stories
+  task, reviewer severity classes).
 - **Judgment layer:** `interaction-defaults.md` #1–#8 (structure) validated; #9–#13 (craft) in cycle-2 above.
 - **Maturity:** ~82–88/100.
 

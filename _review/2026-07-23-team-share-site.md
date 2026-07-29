@@ -23,7 +23,8 @@ The site is only the surfaces that are **safe on an anyone-with-the-link URL**:
 
 | On the site | Not on the site |
 | ----------- | --------------- |
-| The hub (`index.html`) | One-off concept prototypes (archived) |
+| The entry page (`index.html`) — orb + Enter | One-off concept prototypes (archived) |
+| The tool hub (`tools.html`) | |
 | Concept Brief Intake (`intake-form.html`) | Real product-surface names (sanitised out) |
 | Vault Health (`health.html`, already sanitized) | The company name (sanitised out) |
 | Run the intake pilot (`pilot-playbook.html`) | Internal initiative names in worked examples |
@@ -82,7 +83,7 @@ repo. It stays **dormant until a token is set**, so nothing is public by acciden
    workflow on `main`.
 
 To preview locally without any of this: `python3 tools/build_site.py --out site --public`
-and open `site/index.html`.
+and open `site/index.html` (the entry page — Enter leads to `site/tools.html`).
 
 ## Changing the site
 

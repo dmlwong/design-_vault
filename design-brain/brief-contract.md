@@ -1,10 +1,10 @@
 ---
 type: governance
-status: draft
+status: in-review
 owner: design-system
 surfaces: [shared]
 source: specified
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-28
 maturity_score: 0
 tags: [orbit, design-brain, intake, brief, governance, explore]
 ---
@@ -69,6 +69,10 @@ brief does not give enough to judge is a FAIL (missing is not passing).
      Until the Efficio Context Pack lands, the reviewer judges *whether feasibility was
      considered*, and says plainly when it cannot verify buildability.
 8. **Context sufficiency.** The vault (or the brief) supplies enough to build well.
+   A surface of “Other” passes only when the brief body names the concrete surface;
+   an unresolvable surface is a criterion-8 failure — and if no form option nor
+   platform profile could have matched it, flag the *form or vault* gap, not the author
+   (2026-07-21 pilot).
    - Red flag: needs context the vault lacks → the reviewer routes a gap to the Context
      Pack backlog rather than guessing.
 
