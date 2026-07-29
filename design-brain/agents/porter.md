@@ -79,6 +79,12 @@ source — the same convention `design-brain/skills/port-to-orbit/SKILL.md` uses
 benchmark-proven rules. A trap with no citation is a guess, and guesses do not belong in
 an agent that others trust.
 
+## Evidence base
+Every trap above comes from a **single port** — the 2026-06-15 Lovable port and its review.
+One prototype, one reviewer, one source repo. What would strengthen it: a second port from a
+different generator, which is the only way to tell a Lovable-specific defect from a porting
+defect.
+
 ## Handoff & escalation
 - Hand to `design-reviewer` in a fresh context.
 - New components created by the port need stories — route `write-stories` for each, or

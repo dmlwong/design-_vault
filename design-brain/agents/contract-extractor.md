@@ -72,6 +72,12 @@ source — the same convention `design-brain/skills/port-to-orbit/SKILL.md` uses
 benchmark-proven rules. A trap with no citation is a guess, and guesses do not belong in
 an agent that others trust.
 
+## Evidence base
+The traps above rest on the `data-table` precedent and the 2026-07-03 audit; **no scored
+extraction run exists**. What would strengthen it most is the contrast the vault cannot
+currently draw: an extraction where stories exist against one where they don't, scored the
+same way — the whole story-precondition rule is currently reasoning, not measurement.
+
 ## Handoff & escalation
 - Output goes to the owner (or the orchestrator's review step) — extraction is complete
   only when a human has scanned the gap report.

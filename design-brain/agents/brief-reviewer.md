@@ -80,6 +80,12 @@ A single FAIL means the verdict is not READY. Record the verdict in the brief's
 `## Gate log`. Context gaps feed the Efficio Context Pack — the same maintenance loop
 design-reviewer's "contract gaps" feed.
 
+## Evidence base
+The traps above come from the single live intake pilot (2026-07-21) and reference it in prose
+rather than by path — one brief, one session. What would strengthen it: a second pilot with a
+different stakeholder, and recording those outcomes under `_benchmarks/results/` so the traps
+cite a record rather than a memory.
+
 ## Handoff & escalation
 - **Ready** → hand to the `explore` skill (`design-brain/skills/explore/SKILL.md`).
 - **Needs work** → back to the requester with the gaps; they fix in the intake form

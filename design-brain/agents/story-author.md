@@ -62,6 +62,12 @@ source — the same convention `design-brain/skills/port-to-orbit/SKILL.md` uses
 benchmark-proven rules. A trap with no citation is a guess, and guesses do not belong in
 an agent that others trust.
 
+## Evidence base
+**The thinnest of the builders.** Its traps are derived from doctrine, not from a recorded
+run — the agent has been exercised once, on `Button`, and that run produced no scorecard. What
+would strengthen it: a scored story-set run, particularly on a component with density and
+theme variation, where the recorded failures cluster.
+
 ## Handoff & escalation
 - New or contract-less component → hand to `extract-contract` so the contract is derived
   from the stories you just made observable.

@@ -76,6 +76,13 @@ source — the same convention `design-brain/skills/port-to-orbit/SKILL.md` uses
 benchmark-proven rules. A trap with no citation is a guess, and guesses do not belong in
 an agent that others trust.
 
+## Evidence base
+The traps above rest on one scored A/B (`_benchmarks/results/2026-06-23-claude-stress-test-cp-research-card.md`)
+and two build-trial records. **This is the best-evidenced builder, and it is still one
+scored run.** What would strengthen it: a scored result from any future component build,
+and the Chip hover outcome once the owner picks between the parked options
+(`_review/Parked Items.md`).
+
 ## Handoff & escalation
 - Hand to `design-reviewer` in a **fresh context** — never review your own build.
 - After **2 failed review loops** on the same blockers, stop; the contract likely has a

@@ -76,6 +76,12 @@ source — the same convention `design-brain/skills/port-to-orbit/SKILL.md` uses
 benchmark-proven rules. A trap with no citation is a guess, and guesses do not belong in
 an agent that others trust.
 
+## Evidence base
+The traps above cite doctrine and one dated incident; **no scored screen build exists**. The
+UX scorecard (`_benchmarks/ux-scorecard-template.md`) was written precisely because compliance
+scoring missed what this agent gets wrong, and it has never been run against a screen this
+agent produced. What would strengthen it: one screen scored on both rubrics.
+
 ## Handoff & escalation
 - Hand to `design-reviewer` in a fresh context; multi-dimension parallel review is
   appropriate for full screens (`orchestration.md`).

@@ -321,6 +321,7 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
 
     `desc` is rendered on the private dashboard only (see `_doc_summary`).
     """
+    traps = agent_traps()
     by_type: dict[str, list[Path]] = {}
     for path in docs:
         fm = lf.parse_frontmatter(path)
@@ -338,7 +339,10 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
     agents = sorted((ROOT / "design-brain" / "agents").glob("*.md"))
     skills = sorted((ROOT / "design-brain" / "skills").glob("*/SKILL.md"))
     inv: dict[str, list[dict]] = {
-        "Agents": items(agents, lambda p: p.stem),
+        # Agent rows carry their trap/evidence counts so the private drawer can
+        # show which agents have accumulated failure knowledge and which haven't.
+        "Agents": [{**it, "traps": traps.get(it["name"])}
+                   for it in items(agents, lambda p: p.stem)],
         "Skills": [
             {"name": (fm := lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
              "status": None,
@@ -396,6 +400,36 @@ BENCHMARK_RESULTS = ROOT / "_benchmarks" / "results"
 TRAPS_HEADING = re.compile(r"^## .*\btraps\b.*$", re.I | re.M)
 TRAP_BULLET = re.compile(r"^- ", re.M)
 CITED_FILE = re.compile(r"`([^`]+\.md)`")
+
+
+def agent_traps() -> dict[str, dict]:
+    """Per-agent trap count and evidence base, keyed by agent stem.
+
+    `runs` counts citations that resolve to a file in `_benchmarks/results/` —
+    a scored run. `sources` counts every distinct cited file, which includes
+    doctrine files and dated incident records. The distinction matters: a trap
+    citing a scorecard is stronger evidence than one citing a rule, and today
+    most traps are the latter.
+    """
+    results = {p.name for p in BENCHMARK_RESULTS.glob("*.md")} \
+        if BENCHMARK_RESULTS.is_dir() else set()
+    out: dict[str, dict] = {}
+    for path in sorted(AGENTS_DIR.glob("*.md")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        head = TRAPS_HEADING.search(text)
+        if not head:
+            out[path.stem] = {"traps": 0, "sources": 0, "runs": 0}
+            continue
+        rest = text[head.end():]
+        nxt = re.search(r"^## ", rest, re.M)
+        section = rest[: nxt.start()] if nxt else rest
+        cited = {Path(c).name for c in CITED_FILE.findall(section)}
+        out[path.stem] = {
+            "traps": len(TRAP_BULLET.findall(section)),
+            "sources": len(cited),
+            "runs": len(cited & results),
+        }
+    return out
 
 
 def trap_coverage() -> dict:
@@ -810,6 +844,12 @@ STYLE = """
   /* One-line description under each drawer item — private dashboard only.
      A list of bare slugs says what exists but never what any of it is. */
   .items li .dsc{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.45}
+  /* Agent evidence base — private drawer only. */
+  .items li .ev{grid-column:1/-1;font-size:10.5px;font-weight:650;letter-spacing:.02em;
+    text-transform:uppercase;padding:2px 7px;border-radius:999px;justify-self:start;
+    border:1px solid var(--line);color:var(--muted)}
+  .items li .ev.ok{color:var(--stable);border-color:color-mix(in srgb,var(--stable) 40%,var(--line))}
+  .items li .ev.thin{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
   @media (prefers-reduced-motion:reduce){
     .kpi-btn,.kpi-btn:hover,#shell,.drawer{transition:none}
     body.drawer-open .drawer{transition:none}}
@@ -999,8 +1039,24 @@ def _panel_src(label: str, inventory: dict, *, public: bool) -> str:
         desc = "" if public or not it.get("desc") else (
             f'<span class="dsc">{html.escape(it["desc"])}</span>')
         pill = "" if uniform else _status_pill(it["status"])
+        # Agent evidence base, private only. "runs" are scored benchmark results;
+        # "sources" also counts doctrine files and dated incident records, so the
+        # two numbers differing is the point — it shows how much of an agent's
+        # knowledge rests on a measured run rather than a rule.
+        ev = ""
+        t = it.get("traps")
+        if t is not None and not public:
+            if not t["traps"]:
+                ev = '<span class="ev none">no traps yet</span>'
+            else:
+                cls = "thin" if not t["runs"] else "ok"
+                runs = (f'{t["runs"]} scored run{"s" if t["runs"] != 1 else ""}'
+                        if t["runs"] else "no scored run")
+                ev = (f'<span class="ev {cls}">{t["traps"]} traps · '
+                      f'{t["sources"]} source{"s" if t["sources"] != 1 else ""} · '
+                      f'{runs}</span>')
         return (f'<li><span class="nm">{html.escape(it["name"])}</span>'
-                f'{pill}{desc}</li>')
+                f'{pill}{desc}{ev}</li>')
 
     items = "".join(row(it) for it in entries)
     return (f'<div class="panel-src" data-area="{html.escape(label)}" '
@@ -1338,17 +1394,21 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     tr = scanned.get("traps") or {}
     traps_note = ""
     if tr.get("traps") and not public:
+        per = agent_traps()
+        thin = sorted(n for n, d in per.items() if d["traps"] and not d["runs"])
+        named = (f" Resting on no scored run yet: "
+                 + ", ".join(f"<b>{html.escape(n)}</b>" for n in thin) + "."
+                 if thin else " Every agent with traps cites at least one scored run.")
         unmined = tr.get("unmined", 0)
-        gap = (f" They are only as good as the evidence beneath them, and "
-               f"<b>{unmined}</b> of <b>{tr['results']}</b> recorded benchmark results have "
-               f"not yet produced one — unmined evidence, not a defect. Each agent's "
-               f"<b>Source-Required Follow-Up</b> section says where the next trap goes."
-               if unmined else
-               " Every recorded benchmark result has been mined for traps.")
+        gap = (f" <b>{unmined}</b> of <b>{tr['results']}</b> recorded benchmark results have "
+               f"not yet produced a trap — unmined evidence, not a defect."
+               if unmined else " Every recorded benchmark result has been mined.")
         traps_note = (
             f'<p class="cap" style="margin-top:14px"><b>{tr["traps"]}</b> agent traps — '
             f'recorded failure modes stated inline on the agent that makes them — across '
-            f'<b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b> agents.{gap}</p>')
+            f'<b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b> agents. They are only as good '
+            f'as the evidence beneath them.{named}{gap} Open an agent above to see its base; '
+            f'each carries an <b>Evidence base</b> section saying what would strengthen it.</p>')
 
     lessons = scanned.get("lessons") or []
     lessons_tile = ""
