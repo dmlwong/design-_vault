@@ -143,23 +143,32 @@ jobs:
           # nothing unencrypted is ever written into the published tree.
           python3 tools/build_site.py --out site --public --protected-out /tmp/protected
 
-          # Encrypt each staged page into the published tree. Fail closed: without
-          # SITE_PASSPHRASE the encrypter exits non-zero and the page is simply
-          # absent from the site. Never add a fallback that publishes it in the
-          # clear — that is the one outcome this whole mechanism exists to prevent.
+          # Without a usable SITE_PASSPHRASE, build_site.py omits the protected
+          # page from the site AND from the nav and hub, so the site stays
+          # self-consistent — no link points at a page that isn't there.
+          if [ -z "${SITE_PASSPHRASE:-}" ]; then
+            echo "::warning::SITE_PASSPHRASE is not set — the protected page(s) are omitted" \
+                 "from the published site, including from its nav and hub, so nothing links" \
+                 "to a missing page. Add the repository secret to publish them."
+          fi
+
+          # Encrypt each staged page into the published tree. build_site.py only
+          # stages a page once it has confirmed a usable passphrase, so anything
+          # present here is expected to encrypt: a failure now is a real fault, not
+          # the absent-secret path. Fail the step rather than publish a site whose
+          # nav advertises a page we just deleted. Never add a fallback that writes
+          # it in the clear — that is the one outcome this mechanism exists to stop.
           if [ -d /tmp/protected ]; then
-            if [ -z "${SITE_PASSPHRASE:-}" ]; then
-              echo "::warning::SITE_PASSPHRASE is not set — the protected page(s) will be" \
-                   "omitted from the published site. Add the repository secret to publish them."
-            fi
             for f in /tmp/protected/*.html; do
               [ -e "$f" ] || continue
               name=$(basename "$f")
               if node tools/encrypt_page.mjs "$f" "site/$name" "Vault Health"; then
                 echo "Encrypted $name into the published site."
               else
-                echo "::warning::$name not published (encryption unavailable)."
                 rm -f "site/$name"
+                echo "::error::$name was staged with a passphrase present but encryption" \
+                     "failed. Refusing to publish a site whose nav links to it."
+                exit 1
               fi
             done
             rm -rf /tmp/protected

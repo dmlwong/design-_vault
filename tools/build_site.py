@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
 from pathlib import Path
 
@@ -145,6 +146,32 @@ def sanitise(text: str) -> str:
     for needle, repl in SANITISE:
         text = text.replace(needle, repl)
     return text
+
+
+# Minimum passphrase length, kept identical to the check in tools/encrypt_page.mjs
+# (which exits 4 below this). The two must agree: if this were laxer, the nav would
+# advertise a page the encrypter then refuses to produce.
+PROTECTED_MIN_PASSPHRASE = 16
+
+
+def protected_publishable(protected_out: Path | None) -> bool:
+    """Can a `protected` page actually reach the published site?
+
+    Two independent requirements, and both are the caller's to satisfy:
+
+    - a staging directory to put the plaintext in (``--protected-out``), and
+    - a usable ``SITE_PASSPHRASE``, since encryption is what makes publishing it
+      acceptable at all.
+
+    This deliberately mirrors ``tools/encrypt_page.mjs``'s own preconditions rather
+    than trying to predict its result, so the nav, the hub and the encrypter reach
+    the same verdict from the same inputs. Reads only the length of the secret —
+    never its value, and never logs it.
+    """
+    if protected_out is None:
+        return False
+    passphrase = os.environ.get("SITE_PASSPHRASE") or ""
+    return len(passphrase) >= PROTECTED_MIN_PASSPHRASE
 
 
 def assert_clean(name: str, text: str) -> None:
@@ -562,6 +589,25 @@ def build(out: Path, public: bool, protected_out: Path | None = None) -> list[st
     out.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
 
+    # Will the protected pages actually reach the site? The nav and the hub have to
+    # agree with the answer, or the site advertises links that 404. Both are
+    # generated from the manifest, which lists every page whether or not it can be
+    # published — so filter it once, here, and render everything from the result.
+    # Non-public builds keep everything: the internal preview always shows the
+    # protected pages.
+    #
+    # Omitting rather than dimming is the owner's decision (2026-07-30): a site with
+    # one fewer row looks complete, whereas a visible dead end reads as breakage.
+    # It self-heals — the entry returns as soon as the secret exists.
+    will_publish_protected = protected_publishable(protected_out)
+    visible = [t for t in manifest["tools"]
+               if will_publish_protected or not (public and t.get("protected"))]
+    if len(visible) != len(manifest["tools"]):
+        hidden = [t["href"] for t in manifest["tools"] if t not in visible]
+        print(f"  ! omitting from nav and hub (will not be published): "
+              f"{', '.join(hidden)}")
+    nav_manifest = {**manifest, "tools": visible}
+
     # Entry page. Chrome is injected with an EMPTY nav: the whole point of a
     # front door is that Enter is the only way through it, so a nav bar offering
     # five bypasses would defeat it. It still gets the token skin, so it tracks
@@ -574,7 +620,7 @@ def build(out: Path, public: bool, protected_out: Path | None = None) -> list[st
     written.append("index.html")
 
     # Tool hub — everything the entry page used to sit on top of.
-    hub = inject_chrome(render_hub(manifest), render_nav(manifest, HUB_HREF))
+    hub = inject_chrome(render_hub(nav_manifest), render_nav(nav_manifest, HUB_HREF))
     if public:
         hub = sanitise(hub)
         assert_clean(HUB_HREF, hub)
@@ -590,7 +636,7 @@ def build(out: Path, public: bool, protected_out: Path | None = None) -> list[st
                 "Generate it first (e.g. `python3 tools/vault_health.py` writes vault-health.html)."
             )
         text = inject_chrome(src.read_text(encoding="utf-8"),
-                             render_nav(manifest, tool["href"]),
+                             render_nav(nav_manifest, tool["href"]),
                              tool["title"])
         if public and tool.get("protected"):
             # A protected page deliberately carries what SANITISE would strip —
@@ -608,14 +654,23 @@ def build(out: Path, public: bool, protected_out: Path | None = None) -> list[st
             # Fail closed either way: no staging directory and no passphrase means
             # no page. There is deliberately no branch that writes it unencrypted
             # into `out`.
-            if protected_out is not None:
+            #
+            # And when it cannot be encrypted, do not stage it at all. Staging is
+            # only ever a handoff to the encrypter, so writing the plaintext out
+            # when nothing can consume it just puts the product names, the owner's
+            # name and the repo paths on disk for no purpose.
+            if will_publish_protected:
                 protected_out.mkdir(parents=True, exist_ok=True)
                 (protected_out / tool["href"]).write_text(text, encoding="utf-8")
                 print(f"  ~ {tool['href']} staged for encryption in "
                       f"{protected_out} (never written to the published tree)")
-            else:
+            elif protected_out is None:
                 print(f"  ~ {tool['href']} dropped (protected, and no "
                       f"--protected-out given)")
+            else:
+                print(f"  ~ {tool['href']} dropped (protected, and SITE_PASSPHRASE "
+                      f"is unset or under {PROTECTED_MIN_PASSPHRASE} characters — "
+                      f"nothing could encrypt it)")
             continue
         if public:
             text = sanitise(text)
