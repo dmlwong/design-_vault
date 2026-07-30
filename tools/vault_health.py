@@ -1173,6 +1173,27 @@ STYLE = """
     text-decoration-thickness:1px;font-weight:600}
   .cap a:hover{text-decoration-thickness:2px}
   .cap a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  /* "What needs attention" — the actionable backlog. Each row is a count, what it
+     is, and where to go. Anchor jumps clear the injected site nav on the published
+     copy (~52px) without disturbing the standalone page, which has no sticky header. */
+  section[id],div.anchor{scroll-margin-top:64px}
+  .todo{list-style:none;margin:0;padding:0}
+  .todo-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:15px;padding:14px 2px}
+  .todo-row+.todo-row{border-top:1px solid var(--line)}
+  .todo-row .tn{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;
+    min-width:1.5em;text-align:right;letter-spacing:-.02em;line-height:1}
+  .todo-row.watch .tn{color:var(--warn)}
+  .todo-row.soft .tn{color:var(--muted)}
+  .todo-row .tt{min-width:0}
+  .todo-row .tt b{font-size:13.5px;font-weight:600;display:block}
+  .todo-row .td{display:block;color:var(--muted);font-size:12px;margin-top:2px;line-height:1.5}
+  .todo-row .tgo{white-space:nowrap;font-size:12px;font-weight:600;color:var(--accent);
+    text-decoration:none}
+  .todo-row .tgo:hover{text-decoration:underline;text-underline-offset:2px}
+  .todo-row .tgo:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  @media (max-width:560px){
+    .todo-row{grid-template-columns:auto 1fr;gap:6px 12px}
+    .todo-row .tgo{grid-column:2;justify-self:start;margin-top:3px}}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -1541,6 +1562,108 @@ def _shares(s: dict, total: int) -> dict[str, int]:
     return out
 
 
+def attention_items(scanned: dict, inv: dict, cov: dict | None) -> list[dict]:
+    """The open work the page's numbers add up to, most consequential first.
+
+    Every entry is derived from a figure already computed elsewhere on the page —
+    this section does not measure anything new, it collects what is scattered
+    across five other sections into one prioritised, actionable list. A zero-count
+    gap is omitted rather than shown as "0 done", so the list only ever names real
+    outstanding work. Order is fixed by impact (coverage first, housekeeping last),
+    not by count, so a large tidy-up number never outranks a small structural gap.
+    """
+    items: list[dict] = []
+    if cov and cov.get("components"):
+        specs = cov["components"] - cov["contracts"]
+        if specs > 0:
+            items.append({
+                "n": specs, "tone": "watch",
+                "title": "components have no written spec yet",
+                "detail": "The biggest coverage gap — each needs a contract extracted "
+                          "from its code before an agent can build to it reliably.",
+                "where": ("#coverage", "How much is covered")})
+        stories = cov["contracts"] - cov["contracts_with_stories"]
+        if stories > 0:
+            items.append({
+                "n": stories, "tone": "watch",
+                "title": "spec'd components aren't in Storybook",
+                "detail": "Until a story exists, each spec rests on source-reading "
+                          "alone. The write-stories skill is the how.",
+                "where": ("#coverage", "How much is covered")})
+    tr = scanned.get("traps") or {}
+    if tr.get("unmined"):
+        items.append({
+            "n": tr["unmined"], "tone": "watch",
+            "title": "scored test results haven't taught an agent anything",
+            "detail": "Each is a recorded win or loss that could become a known "
+                      "mistake on the agent that produced it.",
+            "where": ("#inventory", "the Agents card")})
+    drafts = sum(1 for rows in inv.values() for it in rows if it.get("status") == "draft")
+    if drafts:
+        items.append({
+            "n": drafts, "tone": "soft",
+            "title": "reusable pieces are still drafts",
+            "detail": "Specs and profiles that haven't reached review — the first "
+                      "step toward approved.",
+            "where": ("#settled", "How settled it is")})
+    lessons = scanned.get("lessons") or []
+    if lessons:
+        items.append({
+            "n": len(lessons), "tone": "soft",
+            "title": "captured corrections not yet applied",
+            "detail": "Lessons logged in the inbox that haven't landed in a brain "
+                      "file or on an agent yet.",
+            "where": ("#wrong", "Anything wrong?")})
+    gap = summary_gap(inv)
+    if gap:
+        items.append({
+            "n": len(gap), "tone": "soft",
+            "title": "catalogued items still show an auto-generated summary",
+            "detail": "A hand-written one-liner reads for a newcomer; the fallback "
+                      "is written for someone who already knows the system.",
+            "where": ("#inventory", "What's in here")})
+    if scanned.get("stale"):
+        items.append({
+            "n": len(scanned["stale"]), "tone": "watch",
+            "title": "documents are overdue for a look",
+            "detail": f"Nobody has reviewed these in {STALE_AFTER_DAYS}+ days.",
+            "where": ("#wrong", "Anything wrong?")})
+    if scanned.get("malformed"):
+        items.append({
+            "n": len(scanned["malformed"]), "tone": "watch",
+            "title": "documents have metadata problems",
+            "detail": "The metadata check flags these for a fix.",
+            "where": ("#wrong", "Anything wrong?")})
+    return items
+
+
+def _attention_section(scanned: dict, inv: dict, cov: dict | None) -> str:
+    items = attention_items(scanned, inv, cov)
+    if not items:
+        return (
+            '\n  <section id="attention">\n'
+            '    <h2 class="s-head">What needs attention</h2>\n'
+            '    <p class="s-sub">Nothing outstanding — every gap the page tracks is at '
+            'zero. When one opens, the specific work lands here.</p>\n'
+            '  </section>')
+    rows = "".join(
+        f'<li class="todo-row {it["tone"]}">'
+        f'<span class="tn mono">{it["n"]}</span>'
+        f'<span class="tt"><b>{html.escape(it["title"])}</b>'
+        f'<span class="td">{html.escape(it["detail"])}</span></span>'
+        f'<a class="tgo" href="{it["where"][0]}">{html.escape(it["where"][1])} &rsaquo;</a>'
+        '</li>'
+        for it in items)
+    return (
+        '\n  <section id="attention">\n'
+        '    <h2 class="s-head">What needs attention</h2>\n'
+        '    <p class="s-sub">The open work the measures below add up to, most '
+        'consequential first — each line links to where it lives. Nothing here is '
+        'broken; this is the backlog of making the vault more complete.</p>\n'
+        f'    <div class="panel"><ol class="todo">{rows}</ol></div>\n'
+        '  </section>')
+
+
 def render_body(scanned: dict, history: list[dict], healthy: bool,
                 reasons: list[str] | None = None) -> str:
     a = scanned["areas"]
@@ -1649,6 +1772,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     artifacts = _artifacts_section()
     component_library = _component_library_section(
         date.fromisoformat(scanned["date"]), cov)
+    attention = _attention_section(scanned, inv, cov)
 
     # One sentence that reconciles every denominator on the page. Four numbers
     # (documents / with-status / library / spec'd) previously appeared in four
@@ -1725,7 +1849,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     </details>
   </header>
 
-  <section>
+  <section id="inventory">
     <h2 class="s-head">What's in here</h2>
     <p class="s-sub">The reusable pieces the vault holds. Open any card to see what's in it —
       each entry says what the thing is, and its path in the <b>design-_vault</b> repo so you
@@ -1735,10 +1859,12 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     {traps_note}
   </section>
   <div hidden>{panel_srcs}</div>
+{attention}
 
+  <div id="coverage" class="anchor"></div>
   {component_library}
 
-  <section>
+  <section id="settled">
     <h2 class="s-head">How settled it is</h2>
     <p class="s-sub">Across every document that carries a review state. The vault is still
       being written, so most haven't reached approved — the aim is for the middle bar to
@@ -1752,7 +1878,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     </div>
   </section>
 
-  <section>
+  <section id="wrong">
     <h2 class="s-head">Anything wrong?</h2>
     <p class="s-sub">The ticks run automatically whenever anything changes — they either pass
       or fail. The counters below them are softer: nothing is broken, but a number above zero
