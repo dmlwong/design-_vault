@@ -564,6 +564,20 @@ def build(out: Path, public: bool) -> list[str]:
         text = inject_chrome(src.read_text(encoding="utf-8"),
                              render_nav(manifest, tool["href"]),
                              tool["title"])
+        if public and tool.get("protected"):
+            # A protected page deliberately carries what SANITISE would strip —
+            # product surfaces, the owner's name, repo paths — and is protected by
+            # encryption at publish time instead. So it skips the sanitiser, which
+            # means the guard cannot vouch for it, which means it MUST NOT be
+            # written here in the clear. The encryption step in CI is the only
+            # thing allowed to emit it.
+            #
+            # Fail closed, always: no passphrase means no page. Publishing it
+            # unencrypted "just this once" is the single outcome worth engineering
+            # against, so there is deliberately no fallback branch.
+            print(f"  ~ {tool['href']} withheld from the plaintext build "
+                  f"(protected; emitted only by the encryption step)")
+            continue
         if public:
             text = sanitise(text)
             assert_clean(tool["href"], text)
