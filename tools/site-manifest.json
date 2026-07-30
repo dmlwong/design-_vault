@@ -19,11 +19,13 @@
     {
       "id": "health",
       "title": "Vault Health",
-      "blurb": "The sanitized, auto-updating health of the design brain: how many docs, how mature, which checks pass, how fresh. Refreshes daily.",
+      "blurb": "The auto-updating health of the design brain: what's inside it, how complete it is, which checks pass, and where to find any of it in the repo. Refreshes daily.",
       "href": "health.html",
       "source": "vault-health.html",
       "tag": "Monitor",
-      "nav": "Vault health"
+      "nav": "Vault health",
+      "protected": true,
+      "protected_note": "Carries product-surface names, the owner's name, and repo file paths. Skips SANITISE and is encrypted at publish time with SITE_PASSPHRASE; if that secret is absent the page is omitted entirely rather than published in the clear."
     },
     {
       "id": "playbook",

@@ -96,12 +96,194 @@ CARD_ORDER = ("Agents", "Skills", "Component contracts", "Pattern contracts",
 # 2026-07-29 fresh-eyes review. Renaming it across the vault is a governed
 # vocabulary change; glossing it on first use is not.
 AREA_GLOSS = {
-    "Agents": "AI agents that build & review designs",
-    "Skills": "Guided workflows the team runs",
-    "Component contracts": "Written specs for reusable UI pieces (not commercial contracts)",
-    "Pattern contracts": "Written specs for whole-page layouts",
-    "Examples": "Golden reference screens to build from",
-    "Platform profiles": "The products the vault serves",
+    "Agents": "AI teammates that build and review design work",
+    "Skills": "Step-by-step workflows a person or an agent follows",
+    "Component contracts": "The written spec for one reusable UI piece — a button, a table",
+    "Pattern contracts": "The written spec for a whole page shape — a dashboard, a wizard",
+    "Examples": "Real screens we point at and say: build it like this",
+    "Platform profiles": "Who each product is for, and how it should feel",
+}
+
+# Plain-English one-liners, keyed by slug. Written here rather than in the 59 source
+# documents (owner decision, 2026-07-29) because each document's own opening sentence is
+# written by a practitioner for a practitioner — accurate, and opaque to anyone new.
+#
+# `_doc_summary()` stays the fallback, and `summary_gap()` counts how many items are
+# still on it, so a newly added contract surfaces as "needs a summary" instead of
+# silently rendering insider prose. That is what keeps this dict honest as the vault
+# grows — a hand-written map with no drift signal would rot the way the old explainer
+# artifacts did.
+#
+# House style: say what it IS, then when you would reach for it. No term that the page
+# does not define elsewhere. Two lines maximum.
+SUMMARIES: dict[str, str] = {
+    # --- Agents -------------------------------------------------------------
+    "benchmark-judge":
+        "Scores two versions of the same work without being told which is which, so the "
+        "comparison can't be flattered.",
+    "brief-coach":
+        "Interviews whoever has the idea and helps them write it down properly. It asks "
+        "questions; it never writes the brief for them.",
+    "brief-reviewer":
+        "Reads a finished brief and says whether it's ready to build from — before anyone "
+        "spends time prototyping.",
+    "component-builder":
+        "Builds or fixes one UI component so it matches its written spec exactly.",
+    "context-scout":
+        "Works out which vault files an agent needs before it starts. It looks things up; "
+        "it never designs.",
+    "contract-extractor":
+        "Reads real code and writes the spec that describes it, plus an honest list of what "
+        "the code is missing.",
+    "design-reviewer":
+        "Checks finished work against every rule in the vault and reports what's wrong. It "
+        "reviews; it never fixes.",
+    "porter":
+        "Takes a prototype built somewhere else and rebuilds it properly on our components "
+        "and colours.",
+    "screen-builder":
+        "Assembles a whole page out of components that already exist, following the page "
+        "spec for that shape.",
+    "story-author":
+        "Writes the Storybook entries that show a component in every state, so nobody has to "
+        "read the code to know how it behaves.",
+    "vault-librarian":
+        "Housekeeping: broken links, missing tags, documents nobody has looked at in months.",
+
+    # --- Skills -------------------------------------------------------------
+    "component-contract":
+        "The procedure for building one component to its spec — what to read, what to "
+        "check, when to stop and ask.",
+    "explore":
+        "Turns a rough idea into a clickable prototype fast, deliberately ignoring the "
+        "design system so the idea can be tested before it's made real.",
+    "extract-contract":
+        "The procedure for writing a spec from code that already exists, instead of "
+        "inventing one.",
+    "port-to-orbit":
+        "The procedure for bringing outside UI onto our design system — what maps to what, "
+        "and what to do when nothing matches.",
+    "write-stories":
+        "The procedure for writing a component's Storybook entries so every state is "
+        "visible and nothing is missed.",
+
+    # --- Component contracts ------------------------------------------------
+    "badge-status":
+        "A small label showing status, a count, or a category. Sits inline in text or a "
+        "table cell.",
+    "button":
+        "The standard button, in every size and state. One primary action per screen.",
+    "card-panel":
+        "A bordered box that groups related content. Never nested inside another card.",
+    "chip":
+        "A small removable or selectable tag — filters, categories, scopes. Not for status; "
+        "that's a badge.",
+    "data-table":
+        "The dense table our users live in — many rows, sortable, still readable at high "
+        "row counts.",
+    "dialog":
+        "A window that interrupts the page for one focused decision, then returns you where "
+        "you were.",
+    "drawer":
+        "A side panel for detail or filters without leaving the page. No reusable component "
+        "exists yet — use an overlay.",
+    "input":
+        "A single-line text field with its label, help text, and error state.",
+    "select-combobox":
+        "A dropdown for choosing from a fixed list, single or multiple, with search when the "
+        "list is long.",
+    "status-indicator":
+        "A coloured dot with optional text. Use where a full badge would be too heavy.",
+    "tabs":
+        "Switches between sibling sections of the same page without navigating away.",
+    "toast-notification":
+        "A brief message confirming something finished, without interrupting what you're "
+        "doing.",
+
+    # --- Pattern contracts --------------------------------------------------
+    "analytics-dashboard":
+        "A page of charts and figures that always lets you reach the underlying rows behind "
+        "the numbers.",
+    "config-wizard":
+        "A step-by-step setup screen. Use it when the order matters and each step needs "
+        "checking before the next.",
+    "focus-mode-results":
+        "A full-width results view for dense output — compare, inspect and act without "
+        "losing your place.",
+    "guided-conversational-workflow":
+        "A card-by-card flow where an AI tool does work for you and you review each result "
+        "before moving on.",
+    "home-dashboard":
+        "The landing page of a product: what's happening, what needs you, where to go next. "
+        "Not a marketing page.",
+    "list-detail":
+        "Scan many items on the left, open one on the right, without losing the list.",
+    "lovable-port":
+        "How to rebuild an AI-generated prototype on our design system, based on a port we "
+        "already did and scored.",
+    "review-and-approve-workflow":
+        "For high-stakes sign-off: clear state, an audit trail, and no irreversible clicks.",
+    "settings-form-validation":
+        "Configuration forms where a wrong value has consequences, so validation and review "
+        "come first.",
+    "tool-hub":
+        "A page for choosing between major tools, without becoming a feature advert.",
+    "work-card":
+        "A card showing one piece of work: title, status, key details, actions.",
+
+    # --- Platform profiles --------------------------------------------------
+    "connected-platform":
+        "The internal product our own consultants and delivery teams use. Dense, fast, "
+        "built for long working sessions.",
+    "orbit-client-connected-platform":
+        "The client-facing product. Same system, but clearer guidance and no internal "
+        "shorthand.",
+
+    # --- Examples -----------------------------------------------------------
+    # Keyed by filename, not by the display title shown on the card.
+    "analytics-kpi-chart":
+        "A figures-and-charts page done right: which chart to use, and how to get from a "
+        "number back to the rows behind it.",
+    "button-states":
+        "Every button state in one place — the reference for what hover, focus, disabled and "
+        "loading should look like.",
+    "clauseiq-focus-mode-results":
+        "Our best worked example of a dense results screen, built from real product code.",
+    "connected-platform-clauseiq-contract-wizard-modal":
+        "A large multi-step task inside a modal, and how it stays navigable.",
+    "connected-platform-home-shell-dashboard":
+        "The internal product's landing page and navigation shell.",
+    "connected-platform-initiative-list-table":
+        "A long internal list at working density — the table reference for the internal "
+        "product.",
+    "connected-platform-supplier-tracker-table":
+        "A supplier tracking table: many columns, comparison-heavy, still scannable.",
+    "data-table-dense":
+        "The table reference: dense rows, row selection, and the accessible names each row "
+        "action needs.",
+    "dialog-keyboard":
+        "How a dialog must behave for keyboard users — focus trapping, Escape, and where "
+        "focus returns.",
+    "form-field-validation":
+        "A form field with its label, help text and error state wired up accessibly.",
+    "lovable-initiatives-port":
+        "A prototype from an AI tool rebuilt on our system, scored and recorded. The "
+        "reference for how a port should go.",
+    "orbit-client-delivery-engine-initiative-detail":
+        "A client-facing detail page for one piece of work.",
+    "orbit-client-home-ai-tools-dashboard":
+        "The client product's landing page, and how it differs from the internal one.",
+    "orbit-client-marketiq-guided-workflow":
+        "A client-facing guided flow, from picking a tool to generating output.",
+    "orbit-client-marketiq-research-output-flow":
+        "The whole run of an AI tool end to end — the most common shape in the client "
+        "product, and the only code-backed example of it.",
+    "orbit-client-marketiq-research-output-next-actions":
+        "What a generated result looks like, and what the user can do next with it.",
+    "orbit-client-sourcing-execution-tool-hub":
+        "A client-facing hub for choosing between sourcing tools.",
+    "work-card-research-primer":
+        "One work card done properly, themed entirely through design tokens.",
 }
 
 # Owner attribution. The name is internal-only: the public page names the role, and
@@ -128,12 +310,11 @@ CONTRACT_COMPONENTS = {
     "chip": "Chip",
 }
 
-# Which areas may reveal their item names on the *public* page. Agents, skills,
-# components and patterns are generic design-system vocabulary; examples and
-# platform profiles name real product surfaces, so they stay counts-only.
-PUBLIC_EXPANDABLE = {"Agents", "Skills", "Component contracts", "Pattern contracts"}
-# The private Artifact may expand everything with items (never the Total).
-PRIVATE_EXPANDABLE = PUBLIC_EXPANDABLE | {"Examples", "Platform profiles"}
+# Every area with items opens (never the Total docs card, which has no list).
+# There is one page now: the public/private content split was retired on
+# 2026-07-29 in favour of encrypting the published page, so nothing is withheld.
+EXPANDABLE = {"Agents", "Skills", "Component contracts", "Pattern contracts",
+              "Examples", "Platform profiles"}
 
 # Plain-language names + one-liners for the technical integrity checks.
 #
@@ -280,7 +461,7 @@ def _doc_summary(path: Path, fm: dict | None) -> str:
     under a summary heading -> the first qualifying block anywhere.
 
     Private pages only — a description can name a product surface, and the
-    public build must not carry those. `_panel_src` gates on `public`.
+    page is encrypted at publish time rather than stripped.
     """
     def sentence(s: str) -> str:
         """Markup stripped, first sentence only — full length, so the prose test
@@ -308,6 +489,47 @@ def _doc_summary(path: Path, fm: dict | None) -> str:
     return ""
 
 
+def block_readiness(inventory: dict[str, list[dict]]) -> dict:
+    """Review state across the six cards only — the reusable pieces.
+
+    The vault-wide share is carried by documents nobody builds from (benchmark
+    records, reviews, indexes). Blind review, 2026-07-30: the page reported 28%
+    approved while the material a designer is told to follow was 7% approved, and
+    that gap was derivable but stated nowhere. It is stated now.
+    """
+    counts = {"stable": 0, "in-review": 0, "draft": 0, None: 0}
+    for rows in inventory.values():
+        for it in rows:
+            counts[it.get("status")] = counts.get(it.get("status"), 0) + 1
+    with_status = sum(v for k, v in counts.items() if k)
+    return {"with_status": with_status, "approved": counts["stable"],
+            "pct": round(100 * counts["stable"] / with_status) if with_status else 0}
+
+
+def summary_gap(inventory: dict[str, list[dict]]) -> list[str]:
+    """Items with no hand-written `SUMMARIES` entry, as "Area / name".
+
+    The drift signal for a hand-maintained map. Add a 13th component contract and
+    it appears here immediately, rather than quietly rendering its own opening
+    sentence — which is accurate but written for someone who already knows the
+    system, and is exactly what this dict exists to replace.
+    """
+    return sorted(f"{area} / {it['name']}"
+                  for area, rows in inventory.items()
+                  for it in rows if not it.get("written"))
+
+
+def _summary_key(path: Path) -> str:
+    """Stable `SUMMARIES` key for a document.
+
+    Filename stem for everything except skills, which live at
+    `skills/<slug>/SKILL.md` — there the slug is the parent directory. Keyed off
+    the path rather than the displayed name because examples show a title
+    ("Button In All States") that is not their filename.
+    """
+    return path.parent.name if path.name == "SKILL.md" else path.stem
+
+
 def _example_name(path: Path) -> str:
     heading = _first_heading(path) or path.stem
     for prefix in ("Golden Example: ", "Golden Example — "):
@@ -317,9 +539,12 @@ def _example_name(path: Path) -> str:
 
 
 def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
-    """area -> [{name, status, desc}] sorted, for the drill-down.
+    """area -> [{name, status, desc, path, written}] sorted, for the drill-down.
 
-    `desc` is rendered on the private dashboard only (see `_doc_summary`).
+    `desc` prefers the hand-written `SUMMARIES` entry and falls back to
+    `_doc_summary()`; `written` records which, so `summary_gap()` can report how
+    many items are still on the fallback. `path` is the repo-relative location,
+    derived from the scanned file so it cannot go stale.
     """
     traps = agent_traps()
     by_type: dict[str, list[Path]] = {}
@@ -328,25 +553,30 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
         if fm and fm.get("type"):
             by_type.setdefault(fm["type"], []).append(path)
 
+    def entry(p: Path, name: str, fm: dict, status) -> dict:
+        written = SUMMARIES.get(_summary_key(p))
+        return {"name": name, "status": status,
+                "desc": written or _doc_summary(p, fm),
+                "written": bool(written),
+                "path": p.relative_to(ROOT).as_posix()}
+
     def items(paths: list[Path], namer) -> list[dict]:
         out = []
         for p in paths:
             fm = lf.parse_frontmatter(p) or {}
-            out.append({"name": namer(p), "status": fm.get("status"),
-                        "desc": _doc_summary(p, fm)})
+            out.append(entry(p, namer(p), fm, fm.get("status")))
         return sorted(out, key=lambda d: d["name"].lower())
 
     agents = sorted((ROOT / "design-brain" / "agents").glob("*.md"))
     skills = sorted((ROOT / "design-brain" / "skills").glob("*/SKILL.md"))
     inv: dict[str, list[dict]] = {
-        # Agent rows carry their trap/evidence counts so the private drawer can
-        # show which agents have accumulated failure knowledge and which haven't.
+        # Agent rows carry their trap/evidence counts too, so the drawer can show
+        # which agents have accumulated failure knowledge and which haven't.
         "Agents": [{**it, "traps": traps.get(it["name"])}
                    for it in items(agents, lambda p: p.stem)],
         "Skills": [
-            {"name": (fm := lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
-             "status": None,
-             "desc": _doc_summary(p, fm)}
+            entry(p, (fm := lf.parse_frontmatter(p) or {}).get("name", p.parent.name),
+                  fm, None)
             for p in skills
         ],
         "Component contracts": items(by_type.get("component-contract", []), lambda p: p.stem),
@@ -363,7 +593,7 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
 # frontmatter `type` so the split is computed, never hand-counted — a reader who
 # subtracts 59 from 142 must find the remainder accounted for, not unexplained.
 REST_BUCKETS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("benchmark records", ("benchmark",)),
+    ("benchmark write-ups", ("benchmark",)),
     ("rules and foundations",
      ("foundation", "principle", "token-contract", "tooling-guide", "orchestration",
       "setup-guide", "governance", "visual-truth")),
@@ -844,6 +1074,13 @@ STYLE = """
   /* One-line description under each drawer item — private dashboard only.
      A list of bare slugs says what exists but never what any of it is. */
   .items li .dsc{grid-column:1/-1;font-size:12px;color:var(--muted);line-height:1.45}
+  /* Where to find it in the repo — the line that makes this page actionable. */
+  .items li .loc{grid-column:1/-1;font-size:11px;color:var(--muted);opacity:.85;
+    overflow-wrap:anywhere}
+  .gloss-list{margin:6px 0 0}
+  .gloss-list p{margin:0 0 7px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .gloss-list b{color:var(--ink);font-weight:650}
+  .explain+.explain{margin-top:2px}
   /* Agent evidence base — private drawer only. */
   .items li .ev{grid-column:1/-1;font-size:10.5px;font-weight:650;letter-spacing:.02em;
     text-transform:uppercase;padding:2px 7px;border-radius:999px;justify-self:start;
@@ -892,11 +1129,6 @@ STYLE = """
   /* Answers "what am I looking at?" before any number does. */
   .purpose{margin:10px 0 20px;font-size:14.5px;color:var(--muted);line-height:1.65;
     max-width:64ch}
-  /* Public page: a card whose titles are withheld. Flat and chevron-less so it
-     never reads as an expander that failed to open. */
-  .kpi.inert{background:transparent;box-shadow:none;
-    border-style:dashed;border-color:color-mix(in srgb,var(--line) 80%,transparent)}
-  .kpi.inert .withheld{margin-top:8px;font-size:11px;color:var(--muted);font-style:italic}
   /* Reference prose, one click away. Collapsed it keeps ~190px of grey text from
      sitting between a phone reader and the first number; <details> needs no JS. */
   .explain{margin:14px 0 0}
@@ -990,10 +1222,10 @@ def _status_pill(status: str | None) -> str:
     return f'<span class="pill {cls}">{html.escape(status_label(status))}</span>'
 
 
-def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
+def _card(label: str, count: int, inventory: dict) -> str:
     esc = html.escape(label)
     gloss = html.escape(AREA_GLOSS.get(label, ""))
-    if label in expandable and inventory.get(label):
+    if label in EXPANDABLE and inventory.get(label):
         hint = '<span class="expand-hint"><span class="chev">›</span>Open list</span>'
         return (
             f'<button type="button" class="kpi-btn" data-area="{esc}" '
@@ -1001,23 +1233,17 @@ def _card(label: str, count: int, inventory: dict, expandable: set[str]) -> str:
             f'<span class="n mono">{count}</span>'
             f'<span class="k">{esc}</span><span class="gloss">{gloss}</span>{hint}</button>'
         )
-    # Withheld on the public page (their titles name product surfaces) rather
-    # than simply non-expandable. Looking identical to a genuine count-only card
-    # reads as a broken control; say so instead.
-    withheld = (label in PRIVATE_EXPANDABLE and label not in expandable
-                and inventory.get(label))
-    note = ('<div class="withheld">Titles are on the internal dashboard</div>'
-            if withheld else "")
-    cls = "kpi inert" if withheld else "kpi"
-    return (f'<div class="{cls}"><div class="n mono">{count}</div>'
-            f'<div class="k">{esc}</div><div class="gloss">{gloss}</div>{note}</div>')
+    return (f'<div class="kpi"><div class="n mono">{count}</div>'
+            f'<div class="k">{esc}</div><div class="gloss">{gloss}</div></div>')
 
 
-def _panel_src(label: str, inventory: dict, *, public: bool) -> str:
+def _panel_src(label: str, inventory: dict) -> str:
     """Hidden per-area list the drawer clones on open.
 
-    Descriptions are private-only: a one-line summary can name a product surface,
-    which the sanitized page must never carry. Public drawers stay titles-only.
+    One row = what it is, its review state, and where to find it. The path is the
+    reason someone can act on this page instead of just reading it: knowing that
+    `config-wizard` exists is useless without knowing it lives at
+    `design-brain/patterns/config-wizard.md`.
     """
     entries = inventory[label]
     # A status badge repeated identically on every row carries no information and
@@ -1036,27 +1262,32 @@ def _panel_src(label: str, inventory: dict, *, public: bool) -> str:
         note = str(len(entries))
 
     def row(it: dict) -> str:
-        desc = "" if public or not it.get("desc") else (
-            f'<span class="dsc">{html.escape(it["desc"])}</span>')
+        desc = ("" if not it.get("desc") else
+                f'<span class="dsc">{html.escape(it["desc"])}</span>')
         pill = "" if uniform else _status_pill(it["status"])
-        # Agent evidence base, private only. "runs" are scored benchmark results;
-        # "sources" also counts doctrine files and dated incident records, so the
-        # two numbers differing is the point — it shows how much of an agent's
-        # knowledge rests on a measured run rather than a rule.
+        path = ("" if not it.get("path") else
+                '<span class="loc mono">'
+                + html.escape(it["path"]).replace("/", "/<wbr>") + '</span>')
+        # Agent evidence base. "runs" are scored benchmark results; "sources" also
+        # counts doctrine files and dated incident records, so the two numbers
+        # differing is the point — it shows how much of an agent's knowledge rests
+        # on a measured run rather than on a rule someone wrote down.
         ev = ""
         t = it.get("traps")
-        if t is not None and not public:
+        if t is not None:
             if not t["traps"]:
-                ev = '<span class="ev none">no traps yet</span>'
+                ev = '<span class="ev none">no recorded mistakes yet</span>'
             else:
+                # "sources" counted cited files, including doctrine — which read as
+                # a contradiction next to "6 known mistakes · 0 sources". Only the
+                # graded-test count is meaningful to a reader, so only it is shown.
                 cls = "thin" if not t["runs"] else "ok"
-                runs = (f'{t["runs"]} scored run{"s" if t["runs"] != 1 else ""}'
-                        if t["runs"] else "no scored run")
-                ev = (f'<span class="ev {cls}">{t["traps"]} traps · '
-                      f'{t["sources"]} source{"s" if t["sources"] != 1 else ""} · '
+                runs = (f'{t["runs"]} from a graded test'
+                        if t["runs"] else "none from a graded test")
+                ev = (f'<span class="ev {cls}">{t["traps"]} known mistakes · '
                       f'{runs}</span>')
         return (f'<li><span class="nm">{html.escape(it["name"])}</span>'
-                f'{pill}{desc}{ev}</li>')
+                f'{pill}{desc}{ev}{path}</li>')
 
     items = "".join(row(it) for it in entries)
     return (f'<div class="panel-src" data-area="{html.escape(label)}" '
@@ -1129,7 +1360,7 @@ def _trend(history: list[dict]) -> str:
                if isinstance(h.get("coverage"), dict)
                and "contracts_with_stories" in h["coverage"]]
     if len(cov_pts) >= 2:
-        add("Spec'd components rendered in Storybook", [float(v) for v in cov_pts],
+        add("Components with a spec, shown in Storybook", [float(v) for v in cov_pts],
             lambda v: f"{int(v)}", "k-cov")
     else:
         rows.append('<p class="cap" style="margin:10px 0 0">Storybook coverage joins this '
@@ -1183,7 +1414,7 @@ def _artifacts_section() -> str:
 
     return (
         '<section>\n'
-        '    <h2 class="s-head">Artifacts</h2>\n'
+        '    <h2 class="s-head">Built from the vault</h2>\n'
         f'    <p class="s-sub">The {total} things built from the vault so far. '
         '<b>Live</b> = a working tool the team uses; <b>Current</b> = an explainer that is '
         'up to date. In a browser these links open normally; inside a rendered Claude '
@@ -1193,17 +1424,11 @@ def _artifacts_section() -> str:
     )
 
 
-def _component_library_section(today: date, cov: dict | None, *, public: bool) -> str:
+def _component_library_section(today: date, cov: dict | None) -> str:
     """Component-library build status + story coverage.
 
     Returns "" when the generated status file is missing, so the section simply
     disappears rather than erroring (same contract as _artifacts_section).
-
-    Public/private difference: both pages link to the live Storybook; only the
-    private dashboard links to the CI run, which is repo plumbing rather than
-    something a stakeholder acts on. The Storybook URL contains a BLOCKLIST term,
-    so it is carried by build_site.py's PUBLIC_URL_ALLOWLIST — an exact-URL
-    exemption, not a relaxed blocklist (owner decision, 2026-07-29).
     """
     if not STORYBOOK_STATUS.is_file():
         return ""
@@ -1252,35 +1477,30 @@ def _component_library_section(today: date, cov: dict | None, *, public: bool) -
             if on_target else
             f"Target: stories for all {c_total} spec'd components ({c_done} done).")
 
-    # The jargon gloss sits BELOW the numbers, not above them. Explaining
-    # Storybook before showing the figure put ~120px of prose between a phone
-    # user and the first fact on the page.
-    gloss = ('<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, '
-             'browsable library where each component is rendered in every state. A '
-             'component that is not rendered there gets its spec written from source code '
-             'alone, which is weaker. The build status only stops coverage slipping '
-             'backwards.</p>')
+    # Storybook was being explained three times over — in the glossary, in this
+    # section's intro, and again here. The glossary owns the definition now
+    # (blind review, 2026-07-30).
+    gloss = ""
 
     parts = []
     if d.get("site_url"):
         parts.append(f'<a href="{html.escape(d["site_url"])}" target="_blank" '
                      f'rel="noopener">Browse the component library &rarr;</a>')
-    if not public:
-        # CI run link and the contributor call to action are repo plumbing — useful
-        # to the team, noise to a stakeholder.
-        if d.get("run_url"):
-            parts.append(f'<a href="{html.escape(d["run_url"])}" target="_blank" '
-                         f'rel="noopener">See the latest build &rarr;</a>')
-        parts.append("Every new story set moves this number — run the "
-                     "<b>write-stories</b> skill.")
+    if d.get("run_url"):
+        parts.append(f'<a href="{html.escape(d["run_url"])}" target="_blank" '
+                     f'rel="noopener">See the latest build &rarr;</a>')
+    parts.append("Want to move this number? Write a component's Storybook entries — "
+                 "the <b>write-stories</b> skill is the how.")
     links = ('<p class="cap" style="margin-top:14px">' + " · ".join(parts) + "</p>"
              if parts else "")
 
     return (
         '<section>\n'
-        '    <h2 class="s-head">Component library</h2>\n'
-        '    <p class="s-sub">How much of the component library is rendered in Storybook for '
-        'specs to be written from. This is the number to watch.</p>\n'
+        '    <h2 class="s-head">How much is covered</h2>\n'
+        '    <p class="s-sub">The components live in a separate codebase, so these counts are '
+        'about that code, not about the documents above. <b>This is the number to watch:</b> a '
+        'component shown in Storybook can have its spec written from what you can see, rather '
+        'than from reading source code and hoping.</p>\n'
         '    <div class="panel">\n'
         '      <div class="fresh">\n'
         f'        <div class="item {cov_cls}"><div class="n mono">{c_done}<span class="of">'
@@ -1289,13 +1509,13 @@ def _component_library_section(today: date, cov: dict | None, *, public: bool) -
         f'<div class="d">{c_pct}% &middot; {goal}</div></div></div>\n'
         f'        <div class="item"><div class="n mono">{storied}<span class="of">/{total}'
         f'</span></div>'
-        f'<div><div class="k">Whole library rendered in Storybook</div>'
-        f'<div class="d">{pct}% &middot; every component in the codebase, spec\'d or not'
+        f'<div><div class="k">The whole library, shown in Storybook</div>'
+        f'<div class="d">{pct}% &middot; every component in the code, spec or no spec'
         f'</div></div></div>\n'
         '      </div>\n'
         f'      <div class="checks" style="margin-top:16px"><div class="check {cls}">'
         f'<span class="mk">{"✓" if cls == "ok" else "!"}</span>'
-        f'<span><span class="ct">Build: {verdict}</span>'
+        f'<span><span class="ct">Library build: {verdict}</span>'
         f'<span class="cd">{detail}</span></span></div></div>\n'
         f'{gloss}{links}'
         '    </div>\n'
@@ -1322,12 +1542,11 @@ def _shares(s: dict, total: int) -> dict[str, int]:
 
 
 def render_body(scanned: dict, history: list[dict], healthy: bool,
-                reasons: list[str] | None = None, *, public: bool) -> str:
+                reasons: list[str] | None = None) -> str:
     a = scanned["areas"]
     s = scanned["status"]
     inv = scanned["inventory"]
     total = scanned["status_total"] or 1
-    expandable = PUBLIC_EXPANDABLE if public else PRIVATE_EXPANDABLE
     vcolor = "var(--stable)" if healthy else "var(--warn)"
     # Name the badge after what it actually measures. "Healthy" read as a verdict
     # on the whole vault, so a 1-of-12 coverage figure underneath it looked like a
@@ -1336,10 +1555,10 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     vtext = "All checks passing" if healthy else "Needs attention"
     reasons = reasons or []
 
-    cards = "".join(_card(label, a[label], inv, expandable) for label in CARD_ORDER)
+    cards = "".join(_card(label, a[label], inv) for label in CARD_ORDER)
     panel_srcs = "".join(
-        _panel_src(label, inv, public=public) for label in CARD_ORDER
-        if label in expandable and inv.get(label)
+        _panel_src(label, inv) for label in CARD_ORDER
+        if label in EXPANDABLE and inv.get(label)
     )
 
     shares = _shares(s, total)
@@ -1368,14 +1587,15 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     # backlog-drift day rendered "Needs attention" directly above "all checks
     # passing · nothing overdue" — the page contradicting itself.
     cov = story_coverage(inv)
+    br = block_readiness(inv)
     if healthy:
         # The badge itself now says "All checks passing", so the summary adds the
         # facts it does NOT cover rather than repeating it.
         summary = " · ".join([
             f"{a['Total docs']} documents",
-            "nothing overdue",
-            "no backlog growth",
-        ] + ([f"Storybook coverage {cov['contracts_with_stories']}/{cov['contracts']}"]
+            "nothing overdue for a look",
+            "review queue no bigger than yesterday",
+        ] + ([f"{cov['contracts_with_stories']}/{cov['contracts']} spec'd components in Storybook"]
              if cov else []))
     else:
         summary = " · ".join(reasons) if reasons else "see the internal report"
@@ -1393,26 +1613,26 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     # names internal process, and a stakeholder has no action to take on it.
     tr = scanned.get("traps") or {}
     traps_note = ""
-    if tr.get("traps") and not public:
+    if tr.get("traps"):
         per = agent_traps()
         thin = sorted(n for n, d in per.items() if d["traps"] and not d["runs"])
-        named = (f" Resting on no scored run yet: "
+        named = (" Learned from experience rather than from a graded test: "
                  + ", ".join(f"<b>{html.escape(n)}</b>" for n in thin) + "."
-                 if thin else " Every agent with traps cites at least one scored run.")
+                 if thin else " Every one traces back to a graded test.")
         unmined = tr.get("unmined", 0)
-        gap = (f" <b>{unmined}</b> of <b>{tr['results']}</b> recorded benchmark results have "
-               f"not yet produced a trap — unmined evidence, not a defect."
-               if unmined else " Every recorded benchmark result has been mined.")
+        gap = (f" We have <b>{tr['results']}</b> recorded tests and <b>{unmined}</b> of them "
+               f"have not yet taught an agent anything — material waiting to be used, not "
+               f"something broken."
+               if unmined else " Every recorded test has been mined for lessons.")
         traps_note = (
-            f'<p class="cap" style="margin-top:14px"><b>{tr["traps"]}</b> agent traps — '
-            f'recorded failure modes stated inline on the agent that makes them — across '
-            f'<b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b> agents. They are only as good '
-            f'as the evidence beneath them.{named}{gap} Open an agent above to see its base; '
-            f'each carries an <b>Evidence base</b> section saying what would strengthen it.</p>')
+            f'<p class="cap" style="margin-top:14px"><b>{tr["traps"]}</b> known mistakes are '
+            f'written into the agents — real errors, recorded on whichever agent made them, '
+            f'across <b>{tr["with_traps"]}</b> of <b>{tr["agents"]}</b>. They are only as good '
+            f'as the evidence behind them.{named}{gap} Open the Agents card to see each one.</p>')
 
     lessons = scanned.get("lessons") or []
     lessons_tile = ""
-    if not public:
+    if True:
         oldest = lessons[0].split("(")[-1].rstrip(")") if lessons else ""
         detail = (f"Captured corrections not yet applied — oldest {oldest}"
                   if lessons else "Every captured correction has landed")
@@ -1422,24 +1642,13 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
             f'<div><div class="k">Open lessons</div>'
             f'<div class="d">{html.escape(detail)}</div></div></div>')
     trend = _trend(history)
-    reveal = ("Agents, Skills, Components and Patterns"
-              if public else "Every card")
-    owner = (f"Owner: {OWNER_NAME} · {OWNER_ROLE}" if not public
-             else f"Maintained by the {OWNER_ROLE} owner")
-    # The redaction promise describes the sanitised build. On the internal
-    # dashboard it was simply untrue — that page does show paths and names.
-    footer_note = ("Sanitized aggregate health of the shared Orbit Design Brain vault. "
-                   "Counts and maturity only — never internal file paths."
-                   if public else
-                   "Internal view of the shared Orbit Design Brain vault. "
-                   "The stakeholder page carries counts and maturity only.")
-    # Artifact index is private-only: several titles name product surfaces, so it
-    # never renders on the public/sanitized page (consistent with hiding platform profiles).
-    artifacts = "" if public else _artifacts_section()
-    # Rendered on both pages, but the private one carries the links (see the
-    # function's docstring for why the public page withholds the URL).
+    reveal = "Every card"
+    owner = f"Looked after by {OWNER_NAME} · {OWNER_ROLE}"
+    footer_note = ("The full internal view of the Orbit Design Brain. It names product "
+                   "surfaces and repo paths, so the published copy is encrypted.")
+    artifacts = _artifacts_section()
     component_library = _component_library_section(
-        date.fromisoformat(scanned["date"]), cov, public=public)
+        date.fromisoformat(scanned["date"]), cov)
 
     # One sentence that reconciles every denominator on the page. Four numbers
     # (documents / with-status / library / spec'd) previously appeared in four
@@ -1452,16 +1661,15 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     if parts:
         listed = rest.get("listed", 0)
         phrase = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + f", and {parts[-1]}"
-        remainder = (f" The six cards below list <b>{listed}</b> of them — the reusable "
+        remainder = (f" The six cards above list <b>{listed}</b> of them — the reusable "
                      f"building blocks. The other "
                      f"<b>{a['Total docs'] - listed}</b> are {phrase}.")
     denominators = (
-        f"<b>{a['Total docs']}</b> documents in the vault; <b>{scanned['status_total']}</b> "
-        f"carry a lifecycle status."
+        f"<b>{a['Total docs']}</b> documents in the vault."
         + remainder
-        + " The component library is a separate codebase, counted separately: "
+        + " The components themselves live in a different repo: "
         + (f"<b>{cov['components']}</b> components, <b>{cov['contracts']}</b> of which have "
-           f"a written spec here ({round(100 * cov['contracts'] / cov['components']) if cov['components'] else 0}%), "
+           f"a written spec in this vault ({round(100 * cov['contracts'] / cov['components']) if cov['components'] else 0}%), "
            f"and <b>{cov['contracts_with_stories']}</b> rendered in Storybook. Specs for the remaining "
            f"<b>{cov['components'] - cov['contracts']}</b> are the work after that."
            if cov else "counts appear once the component feed reports.")
@@ -1471,9 +1679,11 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
   <header>
     <div class="eyebrow">Orbit Design Brain</div>
     <h1>Vault Health</h1>
-    <p class="purpose">The Orbit Design Brain is the living specification our products are
-      built to — the written rules, component specs and worked examples that both people
-      and AI tools follow. This page is its health check.</p>
+    <p class="purpose">Orbit is the design system behind our procurement products. This vault
+      is where its rules are written down — how a table should behave, what a page shape is
+      for, which screens to copy — so that people and AI tools build the same way instead of
+      guessing. <b>This page reports whether the vault is in good order, and tells you where
+      to find anything in it.</b></p>
     <div class="banner" style="--verdict:{vcolor}">
       <span class="dot"></span>
       <div>
@@ -1483,57 +1693,86 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
       <span class="meta">Updated {scanned['date']}<br>Refreshes daily</span>
     </div>
     <details class="explain">
-      <summary>How to read these numbers</summary>
-      <p class="verdict-def">This badge covers three things only: the automated checks pass,
-        nothing is overdue for review, and the review backlog isn’t growing. It is not a
-        verdict on the vault as a whole — Storybook coverage and how much is still in review
-        are separate measures, reported below.</p>
+      <summary>What the badge does and doesn't cover</summary>
+      <p class="verdict-def">It covers three things: the automated checks pass, nothing is
+        overdue for a look, and the review queue is no bigger than it was yesterday. It is
+        <b>not</b> a verdict on the vault as a whole — and "no bigger than yesterday" is a
+        low bar: the queue can grow steadily without ever tripping it. How complete the vault
+        is, and how much is still being worked on, are separate measures below.</p>
       <p class="denoms">{denominators}</p>
     </details>
+    <details class="explain">
+      <summary>Words used on this page</summary>
+      <div class="gloss-list">
+        <p><b>Contract</b> — a written spec for one thing, so anyone building it makes the
+          same choices. Nothing to do with commercial contracts.</p>
+        <p><b>Component</b> — a reusable piece of interface: a button, a table, a dropdown.</p>
+        <p><b>Pattern</b> — the shape of a whole page: a dashboard, a wizard, a list with a
+          detail panel.</p>
+        <p><b>Storybook</b> — a live site where every component is shown in every state. If a
+          component isn't in there, its spec has to be written from source code alone, which
+          is weaker evidence.</p>
+        <p><b>Agent</b> — an AI teammate with one job and written instructions, like a builder
+          or a reviewer.</p>
+        <p><b>Skill</b> — a written procedure a person or an agent follows, step by step.</p>
+        <p><b>Review state</b> — how settled a document is: <i>draft</i>, then <i>in
+          review</i>, then <i>approved</i>.</p>
+        <p><b>Known mistake</b> — a real error someone made before, written into the agent
+          that made it so it doesn't happen twice.</p>
+        <p><b>Scored result</b> — a recorded test where two versions of the same work were
+          graded against a checklist.</p>
+      </div>
+    </details>
   </header>
+
+  <section>
+    <h2 class="s-head">What's in here</h2>
+    <p class="s-sub">The reusable pieces the vault holds. Open any card to see what's in it —
+      each entry says what the thing is, and its path in the <b>design-_vault</b> repo so you
+      can go straight to it. (The components themselves are a different repo — see
+      <i>How much is covered</i> below.)</p>
+    <div class="kpis">{cards}</div>
+    {traps_note}
+  </section>
+  <div hidden>{panel_srcs}</div>
 
   {component_library}
 
   <section>
-    <h2 class="s-head">Checks &amp; attention</h2>
-    <p class="s-sub">The ticks run automatically on every change and are pass/fail. The
-      counters beneath them track things that have drifted out of good standing — nothing
-      here is broken, but a non-zero count is work someone owes the vault.</p>
-    <div class="panel">
-      <div class="checks">{checks}</div>
-      <div class="fresh" style="margin-top:16px">
-        <div class="item {stale_good}"><div class="n mono">{len(scanned['stale'])}</div>
-          <div><div class="k">Overdue for review</div><div class="d">Not looked at in {STALE_AFTER_DAYS}+ days</div></div></div>
-        <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
-          <div><div class="k">Metadata problems</div><div class="d">Missing or invalid tags/dates</div></div></div>
-        {lessons_tile}
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2 class="s-head">How ready it is</h2>
-    <p class="s-sub">Where the {scanned['status_total']} documents that carry a lifecycle
-      status (draft → in review → approved) sit today. The vault is still being built, so
-      most documents have not reached approved yet; the target is to move the in-review
-      column down over time.</p>
+    <h2 class="s-head">How settled it is</h2>
+    <p class="s-sub">Across every document that carries a review state. The vault is still
+      being written, so most haven't reached approved — the aim is for the middle bar to
+      shrink.<br><b>Read this one carefully:</b> the figures below cover the whole vault,
+      and most approved documents are records and indexes nobody builds from. Of the
+      <b>{br['with_status']}</b> reusable pieces in the cards above, just
+      <b>{br['approved']}</b> are approved — <b>{br['pct']}%</b>, not the {shares['stable']}%
+      below. Almost everything you would actually follow is still in review.</p>
     <div class="panel">
       {bar('stable','Approved')}{bar('in-review','In review')}{bar('draft','Draft')}
     </div>
   </section>
 
   <section>
-    <h2 class="s-head">What's inside</h2>
-    <p class="s-sub">The building blocks the vault holds. {reveal} can be opened to list what's in them.</p>
-    <div class="kpis">{cards}</div>
-    {traps_note}
+    <h2 class="s-head">Anything wrong?</h2>
+    <p class="s-sub">The ticks run automatically whenever anything changes — they either pass
+      or fail. The counters below them are softer: nothing is broken, but a number above zero
+      is work someone owes the vault.</p>
+    <div class="panel">
+      <div class="checks">{checks}</div>
+      <div class="fresh" style="margin-top:16px">
+        <div class="item {stale_good}"><div class="n mono">{len(scanned['stale'])}</div>
+          <div><div class="k">Overdue for a look</div><div class="d">Nobody has reviewed these in {STALE_AFTER_DAYS}+ days</div></div></div>
+        <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
+          <div><div class="k">Documents needing a fix</div><div class="d">Which documents the metadata check above is unhappy with</div></div></div>
+        {lessons_tile}
+      </div>
+    </div>
   </section>
-  <div hidden>{panel_srcs}</div>
 
   <section>
-    <h2 class="s-head">Trend</h2>
-    <p class="s-sub">Direction of travel since daily snapshots began. Each line shows its
-      start value, its end value, and which way it moved.</p>
+    <h2 class="s-head">Which way it's going</h2>
+    <p class="s-sub">One line per measure since daily snapshots began, with its start value,
+      its end value, and which way it moved.</p>
     <div class="panel">{trend}</div>
   </section>
 
@@ -1597,7 +1836,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
 def render_standalone(scanned: dict, history: list[dict], healthy: bool,
                       reasons: list[str] | None = None) -> str:
-    body = render_body(scanned, history, healthy, reasons, public=True)
+    body = render_body(scanned, history, healthy, reasons)
     # No hardcoded data-theme: let the viewer's OS preference drive the page
     # (prefers-color-scheme). The :root[data-theme=…] overrides still win if a
     # host stamps the attribute.
@@ -1619,7 +1858,7 @@ def render_standalone(scanned: dict, history: list[dict], healthy: bool,
 def render_artifact(scanned: dict, history: list[dict], healthy: bool,
                     reasons: list[str] | None = None) -> str:
     """Body-only (full drill-down) for the private Claude Artifact."""
-    body = render_body(scanned, history, healthy, reasons, public=False)
+    body = render_body(scanned, history, healthy, reasons)
     return (f"<title>Orbit Design Brain — Vault Health</title>\n"
             f"<style>{STYLE}</style>\n{body}\n")
 
