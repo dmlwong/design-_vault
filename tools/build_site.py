@@ -529,7 +529,7 @@ def render_hub(manifest: dict) -> str:
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
-def build(out: Path, public: bool) -> list[str]:
+def build(out: Path, public: bool, protected_out: Path | None = None) -> list[str]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     out.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
@@ -567,16 +567,27 @@ def build(out: Path, public: bool) -> list[str]:
         if public and tool.get("protected"):
             # A protected page deliberately carries what SANITISE would strip —
             # product surfaces, the owner's name, repo paths — and is protected by
-            # encryption at publish time instead. So it skips the sanitiser, which
-            # means the guard cannot vouch for it, which means it MUST NOT be
-            # written here in the clear. The encryption step in CI is the only
-            # thing allowed to emit it.
+            # encryption at publish time instead. It skips the sanitiser, so the
+            # guard cannot vouch for it, so it MUST NOT be written into the output
+            # directory in the clear: everything in there gets published.
             #
-            # Fail closed, always: no passphrase means no page. Publishing it
-            # unencrypted "just this once" is the single outcome worth engineering
-            # against, so there is deliberately no fallback branch.
-            print(f"  ~ {tool['href']} withheld from the plaintext build "
-                  f"(protected; emitted only by the encryption step)")
+            # It still needs the site chrome (nav, theme skin) applied *before*
+            # encryption, so with --protected-out the chrome-injected plaintext is
+            # staged in a directory deliberately OUTSIDE the published tree, for
+            # tools/encrypt_page.mjs to consume. Without that flag it is simply
+            # dropped.
+            #
+            # Fail closed either way: no staging directory and no passphrase means
+            # no page. There is deliberately no branch that writes it unencrypted
+            # into `out`.
+            if protected_out is not None:
+                protected_out.mkdir(parents=True, exist_ok=True)
+                (protected_out / tool["href"]).write_text(text, encoding="utf-8")
+                print(f"  ~ {tool['href']} staged for encryption in "
+                      f"{protected_out} (never written to the published tree)")
+            else:
+                print(f"  ~ {tool['href']} dropped (protected, and no "
+                      f"--protected-out given)")
             continue
         if public:
             text = sanitise(text)
@@ -597,10 +608,26 @@ def main() -> None:
                         help="output directory (default: site)")
     parser.add_argument("--public", action="store_true",
                         help="sanitise product/company names and refuse to build if any survive")
+    parser.add_argument("--protected-out", metavar="DIR", default=None,
+                        help="stage chrome-injected plaintext for pages marked `protected` "
+                             "in the manifest, for tools/encrypt_page.mjs to encrypt. MUST "
+                             "be outside --out: everything in --out gets published.")
     args = parser.parse_args()
 
     out = (ROOT / args.out) if not Path(args.out).is_absolute() else Path(args.out)
-    written = build(out, args.public)
+    prot = None
+    if args.protected_out:
+        prot = (ROOT / args.protected_out if not Path(args.protected_out).is_absolute()
+                else Path(args.protected_out))
+        # A staging dir inside the output dir would be published verbatim, which is
+        # the exact failure this whole mechanism exists to prevent.
+        if prot == out or out in prot.parents:
+            raise SystemExit(
+                f"--protected-out ({prot}) is inside --out ({out}). Everything under "
+                "--out is published, so staged plaintext would go live. Use a path "
+                "outside the output directory."
+            )
+    written = build(out, args.public, prot)
     mode = "PUBLIC (sanitised)" if args.public else "internal"
     print(f"Built {mode} site in {out.relative_to(ROOT) if out.is_relative_to(ROOT) else out}:")
     for name in written:

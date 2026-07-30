@@ -489,6 +489,23 @@ def _doc_summary(path: Path, fm: dict | None) -> str:
     return ""
 
 
+def block_readiness(inventory: dict[str, list[dict]]) -> dict:
+    """Review state across the six cards only — the reusable pieces.
+
+    The vault-wide share is carried by documents nobody builds from (benchmark
+    records, reviews, indexes). Blind review, 2026-07-30: the page reported 28%
+    approved while the material a designer is told to follow was 7% approved, and
+    that gap was derivable but stated nowhere. It is stated now.
+    """
+    counts = {"stable": 0, "in-review": 0, "draft": 0, None: 0}
+    for rows in inventory.values():
+        for it in rows:
+            counts[it.get("status")] = counts.get(it.get("status"), 0) + 1
+    with_status = sum(v for k, v in counts.items() if k)
+    return {"with_status": with_status, "approved": counts["stable"],
+            "pct": round(100 * counts["stable"] / with_status) if with_status else 0}
+
+
 def summary_gap(inventory: dict[str, list[dict]]) -> list[str]:
     """Items with no hand-written `SUMMARIES` entry, as "Area / name".
 
@@ -576,7 +593,7 @@ def build_inventory(docs: list[Path]) -> dict[str, list[dict]]:
 # frontmatter `type` so the split is computed, never hand-counted — a reader who
 # subtracts 59 from 142 must find the remainder accounted for, not unexplained.
 REST_BUCKETS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("benchmark records", ("benchmark",)),
+    ("benchmark write-ups", ("benchmark",)),
     ("rules and foundations",
      ("foundation", "principle", "token-contract", "tooling-guide", "orchestration",
       "setup-guide", "governance", "visual-truth")),
@@ -1261,11 +1278,13 @@ def _panel_src(label: str, inventory: dict) -> str:
             if not t["traps"]:
                 ev = '<span class="ev none">no recorded mistakes yet</span>'
             else:
+                # "sources" counted cited files, including doctrine — which read as
+                # a contradiction next to "6 known mistakes · 0 sources". Only the
+                # graded-test count is meaningful to a reader, so only it is shown.
                 cls = "thin" if not t["runs"] else "ok"
-                runs = (f'{t["runs"]} scored result{"s" if t["runs"] != 1 else ""}'
-                        if t["runs"] else "none from a scored result")
+                runs = (f'{t["runs"]} from a graded test'
+                        if t["runs"] else "none from a graded test")
                 ev = (f'<span class="ev {cls}">{t["traps"]} known mistakes · '
-                      f'{t["sources"]} source{"s" if t["sources"] != 1 else ""} · '
                       f'{runs}</span>')
         return (f'<li><span class="nm">{html.escape(it["name"])}</span>'
                 f'{pill}{desc}{ev}{path}</li>')
@@ -1458,14 +1477,10 @@ def _component_library_section(today: date, cov: dict | None) -> str:
             if on_target else
             f"Target: stories for all {c_total} spec'd components ({c_done} done).")
 
-    # The jargon gloss sits BELOW the numbers, not above them. Explaining
-    # Storybook before showing the figure put ~120px of prose between a phone
-    # user and the first fact on the page.
-    gloss = ('<p class="cap" style="margin-top:14px"><b>Storybook</b> is the live, '
-             'browsable library where each component is rendered in every state. A '
-             'component that is not rendered there gets its spec written from source code '
-             'alone, which is weaker. The build status only stops coverage slipping '
-             'backwards.</p>')
+    # Storybook was being explained three times over — in the glossary, in this
+    # section's intro, and again here. The glossary owns the definition now
+    # (blind review, 2026-07-30).
+    gloss = ""
 
     parts = []
     if d.get("site_url"):
@@ -1572,13 +1587,14 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     # backlog-drift day rendered "Needs attention" directly above "all checks
     # passing · nothing overdue" — the page contradicting itself.
     cov = story_coverage(inv)
+    br = block_readiness(inv)
     if healthy:
         # The badge itself now says "All checks passing", so the summary adds the
         # facts it does NOT cover rather than repeating it.
         summary = " · ".join([
             f"{a['Total docs']} documents",
             "nothing overdue for a look",
-            "the review queue isn't growing",
+            "review queue no bigger than yesterday",
         ] + ([f"{cov['contracts_with_stories']}/{cov['contracts']} spec'd components in Storybook"]
              if cov else []))
     else:
@@ -1649,10 +1665,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
                      f"building blocks. The other "
                      f"<b>{a['Total docs'] - listed}</b> are {phrase}.")
     denominators = (
-        f"<b>{a['Total docs']}</b> documents in the vault; <b>{scanned['status_total']}</b> "
-        f"have a review state."
+        f"<b>{a['Total docs']}</b> documents in the vault."
         + remainder
-        + " The component library is a separate codebase, counted separately: "
+        + " The components themselves live in a different repo: "
         + (f"<b>{cov['components']}</b> components, <b>{cov['contracts']}</b> of which have "
            f"a written spec in this vault ({round(100 * cov['contracts'] / cov['components']) if cov['components'] else 0}%), "
            f"and <b>{cov['contracts_with_stories']}</b> rendered in Storybook. Specs for the remaining "
@@ -1680,9 +1695,10 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     <details class="explain">
       <summary>What the badge does and doesn't cover</summary>
       <p class="verdict-def">It covers three things: the automated checks pass, nothing is
-        overdue for a look, and the review queue isn't growing. It is <b>not</b> a verdict on
-        the vault as a whole — how complete it is, and how much is still being worked on, are
-        separate measures further down.</p>
+        overdue for a look, and the review queue is no bigger than it was yesterday. It is
+        <b>not</b> a verdict on the vault as a whole — and "no bigger than yesterday" is a
+        low bar: the queue can grow steadily without ever tripping it. How complete the vault
+        is, and how much is still being worked on, are separate measures below.</p>
       <p class="denoms">{denominators}</p>
     </details>
     <details class="explain">
@@ -1712,7 +1728,9 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
   <section>
     <h2 class="s-head">What's in here</h2>
     <p class="s-sub">The reusable pieces the vault holds. Open any card to see what's in it —
-      each entry says what the thing is and where to find it in the repo.</p>
+      each entry says what the thing is, and its path in the <b>design-_vault</b> repo so you
+      can go straight to it. (The components themselves are a different repo — see
+      <i>How much is covered</i> below.)</p>
     <div class="kpis">{cards}</div>
     {traps_note}
   </section>
@@ -1722,9 +1740,13 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
 
   <section>
     <h2 class="s-head">How settled it is</h2>
-    <p class="s-sub">{scanned['status_total']} documents carry a review state. The vault is
-      still being written, so most haven't reached approved yet — the aim is for the middle
-      bar to shrink over time.</p>
+    <p class="s-sub">Across every document that carries a review state. The vault is still
+      being written, so most haven't reached approved — the aim is for the middle bar to
+      shrink.<br><b>Read this one carefully:</b> the figures below cover the whole vault,
+      and most approved documents are records and indexes nobody builds from. Of the
+      <b>{br['with_status']}</b> reusable pieces in the cards above, just
+      <b>{br['approved']}</b> are approved — <b>{br['pct']}%</b>, not the {shares['stable']}%
+      below. Almost everything you would actually follow is still in review.</p>
     <div class="panel">
       {bar('stable','Approved')}{bar('in-review','In review')}{bar('draft','Draft')}
     </div>
@@ -1741,7 +1763,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
         <div class="item {stale_good}"><div class="n mono">{len(scanned['stale'])}</div>
           <div><div class="k">Overdue for a look</div><div class="d">Nobody has reviewed these in {STALE_AFTER_DAYS}+ days</div></div></div>
         <div class="item {mal_good}"><div class="n mono">{len(scanned['malformed'])}</div>
-          <div><div class="k">Missing details</div><div class="d">Tags or dates absent or malformed</div></div></div>
+          <div><div class="k">Documents needing a fix</div><div class="d">Which documents the metadata check above is unhappy with</div></div></div>
         {lessons_tile}
       </div>
     </div>
