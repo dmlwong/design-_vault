@@ -1,5 +1,5 @@
 {
-  "_comment": "Curated definition of the public team-share site. Data only — the generator is tools/build_site.py. Only list surfaces that are provably public-safe: the --public build genericizes product-surface/company names via SANITIZE in build_site.py and fails if any BLOCKLIST term survives. One-off prototypes and explainers stay private Claude Artifacts (per-person Share); they are intentionally NOT here.",
+  "_comment": "Curated definition of the public team-share site. Data only — the generator is tools/build_site.py. Two ways in: (1) list a surface here plainly, in which case it must be provably public-safe — the --public build genericizes product-surface/company names via SANITISE and fails if any BLOCKLIST term survives; or (2) list it with \"protected\": true, which skips the sanitiser and publishes the page encrypted, or omits it entirely when SITE_PASSPHRASE is absent. Explainers do belong here once they pass the guard. What stays out is anything carrying client material or a surface neither route can make safe. A one-off prototype with no durable audience is better left as a private Claude Artifact than added here.",
   "site": {
     "title": "Orbit Design Brain — Team Tools",
     "eyebrow": "Orbit Design Brain",
