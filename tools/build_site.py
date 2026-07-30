@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build the public team-share site for the Orbit Design Brain.
 
-Assembles a small static site — a curated hub plus the living tools it links —
-from vault sources and ``tools/site-manifest.json``. This is the "anyone with
-the link" surface: the intake form and the sanitized health dashboard, one URL,
-no infrastructure beyond GitHub Pages.
+Assembles a small static site — a front door, a hub, and the living tools and
+explainers the hub links — from vault sources and ``tools/site-manifest.json``.
+This is the "anyone with the link" surface: one URL, no infrastructure beyond
+GitHub Pages.
 
 Two build modes:
 
@@ -18,13 +18,19 @@ Usage::
     python3 tools/build_site.py --out site            # internal preview
     python3 tools/build_site.py --out site --public    # what CI publishes
 
-Outputs into ``--out`` (default ``site/``): ``index.html`` (the hub),
-one file per tool (``intake-form.html``, ``health.html``), and ``.nojekyll``
-so GitHub Pages serves the files as-is.
+Outputs into ``--out`` (default ``site/``): ``index.html`` (the entry splash),
+``tools.html`` (the hub — see ``HUB_HREF``), one file per manifest tool, and
+``.nojekyll`` so GitHub Pages serves the files as-is.
 
-The site is generated, never hand-edited. One-off prototypes and explainers
-stay as private Claude Artifacts and are intentionally not part of this site;
-only tools proven safe for a public link belong in the manifest.
+Pages marked ``protected`` in the manifest are the exception, and the health
+dashboard is the only one today. They are **not** written into ``--out`` by this
+script: they carry what the sanitiser would otherwise strip, so they are staged
+via ``--protected-out`` for ``tools/encrypt_page.mjs`` to encrypt, or dropped.
+So a ``--public`` build emits no ``health.html`` — that is correct, not a bug.
+
+The site is generated, never hand-edited. Only surfaces proven safe for a public
+link belong in the manifest; anything carrying product surfaces or client
+material either gets a ``protected`` entry or stays out entirely.
 """
 
 from __future__ import annotations
@@ -47,11 +53,16 @@ HUB_HREF = "tools.html"
 # Public sanitisation
 #
 # In --public mode every emitted file is rewritten through SANITISE (longest
-# match first) and then checked against BLOCKLIST. The health page is already
-# sanitised upstream; this is the guarantee for the intake form, which names
-# product surfaces the vault treats as private (mirrors the health page's
-# platform-profile exclusion). Governed edit: change the vault's private-name
-# policy and this list together.
+# match first) and then checked against BLOCKLIST.
+#
+# This covers the intake form and the explainers. It does NOT cover the
+# health page: that page is `protected` in the manifest and skips this path
+# entirely, because it deliberately carries the product surfaces and owner name
+# these rules exist to remove. Encryption carries it instead; see build().
+# (An earlier version of this comment claimed the health page was "already
+# sanitised upstream". It never is — do not reintroduce that assumption.)
+#
+# Governed edit: change the vault's private-name policy and this list together.
 # --------------------------------------------------------------------------- #
 SANITISE: list[tuple[str, str]] = [
     # Order matters: replacements run top-down, so put whole phrases BEFORE the
@@ -77,6 +88,23 @@ SANITISE: list[tuple[str, str]] = [
 
 # Proper nouns that must never appear on the public site. Checked
 # case-insensitively after SANITISE runs.
+#
+# SCOPE — what this guard does and does not cover.
+#
+# It covers proper nouns: product surfaces, the company name, internal initiative
+# names, the owner's name. That is the whole remit.
+#
+# It does NOT check for repo file paths, and it is not meant to. The explainers
+# publish vault paths on purpose (owner decision, 2026-07-30): naming
+# `design-brain/agents/brief-coach.md` or `design-brain/skills/explore/SKILL.md`
+# IS the explanation those pages exist to give, and a path discloses only a
+# filename in a repo outsiders cannot open — no credentials, no client material.
+#
+# Resist adding a path rule here. Every path these pages print would need
+# exempting, so the allowlist would end up approving everything it matched and
+# the guard would enforce nothing while looking like it did. If a page genuinely
+# must not publish its paths, mark it `protected` in the manifest and let
+# encryption carry it — that mechanism already exists and actually holds.
 BLOCKLIST = [
     "ClauseIQ",
     "MarketIQ",
