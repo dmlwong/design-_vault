@@ -54,6 +54,17 @@ jobs:
       # Set in repo Actions secrets to publish the stakeholder page to the
       # companion public repo (dmlwong/vault-health). Absent → publish is skipped.
       HEALTH_PAGE_TOKEN: ${{ secrets.HEALTH_PAGE_TOKEN }}
+      # Passphrase for pages marked `protected` in tools/site-manifest.json. The
+      # published site lives on GitHub Pages, which has no server-side auth, so a
+      # protected page is encrypted (AES-256-GCM, key derived with PBKDF2) and
+      # decrypted in the reader's browser. Absent → that page is omitted from the
+      # site rather than published in the clear.
+      #
+      # The ciphertext is public, so passphrase strength IS the security model:
+      # tools/encrypt_page.mjs refuses anything under 16 characters. This buys
+      # "not casually readable or indexable" — one shared secret, no revocation,
+      # no audit trail. It is not confidentiality for client-sensitive material.
+      SITE_PASSPHRASE: ${{ secrets.SITE_PASSPHRASE }}
     steps:
       - uses: actions/checkout@v4
 
@@ -125,10 +136,34 @@ jobs:
       - name: Publish stakeholder site
         if: ${{ env.HEALTH_PAGE_TOKEN != '' }}
         run: |
-          # Build the PUBLIC site (hub + intake form + health page). --public
-          # sanitises product/company names and fails the build if any survive,
-          # so nothing private can reach the public URL.
-          python3 tools/build_site.py --out site --public
+          # Build the PUBLIC site. --public sanitises product/company names and
+          # fails the build if any survive. Pages marked `protected` in
+          # tools/site-manifest.json skip the sanitiser (they deliberately carry
+          # what it would strip) and are staged OUTSIDE `site/` for encryption —
+          # nothing unencrypted is ever written into the published tree.
+          python3 tools/build_site.py --out site --public --protected-out /tmp/protected
+
+          # Encrypt each staged page into the published tree. Fail closed: without
+          # SITE_PASSPHRASE the encrypter exits non-zero and the page is simply
+          # absent from the site. Never add a fallback that publishes it in the
+          # clear — that is the one outcome this whole mechanism exists to prevent.
+          if [ -d /tmp/protected ]; then
+            if [ -z "${SITE_PASSPHRASE:-}" ]; then
+              echo "::warning::SITE_PASSPHRASE is not set — the protected page(s) will be" \
+                   "omitted from the published site. Add the repository secret to publish them."
+            fi
+            for f in /tmp/protected/*.html; do
+              [ -e "$f" ] || continue
+              name=$(basename "$f")
+              if node tools/encrypt_page.mjs "$f" "site/$name" "Vault Health"; then
+                echo "Encrypted $name into the published site."
+              else
+                echo "::warning::$name not published (encryption unavailable)."
+                rm -f "site/$name"
+              fi
+            done
+            rm -rf /tmp/protected
+          fi
           git clone --depth 1 \
             "https://x-access-token:${HEALTH_PAGE_TOKEN}@github.com/dmlwong/vault-health.git" /tmp/vh
           # Replace the published surface with the freshly built site.
