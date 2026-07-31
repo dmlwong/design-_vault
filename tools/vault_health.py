@@ -1194,6 +1194,45 @@ STYLE = """
   @media (max-width:560px){
     .todo-row{grid-template-columns:auto 1fr;gap:6px 12px}
     .todo-row .tgo{grid-column:2;justify-self:start;margin-top:3px}}
+  /* "How work flows through the vault" — the two pipelines, drawn from real vault
+     items so each node carries a live review state and repo path. */
+  .wf{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:18px 18px 16px;margin-top:14px}
+  .wf-h h3{margin:0;font-size:15px;font-weight:660;letter-spacing:-.01em}
+  .wf-h p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.55;max-width:72ch}
+  .wf-flow{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-wrap:wrap;
+    align-items:stretch;gap:10px}
+  .wf-node,.wf-step{border:1px solid var(--line);border-radius:12px;padding:11px 13px;
+    display:flex;flex-direction:column;gap:4px;min-width:150px;flex:1 1 150px}
+  .wf-step{background:var(--panel-2)}
+  .wf-node{justify-content:center;background:transparent;border-style:dashed}
+  .wf-node.start{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+  .wf-k{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .wf-b{font-size:12.5px;color:var(--ink);line-height:1.45}
+  /* The flow's result — a bar under the steps, not a final inline node. */
+  .wf-outcome{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:12px;
+    padding:11px 14px;border-radius:12px;
+    background:color-mix(in srgb,var(--stable) 8%,transparent);
+    border:1px solid color-mix(in srgb,var(--stable) 30%,var(--line))}
+  .wf-outcome .wf-k{color:var(--stable)}
+  .wf-outcome .wf-b{font-weight:560}
+  .wf-item{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13.5px}
+  .wf-item b{font-weight:650}
+  .wf-uses{font-size:11.5px;color:var(--muted)}
+  .wf-note{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .wf-step .loc{font-size:10.5px;color:var(--muted);opacity:.85;margin-top:2px;overflow-wrap:anywhere}
+  .wf-arrow{display:flex;align-items:center;justify-content:center;color:var(--muted);
+    opacity:.55;font-size:18px;flex:0 0 auto;padding:0 1px;font-weight:600}
+  .wf-refs{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:13px;
+    padding-top:12px;border-top:1px solid var(--line)}
+  .wf-refs-k{font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+    font-size:10px}
+  .wf-ref{display:inline-flex;flex-direction:column;gap:1px}
+  .wf-ref-t{color:var(--ink);font-weight:600;font-size:12px}
+  .wf-ref .loc{font-size:10px;color:var(--muted);opacity:.85}
+  @media (max-width:620px){
+    .wf-flow{flex-direction:column;align-items:stretch}
+    .wf-arrow{transform:rotate(90deg);padding:2px 0;align-self:center}}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -1562,6 +1601,131 @@ def _shares(s: dict, total: int) -> dict[str, int]:
     return out
 
 
+# The two end-to-end pipelines the vault exists to run (owner-confirmed 2026-07-31).
+# Each step names a REAL vault item by its repo path, so the section renders that
+# item's live review state and location — the pipeline is drawn from its parts and
+# cannot drift from them. `uses` is a supporting spec/skill shown for context;
+# `refs` are the pattern/example a team reads before running the flow. A path that
+# stops resolving is reported by workflow_gaps() rather than rendered as a dead step.
+WORKFLOWS: list[dict] = [
+    {
+        "id": "port",
+        "title": "Port a prototype into Orbit",
+        "lede": "Take a prototype built outside the design system — an AI-generated or "
+                "external mockup — and rebuild it properly on Orbit's components and tokens.",
+        "start": "An external or AI-generated prototype (Lovable, a hand-built mockup, …)",
+        "steps": [
+            {"label": "Port", "path": "design-brain/agents/porter.md",
+             "uses": "the port-to-orbit skill",
+             "note": "Rebuild it on Orbit components and tokens — map what maps, flag what doesn't."},
+            {"label": "Review", "path": "design-brain/agents/design-reviewer.md",
+             "uses": None,
+             "note": "Check it against every rule in the vault. A blocker means not done."},
+        ],
+        "refs": [("design-brain/patterns/lovable-port.md", "lovable-port pattern"),
+                 ("design-brain/examples/lovable-initiatives-port.md", "a scored example port")],
+        "outcome": "An Orbit-native prototype, ready for the build team.",
+    },
+    {
+        "id": "brief",
+        "title": "Generate a brief from stakeholder input",
+        "lede": "Turn raw stakeholder information into a reviewed brief the concept and build "
+                "teams can act on — before anyone spends time prototyping.",
+        "start": "Stakeholder information, captured in the intake form",
+        "steps": [
+            {"label": "Coach", "path": "design-brain/agents/brief-coach.md",
+             "uses": "the brief-contract",
+             "note": "Interview the idea-owner and help them write the brief — it never writes it for them."},
+            {"label": "Review", "path": "design-brain/agents/brief-reviewer.md",
+             "uses": None,
+             "note": "Decide whether it's ready to build from, before anyone prototypes."},
+            {"label": "Hand off", "path": "design-brain/skills/explore/SKILL.md",
+             "uses": None,
+             "note": "Turn the reviewed brief into a testable prototype for the concept/build team."},
+        ],
+        "refs": [],
+        "outcome": "A reviewed brief — and a testable prototype to build from.",
+    },
+]
+
+
+def _inventory_by_path(inv: dict) -> dict:
+    return {it["path"]: it for rows in inv.values() for it in rows}
+
+
+def workflow_gaps(inv: dict) -> list[str]:
+    """Workflow steps whose vault item no longer resolves — the honesty check.
+
+    A renamed or deleted agent/skill would leave a step pointing at nothing; this
+    reports it as "<workflow> / <path>" so the drift is visible (in the section and
+    countable elsewhere) rather than rendered as a dead node.
+    """
+    flat = _inventory_by_path(inv)
+    return [f"{wf['id']} / {st['path']}"
+            for wf in WORKFLOWS for st in wf["steps"] if st["path"] not in flat]
+
+
+def _workflows_section(inv: dict) -> str:
+    flat = _inventory_by_path(inv)
+
+    def loc(path: str) -> str:
+        return f'<span class="loc mono">{html.escape(path).replace("/", "/<wbr>")}</span>'
+
+    def step(st: dict) -> str:
+        it = flat.get(st["path"])
+        name = it["name"] if it else st["path"].rsplit("/", 1)[-1]
+        pill = _status_pill(it["status"]) if it else ""
+        missing = "" if it else '<span class="pill s-draft">missing</span>'
+        uses = f'<span class="wf-uses">with {html.escape(st["uses"])}</span>' if st.get("uses") else ""
+        return (
+            '<li class="wf-step">'
+            f'<span class="wf-k">{html.escape(st["label"])}</span>'
+            f'<span class="wf-item"><b>{html.escape(name)}</b>{pill}{missing}</span>'
+            f'{uses}'
+            f'<span class="wf-note">{html.escape(st["note"])}</span>'
+            f'{loc(st["path"])}'
+            '</li>')
+
+    blocks = []
+    for wf in WORKFLOWS:
+        nodes = [
+            '<li class="wf-node start"><span class="wf-k">Start</span>'
+            f'<span class="wf-b">{html.escape(wf["start"])}</span></li>']
+        for st in wf["steps"]:
+            nodes.append('<li class="wf-arrow" aria-hidden="true">→</li>')
+            nodes.append(step(st))
+        # Outcome is the flow's RESULT, rendered as a bar under the steps rather than
+        # a final inline node — an inline outcome wrapped to its own row on desktop and
+        # left a dangling arrow pointing at nothing.
+        outcome = (
+            '<div class="wf-outcome"><span class="wf-k">Outcome</span>'
+            f'<span class="wf-b">{html.escape(wf["outcome"])}</span></div>')
+        refs = ""
+        if wf["refs"]:
+            items = "".join(
+                f'<span class="wf-ref"><span class="wf-ref-t">{html.escape(label)}</span>'
+                f'{loc(p)}</span>'
+                for p, label in wf["refs"])
+            refs = (f'<div class="wf-refs"><span class="wf-refs-k">Reference</span>'
+                    f'{items}</div>')
+        blocks.append(
+            '<div class="wf">'
+            f'<div class="wf-h"><h3>{html.escape(wf["title"])}</h3>'
+            f'<p>{html.escape(wf["lede"])}</p></div>'
+            f'<ol class="wf-flow">{"".join(nodes)}</ol>'
+            f'{outcome}'
+            f'{refs}</div>')
+
+    return (
+        '\n  <section id="workflows">\n'
+        '    <h2 class="s-head">How work flows through the vault</h2>\n'
+        '    <p class="s-sub">The two pipelines the vault is built to run. Every step is a '
+        'real agent or skill — shown with its review state and its repo path — so this is the '
+        'live pipeline drawn from the parts, not an idealised diagram.</p>\n'
+        f'    {"".join(blocks)}\n'
+        '  </section>')
+
+
 def attention_items(scanned: dict, inv: dict, cov: dict | None) -> list[dict]:
     """The open work the page's numbers add up to, most consequential first.
 
@@ -1773,6 +1937,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     component_library = _component_library_section(
         date.fromisoformat(scanned["date"]), cov)
     attention = _attention_section(scanned, inv, cov)
+    workflows = _workflows_section(inv)
 
     # One sentence that reconciles every denominator on the page. Four numbers
     # (documents / with-status / library / spec'd) previously appeared in four
@@ -1859,6 +2024,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
     {traps_note}
   </section>
   <div hidden>{panel_srcs}</div>
+{workflows}
 {attention}
 
   <div id="coverage" class="anchor"></div>
