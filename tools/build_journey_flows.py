@@ -297,11 +297,11 @@ def render(matrix: Matrix, src: Path) -> str:
 <style>
   :root {{
     --bg: #EFF1F4; --surface: #FFFFFF; --surface-2: #E7EAEF;
-    --ink: #171C26; --ink-soft: #566173; --ink-faint: #8A93A3;
+    --ink: #171C26; --ink-soft: #566173; --ink-faint: #5F6979;
     --line: #DBDFE6; --line-strong: #C6CCD6;
     --accent: #2450B8; --accent-ink: #1C3F96; --accent-2: #6D3BD1; --accent-2-ink: #59309F;
-    --good: #2F7D58; --good-bg: #E4F1EA; --warn: #B07817; --warn-bg: #F7EDDA;
-    --crit: #BC3B2E; --crit-bg: #F8E7E4;
+    --good: #1F5E40; --good-bg: #E4F1EA; --warn: #7E540C; --warn-bg: #F7EDDA;
+    --crit: #9E2F24; --crit-bg: #F8E7E4;
     --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-serif: Charter, "Bitstream Charter", "Iowan Old Style", Georgia, "Times New Roman", serif;
     --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
@@ -311,7 +311,7 @@ def render(matrix: Matrix, src: Path) -> str:
   @media (prefers-color-scheme: dark) {{
     :root {{
       --bg: #0D1118; --surface: #141A24; --surface-2: #1B2330;
-      --ink: #E9ECF2; --ink-soft: #98A4B6; --ink-faint: #647082;
+      --ink: #E9ECF2; --ink-soft: #98A4B6; --ink-faint: #7A8698;
       --line: #26303D; --line-strong: #33404F;
       --accent: #7EA6FF; --accent-ink: #9DBCFF; --accent-2: #A883F2; --accent-2-ink: #C3AEF8;
       --good: #4FB483; --good-bg: #14261E; --warn: #E0A63E; --warn-bg: #2A2113;
@@ -321,16 +321,16 @@ def render(matrix: Matrix, src: Path) -> str:
   }}
   :root[data-theme="light"] {{
     --bg: #EFF1F4; --surface: #FFFFFF; --surface-2: #E7EAEF;
-    --ink: #171C26; --ink-soft: #566173; --ink-faint: #8A93A3;
+    --ink: #171C26; --ink-soft: #566173; --ink-faint: #5F6979;
     --line: #DBDFE6; --line-strong: #C6CCD6;
     --accent: #2450B8; --accent-ink: #1C3F96; --accent-2: #6D3BD1; --accent-2-ink: #59309F;
-    --good: #2F7D58; --good-bg: #E4F1EA; --warn: #B07817; --warn-bg: #F7EDDA;
-    --crit: #BC3B2E; --crit-bg: #F8E7E4;
+    --good: #1F5E40; --good-bg: #E4F1EA; --warn: #7E540C; --warn-bg: #F7EDDA;
+    --crit: #9E2F24; --crit-bg: #F8E7E4;
     --shadow: 0 1px 2px rgba(20,28,42,0.04), 0 8px 30px rgba(20,28,42,0.06);
   }}
   :root[data-theme="dark"] {{
     --bg: #0D1118; --surface: #141A24; --surface-2: #1B2330;
-    --ink: #E9ECF2; --ink-soft: #98A4B6; --ink-faint: #647082;
+    --ink: #E9ECF2; --ink-soft: #98A4B6; --ink-faint: #7A8698;
     --line: #26303D; --line-strong: #33404F;
     --accent: #7EA6FF; --accent-ink: #9DBCFF; --accent-2: #A883F2; --accent-2-ink: #C3AEF8;
     --good: #4FB483; --good-bg: #14261E; --warn: #E0A63E; --warn-bg: #2A2113;
