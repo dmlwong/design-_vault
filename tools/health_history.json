@@ -393,12 +393,12 @@
       "Pattern contracts": 11,
       "Examples": 18,
       "Platform profiles": 2,
-      "Total docs": 144
+      "Total docs": 146
     },
     "status": {
       "stable": 38,
       "in-review": 75,
-      "draft": 26
+      "draft": 28
     },
     "stale": 0,
     "malformed": 0,

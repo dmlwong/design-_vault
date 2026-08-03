@@ -1631,7 +1631,8 @@ WORKFLOWS: list[dict] = [
         "title": "Generate a brief from stakeholder input",
         "lede": "Turn raw stakeholder information into a reviewed brief the concept and build "
                 "teams can act on — before anyone spends time prototyping.",
-        "start": "Stakeholder information, captured in the intake form",
+        "start": "An idea captured in the intake form — or an existing prototype, "
+                 "reverse-briefed by the coach",
         "steps": [
             {"label": "Coach", "path": "design-brain/agents/brief-coach.md",
              "uses": "the brief-contract",
