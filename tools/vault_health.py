@@ -1609,11 +1609,47 @@ def _shares(s: dict, total: int) -> dict[str, int]:
 # stops resolving is reported by workflow_gaps() rather than rendered as a dead step.
 WORKFLOWS: list[dict] = [
     {
+        "id": "brief",
+        "title": "From an idea (or a prototype) to a validated concept",
+        "lede": "The Concept Desk pipeline: turn a stakeholder's idea — or something they "
+                "already built — into a concept that has proven its business and user value, "
+                "before any build effort is committed. The prototype here is deliberately "
+                "off-system: speed of learning first; design-system rules attach at the port.",
+        "start": "An idea captured in the intake form — or an existing prototype, "
+                 "reverse-briefed by the coach",
+        "steps": [
+            {"label": "Coach", "path": "design-brain/agents/brief-coach.md",
+             "uses": "the brief-contract",
+             "note": "Interview the idea-owner and help them write the brief — it never writes it for them."},
+            {"label": "Review", "path": "design-brain/agents/brief-reviewer.md",
+             "uses": None,
+             "note": "Decide whether it's ready to explore, before anyone prototypes."},
+            {"label": "Explore", "path": "design-brain/skills/explore/SKILL.md",
+             "uses": None,
+             "note": "Build a working prototype that tests the bet and shows the value — "
+                     "a throwaway concept, not an Orbit build."},
+            {"label": "Define", "path": "discovery/definition/clauseiq-supplier-rounds.md",
+             "uses": "the journey-flows generator",
+             "note": "Agree the user-journey matrix with the tool owner and data team — "
+                     "authored in Excel, canonical in the vault — and generate the user "
+                     "flows from it. The step links the worked ClauseIQ matrix."},
+        ],
+        "refs": [("discovery/definition/_TEMPLATE-scenario-matrix.md",
+                  "the matrix template (Excel-first authoring)")],
+        "outcome": "A validated concept: the user-journey matrix, its generated user flows, "
+                   "and a working prototype that proved the value — none of it on the design "
+                   "system yet, by design. Only now does it graduate to the build pipeline "
+                   "below.",
+    },
+    {
         "id": "port",
-        "title": "Port a prototype into Orbit",
-        "lede": "Take a prototype built outside the design system — an AI-generated or "
-                "external mockup — and rebuild it properly on Orbit's components and tokens.",
-        "start": "An external or AI-generated prototype (Lovable, a hand-built mockup, …)",
+        "title": "Land a validated concept on Orbit",
+        "lede": "The build stage — downstream of the desk. The proven concept's prototype "
+                "was built off-system on purpose; this pipeline rebuilds it properly on "
+                "Orbit's components and tokens, adding the states and accessibility a "
+                "concept prototype never carries.",
+        "start": "A concept that cleared the desk — value proven by its pack, journey "
+                 "matrix, and working prototype",
         "steps": [
             {"label": "Port", "path": "design-brain/agents/porter.md",
              "uses": "the port-to-orbit skill",
@@ -1624,28 +1660,8 @@ WORKFLOWS: list[dict] = [
         ],
         "refs": [("design-brain/patterns/lovable-port.md", "lovable-port pattern"),
                  ("design-brain/examples/lovable-initiatives-port.md", "a scored example port")],
-        "outcome": "An Orbit-native prototype, ready for the build team.",
-    },
-    {
-        "id": "brief",
-        "title": "Generate a brief from stakeholder input",
-        "lede": "Turn raw stakeholder information into a reviewed brief the concept and build "
-                "teams can act on — before anyone spends time prototyping.",
-        "start": "An idea captured in the intake form — or an existing prototype, "
-                 "reverse-briefed by the coach",
-        "steps": [
-            {"label": "Coach", "path": "design-brain/agents/brief-coach.md",
-             "uses": "the brief-contract",
-             "note": "Interview the idea-owner and help them write the brief — it never writes it for them."},
-            {"label": "Review", "path": "design-brain/agents/brief-reviewer.md",
-             "uses": None,
-             "note": "Decide whether it's ready to build from, before anyone prototypes."},
-            {"label": "Hand off", "path": "design-brain/skills/explore/SKILL.md",
-             "uses": None,
-             "note": "Turn the reviewed brief into a testable prototype for the concept/build team."},
-        ],
-        "refs": [],
-        "outcome": "A reviewed brief — and a testable prototype to build from.",
+        "outcome": "An Orbit-native build ready for the product — benchmarked 18/18 on the "
+                   "worked example.",
     },
 ]
 
@@ -1657,13 +1673,17 @@ def _inventory_by_path(inv: dict) -> dict:
 def workflow_gaps(inv: dict) -> list[str]:
     """Workflow steps whose vault item no longer resolves — the honesty check.
 
-    A renamed or deleted agent/skill would leave a step pointing at nothing; this
-    reports it as "<workflow> / <path>" so the drift is visible (in the section and
-    countable elsewhere) rather than rendered as a dead node.
+    A renamed or deleted step target would leave the pipeline pointing at nothing;
+    this reports it as "<workflow> / <path>" so the drift is visible (in the section
+    and countable elsewhere) rather than rendered as a dead node. A step may point
+    at any vault file, not only the six inventory cards — the Define step names a
+    discovery/definition doc — so the check is existence on disk, with the
+    inventory used only for the richer rendering.
     """
     flat = _inventory_by_path(inv)
     return [f"{wf['id']} / {st['path']}"
-            for wf in WORKFLOWS for st in wf["steps"] if st["path"] not in flat]
+            for wf in WORKFLOWS for st in wf["steps"]
+            if st["path"] not in flat and not (ROOT / st["path"]).exists()]
 
 
 def _workflows_section(inv: dict) -> str:
@@ -1674,6 +1694,12 @@ def _workflows_section(inv: dict) -> str:
 
     def step(st: dict) -> str:
         it = flat.get(st["path"])
+        if it is None and (ROOT / st["path"]).exists():
+            # Outside the six inventory cards (e.g. a discovery/definition doc):
+            # read the file's own frontmatter so it still shows a live status pill.
+            fm = lf.parse_frontmatter(ROOT / st["path"]) or {}
+            it = {"name": st["path"].rsplit("/", 1)[-1].removesuffix(".md"),
+                  "status": fm.get("status", "draft")}
         name = it["name"] if it else st["path"].rsplit("/", 1)[-1]
         pill = _status_pill(it["status"]) if it else ""
         missing = "" if it else '<span class="pill s-draft">missing</span>'
@@ -1720,9 +1746,11 @@ def _workflows_section(inv: dict) -> str:
     return (
         '\n  <section id="workflows">\n'
         '    <h2 class="s-head">How work flows through the vault</h2>\n'
-        '    <p class="s-sub">The two pipelines the vault is built to run. Every step is a '
-        'real agent or skill — shown with its review state and its repo path — so this is the '
-        'live pipeline drawn from the parts, not an idealised diagram.</p>\n'
+        '    <p class="s-sub">The two pipelines the vault is built to run — the Concept Desk '
+        'pipeline that takes an idea to a validated concept, and the build pipeline it '
+        'graduates into. Every step is a real vault item — shown with its review state and '
+        'its repo path — so this is the live pipeline drawn from the parts, not an idealised '
+        'diagram.</p>\n'
         f'    {"".join(blocks)}\n'
         '  </section>')
 
