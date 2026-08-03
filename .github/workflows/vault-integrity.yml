@@ -162,7 +162,10 @@ jobs:
             for f in /tmp/protected/*.html; do
               [ -e "$f" ] || continue
               name=$(basename "$f")
-              if node tools/encrypt_page.mjs "$f" "site/$name" "Vault Health"; then
+              # The unlock shell's title is public (it wraps the ciphertext), so it
+              # comes from the manifest, whose titles are already public-safe hub copy.
+              title=$(python3 -c "import json,sys; ts=json.load(open('tools/site-manifest.json'))['tools']; print(next((t.get('title','Protected') for t in ts if t.get('href')==sys.argv[1]), 'Protected'))" "$name")
+              if node tools/encrypt_page.mjs "$f" "site/$name" "$title"; then
                 echo "Encrypted $name into the published site."
               else
                 rm -f "site/$name"
