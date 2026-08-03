@@ -383,5 +383,50 @@
       "components_with_stories": 1,
       "story_files": 1
     }
+  },
+  {
+    "date": "2026-08-03",
+    "areas": {
+      "Agents": 11,
+      "Skills": 5,
+      "Component contracts": 12,
+      "Pattern contracts": 11,
+      "Examples": 18,
+      "Platform profiles": 2,
+      "Total docs": 144
+    },
+    "status": {
+      "stable": 38,
+      "in-review": 75,
+      "draft": 26
+    },
+    "stale": 0,
+    "malformed": 0,
+    "integrity_ok": true,
+    "check_labels": {
+      "export self-check": [
+        "All required files present",
+        "Nothing the system depends on is missing."
+      ],
+      "link check": [
+        "Every internal link works",
+        "No broken references between documents."
+      ],
+      "frontmatter lint": [
+        "Document metadata is valid",
+        "Every doc is tagged and dated correctly."
+      ],
+      "graph links": [
+        "Navigation index up to date",
+        "The cross-links between docs are current."
+      ]
+    },
+    "coverage": {
+      "contracts": 12,
+      "contracts_with_stories": 1,
+      "components": 52,
+      "components_with_stories": 1,
+      "story_files": 1
+    }
   }
 ]
