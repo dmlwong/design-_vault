@@ -46,6 +46,17 @@
       "nav": "The flow"
     },
     {
+      "id": "clauseiq-flows",
+      "title": "Journey flows — a worked Definition Pack",
+      "blurb": "What a concept earns after it clears the verdict: the agreed scenario & behaviour matrix rendered as interactive journey flows — green path, edge paths, rules, and the open clarifications with owners. Generated from the canonical matrix in the vault.",
+      "href": "journey-flows.html",
+      "source": "artifacts/clauseiq-journey-flows.html",
+      "tag": "Definition",
+      "nav": "Journey flows",
+      "protected": true,
+      "protected_note": "The page names a product surface and real negotiation-behaviour detail, so it skips SANITISE and is encrypted at publish time with SITE_PASSPHRASE; if that secret is absent the page is omitted entirely rather than published in the clear. The hub-card copy above is public even when the page is published, so it must stay surface-neutral — the surface name lives only inside the encrypted page."
+    },
+    {
       "id": "about",
       "title": "About the Orbit Vault",
       "blurb": "What the design brain is, what's inside it, how it's governed and shared, and the benchmark evidence that it works. Generated from the vault itself.",
