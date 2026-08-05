@@ -37,7 +37,8 @@ python3 tools/matrix_xlsx.py template -o <concept>.xlsx        # new
 python3 tools/matrix_xlsx.py export <matrix>.md -o <name>.xlsx # existing, for a round of edits
 ```
 
-Tabs: **Meta** (identity + frontmatter), **Rules** (R-items every journey relies on),
+Tabs: **Meta** (identity, frontmatter, and the `meta_line` row that carries
+**Source Concept Pack** — the field that lights the *Defined* stage), **Rules** (R-items every journey relies on),
 **Clarifications** (C-items, each with an Owner), **Green Path** (G-rows) and **Edge Paths**
 (E-rows). Every scenario row carries the same nine fields — subtitle, the rules it relies on,
 starting state, user actions, backend, front-end result, next action, expected outcome, and
@@ -48,8 +49,9 @@ where the disagreement surfaces.
 ```
 python3 tools/matrix_xlsx.py import <name>.xlsx -o discovery/definition/<slug>.md
 ```
-Set `**Source Concept Pack:**` to the Ready brief's path in backticks — that link is what
-lights the concept's *Defined* stage on Vault Health, and what the link checker validates.
+Set the Meta sheet's `meta_line` row so `**Source Concept Pack:**` carries the Ready
+brief's path in backticks — that link is what lights the concept's *Defined* stage on Vault
+Health, and what the link checker validates.
 The importer refuses a C-item with no owner and a scenario missing any of its nine fields:
 an incomplete matrix should fail loudly here, not quietly in a sprint.
 
@@ -57,8 +59,9 @@ an incomplete matrix should fail loudly here, not quietly in a sprint.
 ```
 python3 tools/build_journey_flows.py discovery/definition/<slug>.md -o artifacts/<slug>-journey-flows.html
 ```
-This page is a **projection** — never hand-edit it; edit the matrix and regenerate. CI fails
-the build if the two drift apart.
+This page is a **projection** — never hand-edit it; edit the matrix and regenerate.
+`matrix_xlsx.py --check` in CI covers every matrix in `discovery/definition/`, so a workbook
+that stops matching its markdown fails the build.
 
 ### 5. Walk the C-items with their owners
 Take every open clarification to the person named on it and come back with a decision or a

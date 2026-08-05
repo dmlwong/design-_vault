@@ -1763,6 +1763,15 @@ _RESUBMITTED = re.compile(r"^\*\*Resubmitted \(narrowed\):\*\*\s*`([^`]+)`", re.
 _BACKTICK = re.compile(r"`([^`]+)`")
 _SOURCE_PACK = re.compile(r"^\*\*Source Concept Pack:\*\*\s*(.+)$", re.M)
 _GRADUATION = re.compile(r"^-\s+\*\*Discovery pack:\*\*\s*(.+)$", re.M)
+# A backticked word in the graduation line is usually prose ("blocked on `TBD`"),
+# not a pack. Only a real discovery path counts as shipped.
+_PACK_PATH = re.compile(r"^discovery/.+\.md$")
+
+
+def _tags(fm: dict) -> set[str]:
+    """Frontmatter values are raw strings, so `tags: [a, b]` arrives as "[a, b]".
+    Split properly — a substring test made `not-a-reverse-brief-yet` a Door 2 concept."""
+    return {tag.strip() for tag in re.split(r"[,\[\]]", fm.get("tags", "")) if tag.strip()}
 
 
 def _unquote(value: str) -> str:
@@ -1780,23 +1789,25 @@ def _gate_verdict(text: str) -> str | None:
     returned verbatim rather than mapped: an unrecognised word on the dashboard is a
     prompt to look, whereas a silently dropped one is a lie.
     """
-    section = re.search(r"^## Gate log\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
-    if not section:
+    rows: list[tuple[date, str]] = []
+    for section in re.finditer(r"^## Gate log\s*$(.*?)(?=^## |\Z)", text, re.M | re.S):
+        for line in section.group(1).splitlines():
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if len(cells) < 2 or set(cells[0]) <= {"-", " "}:
+                continue
+            try:
+                when = date.fromisoformat(cells[0])
+            except ValueError:
+                continue
+            rows.append((when, cells[1].replace("*", "").strip().rstrip("\\").strip()))
+    if not rows:
         return None
-    latest = None
-    for line in section.group(1).splitlines():
-        line = line.strip()
-        if not line.startswith("|"):
-            continue
-        cells = [c.strip() for c in line.strip("|").split("|")]
-        if len(cells) < 2 or set(cells[0]) <= {"-", " "}:
-            continue
-        try:
-            date.fromisoformat(cells[0])
-        except ValueError:
-            continue
-        latest = cells[1].replace("*", "").strip()
-    return latest
+    # By date, not by position: gate logs are appended in both directions in the wild,
+    # and "the last row in the file" is not the same claim as "the latest verdict".
+    return max(rows, key=lambda r: r[0])[1]
 
 
 def _concept_name(text: str, slug: str) -> str:
@@ -1832,8 +1843,8 @@ def concepts_inventory() -> tuple[list[dict], list[str]]:
             "slug": path.stem,
             "name": _concept_name(text, path.stem),
             "owner": fm.get("owner", "—"),
-            "door": ("Door 2 · prototype-first" if "reverse-brief" in fm.get("tags", "")
-                     else "Door 1 · idea-first"),
+            "door": ("Door 2 · prototype-first"
+                     if "reverse-brief" in _tags(fm) else "Door 1 · idea-first"),
             "verdict": _gate_verdict(text),
             "text": text,
         }
@@ -1849,10 +1860,40 @@ def concepts_inventory() -> tuple[list[dict], list[str]]:
         if not m:
             continue
         target = m.group(1)
-        if target in briefs:
+        if target == rel:
+            gaps.append(f"{rel} — resubmitted-narrowed points at itself")
+        elif target in briefs:
             superseded[rel] = target
         else:
             gaps.append(f"{rel} — resubmitted-narrowed points at `{target}`, which is missing")
+
+    # A brief folded into a brief that is itself folded would vanish from the registry
+    # entirely — the one outcome this section must never produce. Unfold the chain and
+    # report it instead of hiding it.
+    for rel in list(superseded):
+        if rel not in superseded:
+            continue  # already released as part of a cycle
+        chain = [rel]
+        target = superseded[rel]
+        while target in superseded:
+            if target in chain:
+                # Every brief in the loop would otherwise be hidden. Release all of
+                # them and say so — a concept vanishing from the registry is the one
+                # failure this section must never produce silently.
+                loop = chain[chain.index(target):]
+                for member in loop:
+                    superseded.pop(member, None)
+                gaps.append("resubmitted-narrowed forms a loop (" +
+                            " → ".join(f"`{m}`" for m in loop + [target]) +
+                            ") — showing every row rather than hiding one")
+                break
+            chain.append(target)
+            target = superseded[target]
+        else:
+            if superseded.get(rel) not in (None, target):
+                gaps.append(f"{rel} — narrowed into `{superseded[rel]}`, which was itself "
+                            f"narrowed into `{target}`; following the chain to the end")
+                superseded[rel] = target
 
     # Explored: a prototype record whose `brief:` resolves to this brief.
     explored: dict[str, dict] = {}
@@ -1868,6 +1909,10 @@ def concepts_inventory() -> tuple[list[dict], list[str]]:
             proto = fm.get("prototype", "").strip()
             if proto and not (record.parent / proto).exists():
                 gaps.append(f"{rel} — its `prototype: {proto}` file is missing from disk")
+            if target in explored:
+                gaps.append(f"{rel} — a second record also claims "
+                            f"`{target}`; only one prototype can be that brief's")
+                continue
             explored[target] = {"path": rel, "status": fm.get("status", "draft")}
 
     # Defined: a definition matrix whose Source Concept Pack names this brief. A matrix
@@ -1903,8 +1948,11 @@ def concepts_inventory() -> tuple[list[dict], list[str]]:
                 else "attention" if verdict else "pending")
         proto = explored.get(rel)
         matrix = defined.get(rel)
-        grad = _GRADUATION.search(brief["text"])
-        grad_link = _BACKTICK.findall(grad.group(1)) if grad else []
+        grad_section = re.search(r"^## Graduation\s*$(.*?)(?=^## |\Z)",
+                                 brief["text"], re.M | re.S)
+        grad = _GRADUATION.search(grad_section.group(1)) if grad_section else None
+        grad_link = [g for g in (_BACKTICK.findall(grad.group(1)) if grad else [])
+                     if _PACK_PATH.match(g)]
 
         narrowed_from = [briefs[s]["slug"] for s, t in superseded.items() if t == rel]
         rows.append({

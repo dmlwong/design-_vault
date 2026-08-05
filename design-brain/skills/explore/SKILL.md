@@ -19,7 +19,7 @@ half of the design funnel. It is the opposite of the vault's port/govern skills:
 A winning concept from this skill later flows *into* the Port funnel to become real. Do not
 try to do both at once — Orbit fidelity is a distraction while exploring.
 
-## The method (four steps — do them in order)
+## The method (five steps — do them in order)
 
 ### 1. Frame first — never jump to screens
 The failure mode is composing screens before deciding what the feature *is*. So:
@@ -65,7 +65,12 @@ The failure mode is composing screens before deciding what the feature *is*. So:
 - **Copy the exact delivered file** to `discovery/prototypes/<slug>/prototype.html`, and write
   a record beside it from `discovery/prototypes/_TEMPLATE-record.md` — its `brief:` key points
   at the brief this came from, which is what lights the concept's *Explored* stage on Vault
-  Health. Then regenerate the graph links with `tools/gen_graph_links.py`.
+  Health. Then regenerate the graph links:
+
+```
+python3 tools/gen_graph_links.py
+```
+
 - Record the **provenance** honestly (original build, or a labelled reconstruction) and what
   you actually verified in step 3 — including anything you skipped.
 - This exists because it was learned the hard way: the 2026-07-21 status-prep prototype was

@@ -18,8 +18,9 @@ round trip is preserved, and the importer's serializer *defines* the canonical f
     line per paragraph (no hard wrapping) · scenario bullets in the fixed nine-field
     order · trailing graph-links block verbatim · one closing newline.
 
-`--check` asserts byte-for-byte that `import(export(golden))` and `import(golden.xlsx)`
-both reproduce the golden markdown. That is only meaningful because the golden file is
+`--check` covers EVERY matrix in discovery/definition/. For each it asserts, byte-for-byte,
+that writing a real workbook and reading it back reproduces the markdown, and that the
+committed sibling .xlsx still does too. That is only meaningful because each matrix is
 stored in exactly this canonical shape — which is why it was normalised once when this
 tool landed. Hard-wrapped prose is joined; no words changed. `build_journey_flows.py`
 joins wrapped lines when it parses, so the generated page is provably unaffected.
@@ -36,6 +37,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -43,6 +45,7 @@ from xml.etree import ElementTree as ET
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MD = ROOT / "discovery" / "definition" / "clauseiq-supplier-rounds.md"
 DEFAULT_XLSX = ROOT / "discovery" / "definition" / "clauseiq-supplier-rounds.xlsx"
+DEFINITION_DIR = ROOT / "discovery" / "definition"
 
 NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
 RNS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -99,9 +102,14 @@ def parse_md(path: Path) -> dict:
     for line in head.splitlines():
         if line.startswith(">"):
             note_lines.append(line)
-        elif note_lines and not line.strip():
-            break
-        elif note_lines:
+        elif not line.strip():
+            if note_lines:
+                break
+            continue  # blank lines between the H1 and the note are fine
+        else:
+            # Real content before any blockquote: this matrix has no doc-note. Without
+            # this the loop scavenged the first blockquote from anywhere in the file
+            # (e.g. a note under R1) and teleported it to the top on the way back.
             break
     doc_note = "\n".join(note_lines)
 
@@ -142,11 +150,16 @@ def parse_md(path: Path) -> dict:
             body_txt = _unwrap([l for l in rest.splitlines() if not l.strip().startswith(">")])
             owner = ""
             if kind == "C":
-                om = re.search(r"Owner:\s*(.+?)\.?\s*$", body_txt)
-                if not om:
+                # Anchor to the LAST "Owner:" — a clarification body may legitimately
+                # discuss an "Owner:" field, and matching the first one silently moved
+                # a whole paragraph into the Owner column of the workbook humans edit.
+                cut = body_txt.rfind("Owner:")
+                if cut == -1:
                     fail(f"{path.name}: {hm.group(1)} has no trailing 'Owner: <team>'")
-                owner = om.group(1).strip()
-                body_txt = body_txt[: om.start()].strip()
+                owner = body_txt[cut + len("Owner:"):].strip().rstrip(".").strip()
+                if not owner:
+                    fail(f"{path.name}: {hm.group(1)} has an empty Owner")
+                body_txt = body_txt[:cut].strip()
             out.append({"ref": hm.group(1), "title": hm.group(2).strip(),
                         "body": body_txt, "owner": owner})
         return out
@@ -232,6 +245,14 @@ def render_md(model: dict) -> str:
 # --------------------------------------------------------------------------- #
 # xlsx writing (inline strings, deterministic archive)
 # --------------------------------------------------------------------------- #
+# XML 1.0 forbids most control characters outright; writing one produces a workbook
+# no reader can open — including this tool's own importer. Excel also refuses a cell
+# over 32767 characters. Both are caught at write time with a message naming the cell,
+# because "wrote the file" followed by an unopenable file is the worst failure mode.
+_ILLEGAL_XML = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+EXCEL_CELL_LIMIT = 32767
+
+
 def _xml_escape(value: str) -> str:
     return (value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                  .replace('"', "&quot;"))
@@ -280,6 +301,13 @@ def _sheet_xml(rows: list[list[str]], widths: list[int] | None = None) -> str:
             if value is None or value == "":
                 continue  # blank cells are omitted; readers use the r= attribute
             ref = f"{_col_name(c_i)}{r_i}"
+            bad = _ILLEGAL_XML.search(value)
+            if bad:
+                fail(f"cell {ref} contains a control character "
+                     f"(0x{ord(bad.group()):02x}) that cannot be written to a workbook")
+            if len(value) > EXCEL_CELL_LIMIT:
+                fail(f"cell {ref} is {len(value)} characters; Excel's limit is "
+                     f"{EXCEL_CELL_LIMIT}. Split the text across rows.")
             style = 1 if r_i == 1 else 0
             cells.append(
                 f'<c r="{ref}" s="{style}" t="inlineStr"><is><t xml:space="preserve">'
@@ -424,10 +452,16 @@ def read_xlsx(path: Path) -> dict[str, list[list[str]]]:
             rid = sheet.get(f"{{{RNS}}}id")
             part = target.get(rid, "")
             if not part:
-                continue
-            member = part if part.startswith("xl/") else "xl/" + part.lstrip("/")
+                fail(f"{path.name}: sheet '{sheet.get('name')}' has no resolvable part")
+            # Targets may be absolute ("/xl/worksheets/sheet1.xml" — legal, and what
+            # openpyxl writes) or relative to xl/. Normalise before looking up, and
+            # refuse rather than skip: a silently dropped sheet reads downstream as
+            # "missing Meta sheet", which blames the user for our path bug.
+            rel = part.lstrip("/")
+            member = rel if rel.startswith("xl/") else "xl/" + rel
             if member not in names:
-                continue
+                fail(f"{path.name}: sheet '{sheet.get('name')}' points at '{part}', "
+                     "which is not in the workbook")
             ws = ET.fromstring(zf.read(member))
             rows: list[list[str]] = []
             for row in ws.iter(f"{{{NS}}}row"):
@@ -444,6 +478,17 @@ def read_xlsx(path: Path) -> dict[str, list[list[str]]]:
                 rows.append([cells.get(i, "") for i in range(1, width + 1)])
             sheets[sheet.get("name", "")] = rows
     return sheets
+
+
+def _no_newline(value: str, src: str, where: str) -> str:
+    """A line break typed in Excel (Alt+Enter) becomes a new markdown line, which at
+    best breaks the round trip and at worst injects a heading that silently restructures
+    the document. Refuse it here, naming the cell, rather than writing a file that
+    fails to parse later with an error pointing somewhere else."""
+    if "\n" in value or "\r" in value:
+        fail(f"{src}: {where} contains a line break. Excel line breaks cannot be "
+             "represented in a matrix field — keep each field to one paragraph.")
+    return value
 
 
 def sheets_to_model(sheets: dict[str, list[list[str]]], src: str) -> dict:
@@ -468,8 +513,12 @@ def sheets_to_model(sheets: dict[str, list[list[str]]], src: str) -> dict:
                 continue
             if not re.fullmatch(rf"{kind}\d+", ref):
                 fail(f"{src}: '{name}' ref '{ref}' is not {kind}<n>")
-            out.append({"ref": ref, "title": cell(row, 1), "body": cell(row, 2),
-                        "owner": cell(row, 3) if kind == "C" else ""})
+            out.append({
+                "ref": ref,
+                "title": _no_newline(cell(row, 1), src, f"{name} {ref} Title"),
+                "body": _no_newline(cell(row, 2), src, f"{name} {ref} Body"),
+                "owner": _no_newline(cell(row, 3), src, f"{name} {ref} Owner")
+                if kind == "C" else ""})
         if kind == "C":
             for item in out:
                 if not item["owner"]:
@@ -494,10 +543,16 @@ def sheets_to_model(sheets: dict[str, list[list[str]]], src: str) -> dict:
                 value = cell(row, i)
                 if not value:
                     fail(f"{src}: {ref} has no '{field}' — all nine fields are required")
-                fields[field] = value
-            out.append({"ref": ref, "title": cell(row, 1),
+                fields[field] = _no_newline(value, src, f"{name} {ref} '{field}'")
+            out.append({"ref": ref,
+                        "title": _no_newline(cell(row, 1), src, f"{name} {ref} Title"),
                         "open": cell(row, 2).lower() in {"yes", "true", "y", "1"},
                         "fields": fields})
+        seen: set[str] = set()
+        for item in out:
+            if item["ref"] in seen:
+                fail(f"{src}: '{name}' has two rows with ref {item['ref']}")
+            seen.add(item["ref"])
         return out
 
     return {
@@ -562,30 +617,76 @@ def cmd_template(out: Path) -> None:
     print(f"matrix_xlsx: wrote a blank matrix workbook to {out}")
 
 
-def cmd_check(md: Path, xlsx: Path) -> None:
-    """Both directions must reproduce the canonical markdown byte-for-byte."""
-    if not md.exists():
-        fail(f"--check: {md} does not exist")
+def _check_one(md: Path) -> list[str]:
+    """Verify one matrix. Returns a list of problems (empty means clean).
+
+    Both legs go through the real OOXML layer — write a workbook, read it back —
+    because an in-memory dict round trip would prove nothing about the file format
+    the owners actually receive.
+    """
+    problems: list[str] = []
     expected = md.read_text(encoding="utf-8")
 
-    round_tripped = render_md(sheets_to_model(_model_to_sheets(parse_md(md)),
-                                              f"{md.name} (in memory)"))
-    if round_tripped != expected:
-        print(f"matrix_xlsx: DRIFT — export/import of {md} does not reproduce it.\n"
-              "The markdown is not in canonical form, or the serializer changed.",
-              file=sys.stderr)
-        raise SystemExit(2)
+    with tempfile.TemporaryDirectory() as tmp:
+        probe = Path(tmp) / "probe.xlsx"
+        write_xlsx(_model_to_sheets(parse_md(md)), probe)
+        if render_md(sheets_to_model(read_xlsx(probe), probe.name)) != expected:
+            problems.append(
+                f"{md.as_posix()}: exporting to a workbook and importing it back does "
+                "not reproduce the file. It is not in canonical form — re-import it, or "
+                "the serializer changed.")
 
-    if xlsx.exists():
-        from_book = render_md(sheets_to_model(read_xlsx(xlsx), xlsx.name))
-        if from_book != expected:
-            print(f"matrix_xlsx: DRIFT — {xlsx} no longer reproduces {md}.\n"
-                  f"Re-export it: python3 tools/matrix_xlsx.py export {md} -o {xlsx}",
-                  file=sys.stderr)
-            raise SystemExit(2)
-        print(f"matrix_xlsx: OK — {md.name} round-trips, and {xlsx.name} matches it")
+    committed = md.with_suffix(".xlsx")
+    if committed.exists():
+        if render_md(sheets_to_model(read_xlsx(committed), committed.name)) != expected:
+            problems.append(
+                f"{committed.as_posix()}: no longer reproduces {md.name}. Re-export it: "
+                f"python3 tools/matrix_xlsx.py export {md.as_posix()} -o {committed.as_posix()}")
     else:
-        print(f"matrix_xlsx: OK — {md.name} round-trips ({xlsx.name} not committed)")
+        problems.append(
+            f"{committed.as_posix()}: missing. Every matrix keeps its workbook beside it "
+            f"so owners can edit it: python3 tools/matrix_xlsx.py export {md.as_posix()}")
+    return problems
+
+
+def cmd_check(md: Path | None, xlsx: Path | None) -> None:
+    """Check every matrix in the vault, not just one exemplar.
+
+    A guard that covers a single hardcoded file leaves every matrix produced by
+    following the define skill unguarded — which is the opposite of what the skill
+    promises. An explicit --md still checks just that file.
+    """
+    if md is not None:
+        if not md.exists():
+            fail(f"--check: {md} does not exist")
+        if xlsx is not None:
+            expected = md.read_text(encoding="utf-8")
+            if render_md(sheets_to_model(read_xlsx(xlsx), xlsx.name)) != expected:
+                print(f"matrix_xlsx: DRIFT — {xlsx} does not reproduce {md}.",
+                      file=sys.stderr)
+                raise SystemExit(2)
+            print(f"matrix_xlsx: OK — {xlsx.name} reproduces {md.name}")
+            return
+        targets = [md]
+    else:
+        targets = sorted(q for q in DEFINITION_DIR.glob("*.md")
+                         if "_TEMPLATE" not in q.name)
+        if not targets:
+            print("matrix_xlsx: no definition matrices to check")
+            return
+
+    problems: list[str] = []
+    for target in targets:
+        problems += _check_one(target)
+    if problems:
+        print("matrix_xlsx: DRIFT", file=sys.stderr)
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
+        raise SystemExit(2)
+    noun = "matrix" if len(targets) == 1 else "matrices"
+    verb = "round-trips" if len(targets) == 1 else "round-trip"
+    print(f"matrix_xlsx: OK — {len(targets)} {noun} {verb} through a real workbook "
+          "and match their committed .xlsx")
 
 
 def main() -> None:
@@ -605,12 +706,15 @@ def main() -> None:
 
     ap.add_argument("--check", action="store_true",
                     help="assert the round trip reproduces the canonical markdown")
-    ap.add_argument("--md", default=str(DEFAULT_MD), help="--check: the canonical markdown")
-    ap.add_argument("--xlsx", default=str(DEFAULT_XLSX), help="--check: the committed workbook")
+    ap.add_argument("--md", default=None,
+                    help="--check: restrict to one matrix (default: every matrix)")
+    ap.add_argument("--xlsx", default=None,
+                    help="--check: compare against this workbook instead of the sibling")
     args = ap.parse_args()
 
     if args.check:
-        cmd_check(Path(args.md), Path(args.xlsx))
+        cmd_check(Path(args.md) if args.md else None,
+                  Path(args.xlsx) if args.xlsx else None)
         return
     if args.cmd == "export":
         src = Path(args.src)
