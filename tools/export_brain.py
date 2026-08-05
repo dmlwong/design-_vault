@@ -86,6 +86,7 @@ REQUIRED_FILES = [
     "discovery/README.md",
     "discovery/briefs/_TEMPLATE.md",
     "discovery/briefs/README.md",
+    "discovery/prototypes/_TEMPLATE-record.md",
 ]
 
 REQUIRED_DIRS = [
@@ -102,6 +103,7 @@ REQUIRED_DIRS = [
     "design-brain/lessons",
     "design-brain/lovable",
     "discovery",
+    "discovery/prototypes",
 ]
 
 EXCLUDED_NAMES = {".DS_Store", "__pycache__"}
@@ -109,13 +111,23 @@ EXCLUDED_NAMES = {".DS_Store", "__pycache__"}
 # Restricted or personal content that must NOT leave the vault by default.
 # - Platform screenshots are in-review and restricted until design-system owners
 #   approve sanitization (see the screenshot manifests). Manifests themselves export.
+# - Explore prototype HTML is throwaway concept code, often carrying client-shaped
+#   sample data — the governed record.md beside it exports and describes it, the
+#   runnable file stays in the vault.
 # - _review WIP/state files carry personal paths and in-flight work, not brain content.
 # Pass --include-restricted only after sanitization approval.
+#
+# NOTE the AND semantics in is_restricted(): a file is withheld only when it matches a
+# prefix AND a suffix, so these two tuples form a cross product. Appending a prefix
+# withholds every listed suffix underneath it (images under discovery/prototypes/ are
+# withheld too, which is intended); appending a suffix applies it to every prefix.
+# Check both lists before extending either.
 RESTRICTED_PREFIXES = (
     "design-brain/examples/screenshots/connected-platform/",
     "design-brain/examples/screenshots/orbit-client-connected-platform/",
+    "discovery/prototypes/",
 )
-RESTRICTED_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif")
+RESTRICTED_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".html")
 PRIVATE_REL_PATHS = {
     "_review/STATE.md",
     "_review/cp-personas-WIP.md",
