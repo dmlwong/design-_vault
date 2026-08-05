@@ -950,6 +950,30 @@ def render_md(scanned: dict, previous: dict | None, healthy: bool, reasons: list
             lines.append(f"- {it['name']}{tag}")
         lines.append("")
 
+    c_rows, c_gaps = concepts_inventory()
+    c_gaps = c_gaps + [f"workflow step no longer resolves — {g}"
+                       for g in workflow_gaps(scanned["inventory"])]
+    if c_rows or c_gaps:
+        lines += ["## Concepts in flight", "",
+                  "Derived from the artifacts on disk — a stage lights only when the file "
+                  "that proves it exists.", "",
+                  "| Concept | Door | Owner | Gate | Briefed | Gated | Explored | Defined | Ported |",
+                  "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+        mark = {"done": "✅", "attention": "⚠️", "pending": "–"}
+        for row in c_rows:
+            cells = " | ".join(mark[s["state"]] for s in row["stages"])
+            lines.append(f"| {row['name']} | {row['door']} | {row['owner']} | "
+                         f"{row['verdict']} | {cells} |")
+        for row in c_rows:
+            if row["narrowed_from"]:
+                lines += ["", f"- **{row['name']}** narrowed from "
+                              + ", ".join(f"`{s}`" for s in row["narrowed_from"])
+                              + " — folded into one row."]
+        if c_gaps:
+            lines += ["", "**Dangling references:**"]
+            lines += [f"- {g}" for g in c_gaps]
+        lines.append("")
+
     lines += ["## Integrity checks", "", "| Check | Result |", "| --- | --- |"]
     for name, ok in scanned["integrity"].items():
         lines.append(f"| {name} | {'pass ✅' if ok else 'FAIL ❌'} |")
@@ -1233,6 +1257,40 @@ STYLE = """
   @media (max-width:620px){
     .wf-flow{flex-direction:column;align-items:stretch}
     .wf-arrow{transform:rotate(90deg);padding:2px 0;align-self:center}}
+  /* --- Concepts in flight: the registry, derived from artifacts on disk --- */
+  .cs{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);padding:16px 18px;margin-top:12px}
+  .cs-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .cs-h h3{margin:0;font-size:1rem;font-weight:660;letter-spacing:-.01em}
+  .cs-door{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--accent-ink);white-space:nowrap}
+  .cs-meta{margin:5px 0 0;font-size:.82rem;color:var(--muted)}
+  .cs-verdict{font-weight:660}
+  .cs-verdict.v-ready{color:var(--stable)}
+  .cs-verdict.v-work{color:var(--review)}
+  .cs-verdict.v-open{color:var(--muted)}
+  .cs-prov{margin:7px 0 0;font-size:.79rem;color:var(--muted)}
+  .cs-prov code{font-size:.95em}
+  .cs-stages{list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+    margin:12px 0 0;padding:0}
+  .cs-stage{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+    display:flex;flex-direction:column;gap:4px;min-width:0}
+  .cs-stage .cs-k{font-size:.72rem;font-weight:700;letter-spacing:.04em}
+  .cs-stage.is-done{border-color:var(--stable);
+    background:color-mix(in srgb,var(--stable) 9%,transparent)}
+  .cs-stage.is-done .cs-k{color:var(--stable)}
+  .cs-stage.is-attention{border-color:var(--review);
+    background:color-mix(in srgb,var(--review) 10%,transparent)}
+  .cs-stage.is-attention .cs-k{color:var(--review)}
+  .cs-stage.is-pending .cs-k{color:var(--muted)}
+  .cs-note{font-size:.74rem;color:var(--muted)}
+  .cs-loc{font-size:.7rem;overflow-wrap:anywhere;line-height:1.35}
+  .cs-gaps{margin-top:12px;padding:11px 14px;border:1px solid var(--warn);
+    border-radius:10px;background:color-mix(in srgb,var(--warn) 8%,transparent)}
+  .cs-gaps-k{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--warn)}
+  .cs-gaps ul{margin:6px 0 0;padding-left:18px;font-size:.8rem;color:var(--ink)}
+  @media(max-width:760px){.cs-stages{grid-template-columns:1fr 1fr}}
   footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
   @media (max-width:640px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -1627,7 +1685,9 @@ WORKFLOWS: list[dict] = [
             {"label": "Explore", "path": "design-brain/skills/explore/SKILL.md",
              "uses": None,
              "note": "Build a working prototype that tests the bet and shows the value — "
-                     "a throwaway concept, not an Orbit build."},
+                     "a throwaway concept, not an Orbit build. It is archived with its "
+                     "record in discovery/prototypes/: delivery is a link, storage is the "
+                     "record."},
             {"label": "Define", "path": "discovery/definition/clauseiq-supplier-rounds.md",
              "uses": "the journey-flows generator",
              "note": "Agree the user-journey matrix with the tool owner and data team — "
@@ -1635,7 +1695,9 @@ WORKFLOWS: list[dict] = [
                      "flows from it. The step links the worked ClauseIQ matrix."},
         ],
         "refs": [("discovery/definition/_TEMPLATE-scenario-matrix.md",
-                  "the matrix template (Excel-first authoring)")],
+                  "the matrix template (Excel-first authoring)"),
+                 ("discovery/prototypes/_TEMPLATE-record.md",
+                  "the prototype record template")],
         "outcome": "A validated concept: the user-journey matrix, its generated user flows, "
                    "and a working prototype that proved the value — none of it on the design "
                    "system yet, by design. Only now does it graduate to the build pipeline "
@@ -1670,6 +1732,197 @@ def _inventory_by_path(inv: dict) -> dict:
     return {it["path"]: it for rows in inv.values() for it in rows}
 
 
+# --------------------------------------------------------------------------- #
+# Concepts in flight
+#
+# The registry. Every row is DERIVED from files on disk — never hand-listed — so a
+# concept cannot appear here without its artifacts, and cannot go stale when they
+# move. The rule that keeps it honest: a stage lights only when its durable artifact
+# exists. Prose is never parsed; a brief that *describes* a prototype in beautiful
+# detail still shows Explored as pending until a record file points back at it. That
+# is deliberate — describing work is not the same as keeping it.
+# --------------------------------------------------------------------------- #
+BRIEFS_DIR = ROOT / "discovery" / "briefs"
+PROTOTYPES_DIR = ROOT / "discovery" / "prototypes"
+DEFINITION_DIR = ROOT / "discovery" / "definition"
+
+# `**Resubmitted (narrowed):** `path`` in a brief means that brief was superseded by a
+# narrower one — the pair is one concept, so the broad brief folds into the narrow
+# brief's row as provenance instead of standing as a second (permanently stalled) row.
+_RESUBMITTED = re.compile(r"^\*\*Resubmitted \(narrowed\):\*\*\s*`([^`]+)`", re.M)
+_BACKTICK = re.compile(r"`([^`]+)`")
+_SOURCE_PACK = re.compile(r"^\*\*Source Concept Pack:\*\*\s*(.+)$", re.M)
+_GRADUATION = re.compile(r"^-\s+\*\*Discovery pack:\*\*\s*(.+)$", re.M)
+
+
+def _unquote(value: str) -> str:
+    """Frontmatter values are raw strings; ours are written backticked so that
+    check_links validates them. Strip the decoration to get the path."""
+    return value.strip().strip("`").strip('"').strip("'").strip()
+
+
+def _gate_verdict(text: str) -> str | None:
+    """The latest dated verdict from a brief's `## Gate log` table.
+
+    Rows are `| date | verdict | by | notes |`. Only rows whose date parses count —
+    the reverse brief's placeholder row (`| — | not yet submitted | … |`) is a
+    declaration that the gate has not run, not a verdict. Unknown verdict strings are
+    returned verbatim rather than mapped: an unrecognised word on the dashboard is a
+    prompt to look, whereas a silently dropped one is a lie.
+    """
+    section = re.search(r"^## Gate log\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not section:
+        return None
+    latest = None
+    for line in section.group(1).splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) < 2 or set(cells[0]) <= {"-", " "}:
+            continue
+        try:
+            date.fromisoformat(cells[0])
+        except ValueError:
+            continue
+        latest = cells[1].replace("*", "").strip()
+    return latest
+
+
+def _concept_name(text: str, slug: str) -> str:
+    m = re.search(r"^# (.+)$", text, re.M)
+    if not m:
+        return slug.replace("-", " ").capitalize()
+    name = m.group(1).strip()
+    for prefix in ("Concept brief (reverse): ", "Concept brief: "):
+        if name.startswith(prefix):
+            return name[len(prefix):]
+    return name
+
+
+def concepts_inventory() -> tuple[list[dict], list[str]]:
+    """Every concept in the pipeline, with the stage each artifact proves.
+
+    Returns (rows, gaps). `gaps` is the honesty check — dangling references the page
+    reports by name rather than rendering as if they resolved.
+    """
+    gaps: list[str] = []
+    if not BRIEFS_DIR.is_dir():
+        return [], gaps
+
+    briefs: dict[str, dict] = {}
+    for path in sorted(BRIEFS_DIR.glob("*.md")):
+        if "_TEMPLATE" in path.name or path.name == "README.md":
+            continue
+        rel = path.relative_to(ROOT).as_posix()
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        fm = lf.parse_frontmatter(path) or {}
+        briefs[rel] = {
+            "path": rel,
+            "slug": path.stem,
+            "name": _concept_name(text, path.stem),
+            "owner": fm.get("owner", "—"),
+            "door": ("Door 2 · prototype-first" if "reverse-brief" in fm.get("tags", "")
+                     else "Door 1 · idea-first"),
+            "verdict": _gate_verdict(text),
+            "text": text,
+        }
+        if "## Gate log" not in text:
+            gaps.append(f"{rel} — no `## Gate log` section, so its verdict cannot be read")
+        if "## Graduation" not in text:
+            gaps.append(f"{rel} — no `## Graduation` section, so its handoff cannot be read")
+
+    # Fold superseded briefs into the brief that narrowed them.
+    superseded: dict[str, str] = {}
+    for rel, brief in briefs.items():
+        m = _RESUBMITTED.search(brief["text"])
+        if not m:
+            continue
+        target = m.group(1)
+        if target in briefs:
+            superseded[rel] = target
+        else:
+            gaps.append(f"{rel} — resubmitted-narrowed points at `{target}`, which is missing")
+
+    # Explored: a prototype record whose `brief:` resolves to this brief.
+    explored: dict[str, dict] = {}
+    if PROTOTYPES_DIR.is_dir():
+        for record in sorted(PROTOTYPES_DIR.glob("*/record.md")):
+            rel = record.relative_to(ROOT).as_posix()
+            fm = lf.parse_frontmatter(record) or {}
+            target = _unquote(fm.get("brief", ""))
+            if not target or target not in briefs:
+                gaps.append(f"{rel} — `brief:` points at `{target or '(nothing)'}`, "
+                            "which is not a brief in the vault")
+                continue
+            proto = fm.get("prototype", "").strip()
+            if proto and not (record.parent / proto).exists():
+                gaps.append(f"{rel} — its `prototype: {proto}` file is missing from disk")
+            explored[target] = {"path": rel, "status": fm.get("status", "draft")}
+
+    # Defined: a definition matrix whose Source Concept Pack names this brief. A matrix
+    # with no brief reference (the ClauseIQ exemplar predates the chain) is unlinked,
+    # not dangling — it earns no gap and no row.
+    defined: dict[str, dict] = {}
+    if DEFINITION_DIR.is_dir():
+        for matrix in sorted(DEFINITION_DIR.glob("*.md")):
+            if "_TEMPLATE" in matrix.name:
+                continue
+            rel = matrix.relative_to(ROOT).as_posix()
+            m = _SOURCE_PACK.search(matrix.read_text(encoding="utf-8", errors="ignore"))
+            if not m:
+                continue
+            refs = [r for r in _BACKTICK.findall(m.group(1))
+                    if r.startswith("discovery/briefs/")]
+            if not refs:
+                continue
+            fm = lf.parse_frontmatter(matrix) or {}
+            for ref in refs:
+                if ref not in briefs:
+                    gaps.append(f"{rel} — its Source Concept Pack `{ref}` is not a brief "
+                                "in the vault")
+                    continue
+                defined[ref] = {"path": rel, "status": fm.get("status", "draft")}
+
+    rows = []
+    for rel, brief in briefs.items():
+        if rel in superseded:
+            continue
+        verdict = brief["verdict"]
+        gate = ("done" if verdict == "Ready"
+                else "attention" if verdict else "pending")
+        proto = explored.get(rel)
+        matrix = defined.get(rel)
+        grad = _GRADUATION.search(brief["text"])
+        grad_link = _BACKTICK.findall(grad.group(1)) if grad else []
+
+        narrowed_from = [briefs[s]["slug"] for s, t in superseded.items() if t == rel]
+        rows.append({
+            "name": brief["name"],
+            "door": brief["door"],
+            "owner": brief["owner"],
+            "verdict": verdict or "Not yet submitted",
+            "path": rel,
+            "narrowed_from": narrowed_from,
+            "stages": [
+                {"label": "Briefed", "state": "done", "path": rel, "status": None},
+                {"label": "Gated", "state": gate, "path": rel,
+                 "status": None, "note": verdict or "not yet submitted"},
+                {"label": "Explored", "state": "done" if proto else "pending",
+                 "path": proto["path"] if proto else None,
+                 "status": proto["status"] if proto else None},
+                {"label": "Defined", "state": "done" if matrix else "pending",
+                 "path": matrix["path"] if matrix else None,
+                 "status": matrix["status"] if matrix else None},
+                {"label": "Ported", "state": "done" if grad_link else "pending",
+                 "path": grad_link[0] if grad_link else None, "status": None,
+                 "note": None if grad_link else "not yet"},
+            ],
+        })
+    rows.sort(key=lambda r: r["path"])
+    return rows, gaps
+
+
 def workflow_gaps(inv: dict) -> list[str]:
     """Workflow steps whose vault item no longer resolves — the honesty check.
 
@@ -1684,6 +1937,64 @@ def workflow_gaps(inv: dict) -> list[str]:
     return [f"{wf['id']} / {st['path']}"
             for wf in WORKFLOWS for st in wf["steps"]
             if st["path"] not in flat and not (ROOT / st["path"]).exists()]
+
+
+def _concepts_section(rows: list[dict], gaps: list[str]) -> str:
+    """The registry, rendered. Generated from artifacts — never hand-edited."""
+    if not rows and not gaps:
+        return ""
+
+    def loc(path: str) -> str:
+        # Stage chips are narrow columns; a full repo path wraps to six lines and
+        # buries the label. Show the filename, carry the path in the tooltip.
+        name = path.rsplit("/", 1)[-1]
+        return (f'<span class="loc mono cs-loc" title="{html.escape(path)}">'
+                f'{html.escape(name)}</span>')
+
+    cards = []
+    for row in rows:
+        chips = []
+        for st in row["stages"]:
+            pill = _status_pill(st["status"]) if st.get("status") else ""
+            note = (f'<span class="cs-note">{html.escape(st["note"])}</span>'
+                    if st.get("note") else "")
+            path = loc(st["path"]) if st.get("path") else ""
+            chips.append(
+                f'<li class="cs-stage is-{st["state"]}">'
+                f'<span class="cs-k">{html.escape(st["label"])}</span>'
+                f'{pill}{note}{path}</li>')
+        prov = ""
+        if row["narrowed_from"]:
+            names = ", ".join(f"<code>{html.escape(s)}</code>" for s in row["narrowed_from"])
+            prov = (f'<p class="cs-prov">Narrowed from {names} — that first attempt went to '
+                    "the gate uncoached and came back Needs work. One concept, one row.</p>")
+        verdict_cls = ("v-ready" if row["verdict"] == "Ready"
+                       else "v-open" if row["verdict"] == "Not yet submitted" else "v-work")
+        cards.append(
+            '<article class="cs">'
+            f'<div class="cs-h"><h3>{html.escape(row["name"])}</h3>'
+            f'<span class="cs-door">{html.escape(row["door"])}</span></div>'
+            f'<p class="cs-meta">Owner: {html.escape(row["owner"])} · Gate: '
+            f'<span class="cs-verdict {verdict_cls}">{html.escape(row["verdict"])}</span></p>'
+            f'{prov}'
+            f'<ol class="cs-stages">{"".join(chips)}</ol>'
+            '</article>')
+
+    gap_block = ""
+    if gaps:
+        items = "".join(f"<li>{html.escape(g)}</li>" for g in gaps)
+        gap_block = ('<div class="cs-gaps"><span class="cs-gaps-k">Dangling references</span>'
+                     f'<ul>{items}</ul></div>')
+
+    return (
+        '\n  <section id="concepts">\n'
+        '    <h2 class="s-head">Concepts in flight</h2>\n'
+        '    <p class="s-sub">Every concept the desk is carrying, and how far it has got. '
+        'Each stage lights only when the artifact that proves it exists on disk — a brief '
+        'that merely describes a prototype does not count. Generated from those files, so '
+        'this list cannot drift from them.</p>\n'
+        f'    {"".join(cards)}{gap_block}\n'
+        '  </section>')
 
 
 def _workflows_section(inv: dict) -> str:
@@ -1967,6 +2278,11 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
         date.fromisoformat(scanned["date"]), cov)
     attention = _attention_section(scanned, inv, cov)
     workflows = _workflows_section(inv)
+    concept_rows, concept_gaps = concepts_inventory()
+    # workflow_gaps() reports pipeline steps whose vault item stopped resolving; fold
+    # them into the same honesty list so both drift signals surface in one place.
+    concepts = _concepts_section(concept_rows, concept_gaps + [
+        f"workflow step no longer resolves — {g}" for g in workflow_gaps(inv)])
 
     # One sentence that reconciles every denominator on the page. Four numbers
     # (documents / with-status / library / spec'd) previously appeared in four
@@ -2054,6 +2370,7 @@ def render_body(scanned: dict, history: list[dict], healthy: bool,
   </section>
   <div hidden>{panel_srcs}</div>
 {workflows}
+{concepts}
 {attention}
 
   <div id="coverage" class="anchor"></div>
