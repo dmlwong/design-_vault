@@ -29,6 +29,12 @@ jobs:
       - name: Graph links current (Obsidian footer blocks match references)
         run: python3 tools/gen_graph_links.py --check
 
+      - name: Journey flows current (generated page matches its canonical matrix)
+        run: python3 tools/build_journey_flows.py --check
+
+      - name: Definition matrix round-trip (Excel and markdown stay exact inverses)
+        run: python3 tools/matrix_xlsx.py --check
+
       - name: Staleness report (informational — never fails the build)
         run: python3 tools/lint_frontmatter.py --stale-report
 

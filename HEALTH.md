@@ -12,12 +12,12 @@ _Snapshot 2026-08-06. Regenerate with `tools/vault_health.py`._
 | Area | Count |
 | --- | ---: |
 | Agents | 11 |
-| Skills | 5 |
+| Skills | 6 (+1) |
 | Component contracts | 12 |
 | Pattern contracts | 11 |
 | Examples | 18 |
 | Platform profiles | 2 |
-| Total docs | 148 (+2) |
+| Total docs | 149 (+3) |
 
 ## Status mix
 
@@ -44,8 +44,9 @@ _143 docs carry a status field (skill files use a different frontmatter shape an
 - story-author — draft
 - vault-librarian — in-review
 
-### Skills (5)
+### Skills (6)
 - component-contract
+- define
 - explore
 - extract-contract
 - port-to-orbit
@@ -121,6 +122,8 @@ Derived from the artifacts on disk — a stage lights only when the file that pr
 | link check | pass ✅ |
 | frontmatter lint | pass ✅ |
 | graph links | pass ✅ |
+| journey flows | pass ✅ |
+| matrix round-trip | pass ✅ |
 
 ## Freshness
 

@@ -16,8 +16,7 @@ tags: [orbit, discovery, definition-matrix, clauseiq]
 > 23 July 2026). The generated journey-flows page is built from this file by
 > `tools/build_journey_flows.py` — never hand-edit the generated page.
 
-**Source Concept Pack:** predates the pack chain — this matrix is the exemplar the chain
-was designed around. · **Working draft:** v0.1 · 23 July 2026
+**Source Concept Pack:** predates the pack chain — this matrix is the exemplar the chain was designed around. · **Working draft:** v0.1 · 23 July 2026
 
 ## Key rules (agreed)
 

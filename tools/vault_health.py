@@ -328,6 +328,10 @@ CHECK_LABELS = {
     "link check": ("Every internal link works", "No broken references between documents."),
     "frontmatter lint": ("Document metadata is valid", "Every doc is tagged and dated correctly."),
     "graph links": ("Navigation index up to date", "The cross-links between docs are current."),
+    "journey flows": ("Journey flows match their matrix",
+                      "The interactive flow pages still show what the agreed matrix says."),
+    "matrix round-trip": ("Excel and markdown agree",
+                          "A matrix exported for editing comes back as exactly the same document."),
 }
 
 # What each maturity status means, in plain words (for the legend).
@@ -350,6 +354,12 @@ INTEGRITY_CHECKS = {
     "link check": ["check_links.py"],
     "frontmatter lint": ["lint_frontmatter.py"],
     "graph links": ["gen_graph_links.py", "--check"],
+    # Generated-projection guards: a page or workbook that no longer matches its
+    # source is drift, and drift in a *generated* artifact is the kind a reader
+    # cannot see. Both are local, deterministic scripts, so they belong to the
+    # verdict exactly as the checks above do — and they mirror CI step for step.
+    "journey flows": ["build_journey_flows.py", "--check"],
+    "matrix round-trip": ["matrix_xlsx.py", "--check"],
 }
 
 
