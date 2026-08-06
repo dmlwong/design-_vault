@@ -1,15 +1,27 @@
 #!/usr/bin/env python3
-"""Project the intake specs into paste-ready Claude Project bundles.
+"""Project the intake specs onto the surfaces stakeholders can actually use.
 
-A stakeholder can't run a vault agent directly, so for the team test we project
-the coach and reviewer specs onto a surface they can use self-serve: a Claude
-Project each. This script assembles two self-contained bundles from the
-canonical specs — author once in the vault, project here — so the Projects never
-drift from the source. Re-run after editing any source spec, then re-paste.
+A stakeholder can't run a vault agent directly, so the coach and reviewer specs
+are projected onto self-serve surfaces. Two shapes, same source:
+
+  *-project.md   Claude Project bundles — paste once into a Project's custom
+                 instructions; testers then just start a chat.
+  *-anytool.md   Tool-neutral packs — the same spec with setup notes for Codex,
+                 ChatGPT, Copilot, or any assistant with a chat box. These exist
+                 because not everyone has Claude: the specs are plain markdown,
+                 and AGENTS.md is explicit that the brain is tool-neutral
+                 ("Codex reads it directly"). A Project is a convenience, never
+                 a requirement.
+
+Everything is assembled from the canonical specs — author once in the vault,
+project here — so no surface can drift from the source. Re-run after editing any
+source spec, then re-paste.
 
 Outputs (generated — do not hand-edit):
   design-brain/projects/brief-coach-project.md
   design-brain/projects/brief-reviewer-project.md
+  design-brain/projects/brief-coach-anytool.md
+  design-brain/projects/brief-reviewer-anytool.md
 """
 
 from __future__ import annotations
@@ -31,7 +43,7 @@ status: draft
 owner: design-system
 surfaces: [shared]
 source: code
-last_reviewed: 2026-07-21
+last_reviewed: 2026-08-06
 maturity_score: 0
 tags: [orbit, design-brain, intake, brief, projection]
 ---
@@ -56,6 +68,9 @@ COACH_WRAP = """# Orbit Brief Coach — Claude Project bundle
 everything below (from "Your role" down) into its custom instructions — or add this file
 to the Project's knowledge. Share the Project with your testers; each tester just starts a
 normal chat.
+
+**No Claude?** Use `design-brain/projects/brief-coach-anytool.md` instead — the same
+spec, with setup notes for Codex, ChatGPT, Copilot, or any assistant.
 
 **The firewall:** this Project **only coaches**. It never judges a brief, never says a
 brief will pass. Judging happens in a **separate** *Orbit Brief Reviewer* Project. Never do
@@ -82,9 +97,72 @@ the platform profiles (`design-brain/platforms/*.md`) to the Project's knowledge
 criterion 8 can be checked against real profiles. Keep this **separate** from the coach
 Project.
 
+**No Claude?** Use `design-brain/projects/brief-reviewer-anytool.md` instead — the same
+spec, with setup notes for other assistants.
+
 **How testers use it:** paste a submitted brief; the reviewer returns the verdict in the
 fixed format. If the platform/surface can't be verified from what's provided, it says so
 under criterion 8 — it must not invent context.
+
+---
+
+## Your role — reviewer spec
+
+"""
+
+
+SETUP = """
+## Setting it up in your tool
+
+The spec below is **just a prompt**. Any assistant with a chat box can run it — the vault's
+brain is tool-neutral by design (`AGENTS.md`: *"Codex reads it directly"*). Pick your row:
+
+| Tool | Once | Each session |
+| ---- | ---- | ------------ |
+| **Codex** | Nothing, if you have the repo: it reads `AGENTS.md` and the specs in `design-brain/agents/` directly. Otherwise paste this file. | Say which role you want: *"Act as the brief-coach spec"* (or point it at the file). |
+| **ChatGPT** | Create a Project (or a custom GPT) and paste everything from "Your role" down into its instructions. | Start a new chat in it. |
+| **Copilot** | Add this file to the repo's instructions (e.g. `.github/copilot-instructions.md`) or attach it in chat. | Open a new chat. |
+| **Anything else** | — | Paste everything from "Your role" down as the first message, then start. |
+
+**The one rule that survives every tool:** the coach and the reviewer run in **two separate
+chats**, never one. A reviewer that saw the coaching approves what it helped write, and the
+gate becomes theatre. This is not a Claude constraint — it is the gate's integrity.
+
+**A word on model quality.** The spec ports cleanly everywhere; the judgement does not. The
+reviewer is the one making a call, so if you run it on a different model, spot-check a couple
+of verdicts against a known-good one before trusting it. An honest "cannot verify" is a good
+sign; invented context is not.
+
+**No AI at all?** You do not need any of this to enter the pipeline. Fill in the intake form
+(`tools/intake-form.html`, on the team site), download the brief, and send it to the intake
+owner. The coach makes a brief sharper; it was never the entry requirement.
+"""
+
+COACH_NEUTRAL = """# Orbit Brief Coach — any assistant
+
+Turns a rough idea into a concept brief the design team can act on, by asking questions.
+""" + SETUP + """
+**Open every new session with this message:**
+> Hi — I'll help you turn a rough idea into a sharp concept brief for the design team, just
+> by asking a few questions. Nothing to prepare. In a sentence or two: what's the thing you
+> want to build or fix?
+
+Then follow the spec exactly. **Only coach.** Never judge the brief, never predict whether it
+will pass — that happens in a separate reviewer session.
+
+---
+
+## Your role — coach spec
+
+"""
+
+REVIEWER_NEUTRAL = """# Orbit Brief Reviewer — any assistant
+
+Scores a submitted brief against the eight criteria and returns Ready / Needs work / Blocked.
+""" + SETUP + """
+**Use a fresh session for every review.** A reviewer carrying earlier conversation is no
+longer blind. If the platform or surface cannot be verified from what you were given, say so
+under criterion 8 — never invent context to fill a gap.
 
 ---
 
@@ -111,11 +189,30 @@ def build() -> None:
         + "\n\n---\n\n## The standard you score against\n\n" + contract + "\n"
     )
 
-    (OUT / "brief-coach-project.md").write_text(coach, encoding="utf-8")
-    (OUT / "brief-reviewer-project.md").write_text(reviewer, encoding="utf-8")
+    coach_any = (
+        FRONT + GEN_NOTE + "\n\n" + COACH_NEUTRAL + body(COACH)
+        + "\n\n---\n\n## The standard you coach toward\n\n"
+        + "_Your private checklist — the eight criteria. Do not read it out; use it to know "
+        + "what a strong brief needs._\n\n" + contract
+        + "\n\n---\n\n## The brief shape to play back\n\n"
+        + "_When you play the brief back, use this structure._\n\n" + template + "\n"
+    )
+    reviewer_any = (
+        FRONT + GEN_NOTE + "\n\n" + REVIEWER_NEUTRAL + body(REVIEWER)
+        + "\n\n---\n\n## The standard you score against\n\n" + contract + "\n"
+    )
+
+    written = {
+        "brief-coach-project.md": coach,
+        "brief-reviewer-project.md": reviewer,
+        "brief-coach-anytool.md": coach_any,
+        "brief-reviewer-anytool.md": reviewer_any,
+    }
+    for name, text in written.items():
+        (OUT / name).write_text(text, encoding="utf-8")
     print("Wrote:")
-    print("  design-brain/projects/brief-coach-project.md")
-    print("  design-brain/projects/brief-reviewer-project.md")
+    for name in written:
+        print(f"  design-brain/projects/{name}")
 
 
 if __name__ == "__main__":

@@ -224,10 +224,10 @@
   <section class="phase">
     <div class="ph-head">
       <span class="ph-num">1</span>
-      <h2 class="ph-title">Set up the two Projects</h2>
+      <h2 class="ph-title">Set up the two roles</h2>
       <span class="ph-when">once · owner · ~20 min</span>
     </div>
-    <p class="ph-sub">You provision this once. It's two Claude Projects and a link — nothing installed.</p>
+    <p class="ph-sub">You provision this once. Two assistant setups and a link — nothing installed.</p>
     <div class="steps">
       <div class="step"><span class="mk">1.1</span><div class="body">
         <div class="t">Create the “Orbit Brief Coach” Project</div>
@@ -239,10 +239,19 @@
           <span class="inline-code">brief-reviewer-project.md</span>. Optionally add your platform profiles to its
           knowledge so it checks concepts against real context.</div></div></div>
       <div class="step"><span class="mk">1.3</span><div class="body">
+        <div class="t">Testers without Claude — point them at the neutral pack</div>
+        <div class="d">The specs are plain prompts, not a Claude product. Anyone on <b>Codex</b>,
+          <b>ChatGPT</b>, or <b>Copilot</b> uses <span class="inline-code">brief-coach-anytool.md</span> /
+          <span class="inline-code">brief-reviewer-anytool.md</span> instead — same spec, with a setup row per
+          tool. Codex needs no setup at all if they have the repo: it reads the brain directly.
+          <b>And nobody needs an assistant to take part</b> — the intake form alone puts a brief in the
+          pipeline; the coach only makes it sharper. The one rule that travels with every tool:
+          <b>coach and reviewer stay in separate chats.</b></div></div></div>
+      <div class="step"><span class="mk">1.4</span><div class="body">
         <div class="t">Confirm the intake link works</div>
         <div class="d">Open the site, click <b>Concept Brief Intake</b>, type a line, hit <b>Download .md</b>.
           If a file lands in your downloads, the tester path works.</div></div></div>
-      <div class="step"><span class="mk">1.4</span><div class="body">
+      <div class="step"><span class="mk">1.5</span><div class="body">
         <div class="t">Name the intake owner &amp; the clock</div>
         <div class="d">One person runs the Reviewer and replies within <b>two working days</b>. It can be you.
           Without a named owner, briefs pile up and the pilot stalls.</div></div></div>
